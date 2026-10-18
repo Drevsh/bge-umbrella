@@ -80,7 +80,8 @@ export const QuestGraphCanvas: React.FC = () => {
       edges,
       simulator.activeRewardChoices,
       simulator.completedQuestIds,
-      simulator.customTags
+      simulator.customTags,
+      simulator.manualTimeOffset || 0
     );
   }, [quests, edges, simulator]);
 

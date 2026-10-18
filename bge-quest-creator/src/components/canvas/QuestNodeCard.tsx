@@ -13,7 +13,9 @@ import {
   Tag,
   Globe,
   Volume2,
-  Dices
+  Dices,
+  Compass,
+  Clock
 } from 'lucide-react';
 import { QuestModel, QuestVariantOverride } from '../../types/campaign';
 import { QuestSimStatus } from '../../utils/simulatorEngine';
@@ -185,6 +187,22 @@ export const QuestNodeCard = memo(({ id, data, selected }: { id: string; data: Q
           </h3>
         )}
 
+        {/* Dragon Eclipse Exploration Stage Badge */}
+        {(quest.isExplorationStage || quest.category === 'EXPLORATION' || Boolean(quest.explorationConfig)) && (
+          <div className="flex items-center gap-1.5 mt-1.5">
+            <span className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-teal-300 bg-teal-950/80 border border-teal-500/50 px-1.5 py-0.5 rounded shadow-[0_0_8px_rgba(20,184,166,0.25)]">
+              <Compass className="w-2.5 h-2.5 text-teal-400" />
+              Exploration Stage
+            </span>
+            {Boolean(quest.timeAdvance && quest.timeAdvance > 0) && (
+              <span className="flex items-center gap-0.5 text-[9px] font-mono font-bold text-teal-300 bg-teal-950 px-1.5 py-0.5 rounded border border-teal-700/60" title={`Base exploration duration: +${quest.timeAdvance} Time`}>
+                <Clock className="w-2.5 h-2.5 text-teal-400" />
+                +{quest.timeAdvance} Time
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Simulator Toggle Button */}
         <div className="mt-2 flex items-center justify-between pt-1 border-t border-slate-800/40">
           <div className="flex items-center gap-2">
@@ -315,6 +333,15 @@ export const QuestNodeCard = memo(({ id, data, selected }: { id: string; data: Q
               </div>
 
               <div className="flex items-center gap-1.5 text-[10px] shrink-0 text-slate-400 mr-2">
+                {Boolean((reward.timeAdvance || testOutcome?.timeAdvance) && ((reward.timeAdvance || 0) > 0 || (testOutcome?.timeAdvance || 0) > 0)) && (
+                  <span
+                    className="flex items-center gap-0.5 font-mono text-[9px] font-bold text-teal-300 bg-teal-950/90 border border-teal-600/70 px-1.5 py-0.2 rounded shadow-[0_0_6px_rgba(20,184,166,0.3)]"
+                    title={`Advances Exploration Time Track by +${reward.timeAdvance || testOutcome?.timeAdvance}`}
+                  >
+                    <Clock className="w-2.5 h-2.5 text-teal-400" />
+                    +{reward.timeAdvance || testOutcome?.timeAdvance}h
+                  </span>
+                )}
                 {reward.gold > 0 && (
                   <span className="flex items-center gap-0.5 text-amber-400">
                     <Coins className="w-2.5 h-2.5" />

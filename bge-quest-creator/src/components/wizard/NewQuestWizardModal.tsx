@@ -18,7 +18,9 @@ import {
   ShieldAlert,
   Loader2,
   FileCode2,
-  Dices
+  Dices,
+  Compass,
+  Clock
 } from 'lucide-react';
 import { useCampaignStore } from '../../store/useCampaignStore';
 import {
@@ -30,7 +32,8 @@ import {
   QuestVariantOverride,
   DragonEclipseTestConfig,
   createDefaultDragonEclipseTestConfig,
-  syncTestOutcomesToRewardOutcomes
+  syncTestOutcomesToRewardOutcomes,
+  createDefaultExplorationConfig
 } from '../../types/campaign';
 import { getAvailableStateTagsForQuest } from '../../utils/tagAnalysis';
 import { StateTagAutocompleteInput } from '../inspector/StateTagAutocompleteInput';
@@ -92,6 +95,7 @@ export const NewQuestWizardModal: React.FC = () => {
     else if (cat === 'FACTION') prefix = 'F';
     else if (cat === 'BOSS') prefix = 'B';
     else if (cat === 'TEST') prefix = 'T';
+    else if (cat === 'EXPLORATION') prefix = 'E';
     else if (cat === 'ACT_TRANSITION') prefix = 'ACT_TRANS';
     else {
       prefix = cat.slice(0, 2).toUpperCase();
@@ -169,7 +173,7 @@ export const NewQuestWizardModal: React.FC = () => {
   };
 
   // Archetype Presets
-  const applyPreset = (presetType: 'STANDARD' | 'CHOICE_BRANCH' | 'BOSS_CLIMAX' | 'SIDE_QUEST' | 'SKILL_TEST') => {
+  const applyPreset = (presetType: 'STANDARD' | 'CHOICE_BRANCH' | 'BOSS_CLIMAX' | 'SIDE_QUEST' | 'SKILL_TEST' | 'EXPLORATION') => {
     const timestamp = Date.now().toString(36);
     if (presetType === 'STANDARD') {
       setCategory('MAIN');
@@ -252,6 +256,33 @@ export const NewQuestWizardModal: React.FC = () => {
       const defaultCfg = createDefaultDragonEclipseTestConfig('Skill Test (Page 11)');
       setTestConfig(defaultCfg);
       setRewards(syncTestOutcomesToRewardOutcomes(defaultCfg));
+    } else if (presetType === 'EXPLORATION') {
+      setCategory('EXPLORATION');
+      setCode(computeNextCode('EXPLORATION'));
+      setTestConfig(undefined);
+      setFlavorText('Venturing forth into the wild uncharted hexes of the continent...');
+      setSetupInstructions('Initialize the World Exploration Time Track at Slot 1.');
+      setObjectives('Explore points of interest before the Time Track triggers Peril events.');
+      setRewards([
+        {
+          id: `r-${timestamp}-safe`,
+          label: 'Cautious Scout (+1 Time)',
+          isExclusiveChoice: true,
+          gold: 20,
+          items: ['Exploration Map'],
+          grantsStateTags: ['+Hex_Scouted'],
+          timeAdvance: 1
+        },
+        {
+          id: `r-${timestamp}-deep`,
+          label: 'Thorough Survey (+2 Time)',
+          isExclusiveChoice: true,
+          gold: 45,
+          items: ['Rare Herb', 'Mystling Lore'],
+          grantsStateTags: ['+Deep_Secrets'],
+          timeAdvance: 2
+        }
+      ]);
     }
   };
 
@@ -346,6 +377,8 @@ export const NewQuestWizardModal: React.FC = () => {
     }
 
     const finalTestConfig = testConfig || (category === 'TEST' ? createDefaultDragonEclipseTestConfig(title.trim() || `Skill Test ${finalCode}`) : undefined);
+    const isExploration = category === 'EXPLORATION';
+    const finalExplorationConfig = isExploration ? createDefaultExplorationConfig() : undefined;
 
     const newQuest: QuestModel = {
       uid,
@@ -362,6 +395,9 @@ export const NewQuestWizardModal: React.FC = () => {
       setupInstructions,
       objectives,
       testConfig: finalTestConfig,
+      isExplorationStage: isExploration ? true : undefined,
+      timeAdvance: isExploration ? 1 : undefined,
+      explorationConfig: finalExplorationConfig,
       rewardOutcomes: rewards.length > 0 ? rewards : [
         {
           id: `r-${uid}-1`,
@@ -528,7 +564,7 @@ export const NewQuestWizardModal: React.FC = () => {
                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
                   Start From Archetype Template (Optional)
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
                   <button
                     type="button"
                     onClick={() => applyPreset('STANDARD')}
@@ -544,6 +580,17 @@ export const NewQuestWizardModal: React.FC = () => {
                   >
                     <div className="font-semibold text-xs text-cyan-300">Branching Choice</div>
                     <div className="text-[10px] text-slate-500">2 exclusive paths</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyPreset('EXPLORATION')}
+                    className="p-2.5 rounded-lg border border-slate-800 bg-slate-950 hover:border-teal-500/60 hover:bg-slate-800/40 text-left transition-all cursor-pointer group"
+                  >
+                    <div className="font-semibold text-xs text-teal-300 flex items-center gap-1">
+                      <Compass className="w-3.5 h-3.5 text-teal-400 group-hover:rotate-45 transition-transform" />
+                      <span>Exploration</span>
+                    </div>
+                    <div className="text-[10px] text-slate-500">Time track & events</div>
                   </button>
                   <button
                     type="button"

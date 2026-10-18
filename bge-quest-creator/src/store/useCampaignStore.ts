@@ -80,6 +80,7 @@ export interface CampaignStoreState {
     activeRewardChoices: string[]; // RewardOutcome.id
     completedQuestIds: string[];   // Quest uid
     customTags: string[];          // Manually enabled tags
+    manualTimeOffset: number;      // Manual adjustment to Exploration Time Track
   };
 
   // Modals & Creation Config
@@ -164,6 +165,7 @@ export interface CampaignStoreState {
   toggleSimulatorRewardChoice: (rewardId: string, questUid: string) => void;
   toggleSimulatorQuestCompletion: (questUid: string) => void;
   toggleSimulatorCustomTag: (tag: string) => void;
+  adjustSimulatorTime: (delta: number) => void;
   resetSimulator: () => void;
 
   // Multi-Project DB Actions
@@ -214,7 +216,8 @@ export const useCampaignStore = create<CampaignStoreState>()(
       simulator: {
         activeRewardChoices: [],
         completedQuestIds: [],
-        customTags: []
+        customTags: [],
+        manualTimeOffset: 0
       },
 
       modals: {
@@ -468,7 +471,8 @@ export const useCampaignStore = create<CampaignStoreState>()(
           simulator: {
             activeRewardChoices: [],
             completedQuestIds: [],
-            customTags: []
+            customTags: [],
+            manualTimeOffset: 0
           }
         });
       },
@@ -1124,12 +1128,22 @@ export const useCampaignStore = create<CampaignStoreState>()(
         });
       },
 
+      adjustSimulatorTime: (delta) => {
+        set((state) => ({
+          simulator: {
+            ...state.simulator,
+            manualTimeOffset: Math.max(-10, (state.simulator.manualTimeOffset || 0) + delta)
+          }
+        }));
+      },
+
       resetSimulator: () => {
         set({
           simulator: {
             activeRewardChoices: [],
             completedQuestIds: [],
-            customTags: []
+            customTags: [],
+            manualTimeOffset: 0
           }
         });
       },
@@ -1230,7 +1244,8 @@ export const useCampaignStore = create<CampaignStoreState>()(
             simulator: {
               activeRewardChoices: [],
               completedQuestIds: [],
-              customTags: []
+              customTags: [],
+              manualTimeOffset: 0
             }
           });
         }

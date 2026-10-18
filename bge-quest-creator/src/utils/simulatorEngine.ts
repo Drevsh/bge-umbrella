@@ -2,12 +2,32 @@ import { QuestModel, CampaignEdge, QuestVariantOverride } from '../types/campaig
 
 export type QuestSimStatus = 'START' | 'LOCKED' | 'AVAILABLE' | 'COMPLETED' | 'LOCKED_OUT';
 
+export interface TimeTrackContributor {
+  questUid: string;
+  questCode: string;
+  questTitle: string;
+  source: 'QUEST' | 'CHOICE';
+  label: string;
+  amount: number;
+}
+
+export interface TriggeredEventSlot {
+  slotNumber: number;
+  title: string;
+  description?: string;
+  questCode?: string;
+  grantsStateTag?: string;
+}
+
 export interface EvaluatedCampaignState {
   activeStateTags: Set<string>;
   questStatuses: Record<string, QuestSimStatus>;
   activeVariantsByQuest: Record<string, QuestVariantOverride[]>;
   activeEdgeIds: Set<string>;
   lockedOutQuests: Set<string>;
+  totalTimeElapsed: number;
+  timeContributors: TimeTrackContributor[];
+  triggeredEventSlots: TriggeredEventSlot[];
 }
 
 export function evaluateCampaignSimulation(
@@ -15,13 +35,33 @@ export function evaluateCampaignSimulation(
   edges: CampaignEdge[],
   selectedRewardOutcomeIds: string[],
   completedQuestIds: string[],
-  customTags: string[] = []
+  customTags: string[] = [],
+  manualTimeOffset: number = 0
 ): EvaluatedCampaignState {
   const activeTags = new Set<string>(customTags);
   const completedSet = new Set<string>(completedQuestIds);
   const selectedRewardsSet = new Set<string>(selectedRewardOutcomeIds);
+  const timeContributors: TimeTrackContributor[] = [];
 
-  // 1. Accumulate state tags from all selected reward outcomes on completed quests
+  let totalTime = manualTimeOffset;
+
+  // 1. Calculate time from completed quests base duration
+  completedSet.forEach((uid) => {
+    const q = quests[uid];
+    if (q && q.timeAdvance && q.timeAdvance > 0) {
+      totalTime += q.timeAdvance;
+      timeContributors.push({
+        questUid: q.uid,
+        questCode: q.code,
+        questTitle: q.title,
+        source: 'QUEST',
+        label: 'Base Exploration Cost',
+        amount: q.timeAdvance
+      });
+    }
+  });
+
+  // 2. Accumulate state tags & time from reward outcomes on completed quests / selected choices
   Object.values(quests).forEach((quest) => {
     quest.rewardOutcomes.forEach((reward) => {
       // If reward is selected OR (quest is completed and reward is an "always" reward)
@@ -30,8 +70,47 @@ export function evaluateCampaignSimulation(
         (!reward.isExclusiveChoice && completedSet.has(quest.uid))
       ) {
         reward.grantsStateTags.forEach((tag) => activeTags.add(tag));
+
+        if (reward.timeAdvance && reward.timeAdvance > 0) {
+          totalTime += reward.timeAdvance;
+          timeContributors.push({
+            questUid: quest.uid,
+            questCode: quest.code,
+            questTitle: quest.title,
+            source: 'CHOICE',
+            label: reward.label,
+            amount: reward.timeAdvance
+          });
+        }
       }
     });
+  });
+
+  // 3. Evaluate Triggered Event Slots from exploration quests
+  const triggeredEventSlots: TriggeredEventSlot[] = [];
+  const seenEventKeys = new Set<string>();
+
+  Object.values(quests).forEach((quest) => {
+    if (quest.explorationConfig?.eventSlots) {
+      quest.explorationConfig.eventSlots.forEach((slot) => {
+        if (totalTime >= slot.slotNumber) {
+          const key = `${quest.code}_slot_${slot.slotNumber}`;
+          if (!seenEventKeys.has(key)) {
+            seenEventKeys.add(key);
+            triggeredEventSlots.push({
+              slotNumber: slot.slotNumber,
+              title: slot.title,
+              description: slot.description,
+              questCode: quest.code,
+              grantsStateTag: slot.grantsStateTag
+            });
+            if (slot.grantsStateTag) {
+              activeTags.add(slot.grantsStateTag);
+            }
+          }
+        }
+      });
+    }
   });
 
   // 2. Identify Lockouts
@@ -142,6 +221,9 @@ export function evaluateCampaignSimulation(
     questStatuses,
     activeVariantsByQuest,
     activeEdgeIds,
-    lockedOutQuests
+    lockedOutQuests,
+    totalTimeElapsed: totalTime,
+    timeContributors,
+    triggeredEventSlots
   };
 }

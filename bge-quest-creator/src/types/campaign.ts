@@ -35,6 +35,7 @@ export interface RewardOutcome {
   gold: number;
   items: string[];
   grantsStateTags: string[];  // e.g. ["++Arnak_saved" or "+Beacon_lit"]
+  timeAdvance?: number;       // Dragon Eclipse: Steps advanced on the Exploration Time Track
   customResources?: Record<string, any>; // Dynamic resource bag for game-specific reward types
 }
 
@@ -74,6 +75,7 @@ export interface DragonEclipseTestOutcome {
   gold?: number;
   items?: string[];
   grantsStateTags?: string[];
+  timeAdvance?: number;       // Dragon Eclipse: Steps advanced on the Exploration Time Track
 }
 
 export interface DragonEclipseTestConfig {
@@ -98,7 +100,8 @@ export function createDefaultDragonEclipseTestConfig(testName: string = 'Skill T
         narrative: 'Your efforts falter. A trap clicks or guards turn in your direction.',
         gold: 0,
         items: [],
-        grantsStateTags: ['+Test_Failed']
+        grantsStateTags: ['+Test_Failed'],
+        timeAdvance: 2
       },
       {
         id: `test-${ts}-neu`,
@@ -110,7 +113,8 @@ export function createDefaultDragonEclipseTestConfig(testName: string = 'Skill T
         narrative: 'You barely make it through, but resource or stamina was lost in the struggle.',
         gold: 10,
         items: [],
-        grantsStateTags: ['+Test_Narrow']
+        grantsStateTags: ['+Test_Narrow'],
+        timeAdvance: 1
       },
       {
         id: `test-${ts}-pos`,
@@ -122,7 +126,8 @@ export function createDefaultDragonEclipseTestConfig(testName: string = 'Skill T
         narrative: 'You execute the task with mastery, discovering extra spoils along the way.',
         gold: 25,
         items: ['Valuable Clue'],
-        grantsStateTags: ['++Test_Triumph']
+        grantsStateTags: ['++Test_Triumph'],
+        timeAdvance: 0
       }
     ]
   };
@@ -135,8 +140,41 @@ export function syncTestOutcomesToRewardOutcomes(testConfig: DragonEclipseTestCo
     isExclusiveChoice: true,
     gold: o.gold || 0,
     items: o.items || [],
-    grantsStateTags: o.grantsStateTags || []
+    grantsStateTags: o.grantsStateTags || [],
+    timeAdvance: o.timeAdvance || 0
   }));
+}
+
+export interface DragonEclipseEventSlot {
+  slotNumber: number;          // Position on Time Track (e.g. 3, 6, 9)
+  title: string;               // e.g. "Dusk Encroaches", "Wandering Pack"
+  description?: string;        // e.g. "Draw an Event card from the Exploration deck"
+  grantsStateTag?: string;     // e.g. "+Event_Dusk"
+}
+
+export interface DragonEclipseExplorationConfig {
+  trackLength: number;         // Total numbered slots on Time Track (e.g. 8, 10, 12)
+  eventSlots: DragonEclipseEventSlot[];
+}
+
+export function createDefaultExplorationConfig(): DragonEclipseExplorationConfig {
+  return {
+    trackLength: 8,
+    eventSlots: [
+      {
+        slotNumber: 3,
+        title: 'Event Slot 1: Dusk Descends',
+        description: 'Draw an Event card from the Exploration Event deck.',
+        grantsStateTag: '+Event_Dusk'
+      },
+      {
+        slotNumber: 6,
+        title: 'Event Slot 2: Nightfall Peril',
+        description: 'Draw an Event card; enemies emerge and danger increases.',
+        grantsStateTag: '+Event_Nightfall'
+      }
+    ]
+  };
 }
 
 export interface QuestModel {
@@ -166,6 +204,9 @@ export interface QuestModel {
   devStatus: DevStatus;
   audioTracks?: QuestAudioTrack[];
   testConfig?: DragonEclipseTestConfig;
+  isExplorationStage?: boolean;
+  timeAdvance?: number;
+  explorationConfig?: DragonEclipseExplorationConfig;
 }
 
 export interface CampaignEdge {
@@ -207,6 +248,7 @@ export const RewardOutcomeSchema = z.object({
   gold: z.number().default(0),
   items: z.array(z.string()).default([]),
   grantsStateTags: z.array(z.string()).default([]),
+  timeAdvance: z.number().optional(),
   customResources: z.record(z.any()).optional()
 });
 
@@ -266,7 +308,19 @@ export const QuestModelSchema = z.object({
       narrative: z.string().optional(),
       gold: z.number().optional(),
       items: z.array(z.string()).optional(),
-      grantsStateTags: z.array(z.string()).optional()
+      grantsStateTags: z.array(z.string()).optional(),
+      timeAdvance: z.number().optional()
+    }))
+  }).optional(),
+  isExplorationStage: z.boolean().optional(),
+  timeAdvance: z.number().optional(),
+  explorationConfig: z.object({
+    trackLength: z.number(),
+    eventSlots: z.array(z.object({
+      slotNumber: z.number(),
+      title: z.string(),
+      description: z.string().optional(),
+      grantsStateTag: z.string().optional()
     }))
   }).optional()
 });

@@ -10,6 +10,7 @@ import { GameManagerModal } from './components/modals/GameManagerModal';
 import { ExportModal } from './components/modals/ExportModal';
 import { PrintCardsModal } from './components/modals/PrintCardsModal';
 import { ApiKeyModal } from './components/modals/ApiKeyModal';
+import { ExplorationTimeTrackBar } from './components/canvas/ExplorationTimeTrackBar';
 import { useCampaignStore } from './store/useCampaignStore';
 
 export const App: React.FC = () => {
@@ -85,6 +86,9 @@ export const App: React.FC = () => {
           <>
             {/* React Flow Interactive Canvas */}
             <QuestGraphCanvas />
+
+            {/* Dragon Eclipse World Exploration Stage Time Track */}
+            <ExplorationTimeTrackBar />
 
             {/* Split View: Automatically closes when nothing is selected */}
             {viewMode === 'SPLIT' && Boolean(selectedQuestId || selectedEdgeId) && (

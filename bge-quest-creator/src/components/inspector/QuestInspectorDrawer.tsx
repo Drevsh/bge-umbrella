@@ -24,7 +24,9 @@ import {
   Key,
   Loader2,
   Mic,
-  Dices
+  Dices,
+  Compass,
+  Clock
 } from 'lucide-react';
 import { useCampaignStore } from '../../store/useCampaignStore';
 import { VariantTabsEditor } from './VariantTabsEditor';
@@ -40,7 +42,9 @@ import {
   QuestAudioTrack,
   QuestVariantOverride,
   createDefaultDragonEclipseTestConfig,
-  syncTestOutcomesToRewardOutcomes
+  syncTestOutcomesToRewardOutcomes,
+  DragonEclipseEventSlot,
+  createDefaultExplorationConfig
 } from '../../types/campaign';
 import { QuestAudioPlayer } from '../audio/QuestAudioPlayer';
 import {
@@ -82,6 +86,7 @@ export const QuestInspectorDrawer: React.FC = () => {
   const [newRewardLabel, setNewRewardLabel] = useState('');
   const [newRewardIsChoice, setNewRewardIsChoice] = useState(false);
   const [newRewardGold, setNewRewardGold] = useState(0);
+  const [newRewardTime, setNewRewardTime] = useState(0);
   const [newRewardItems, setNewRewardItems] = useState('');
   const [newRewardTags, setNewRewardTags] = useState('');
   const [isAddingReward, setIsAddingReward] = useState(false);
@@ -91,6 +96,7 @@ export const QuestInspectorDrawer: React.FC = () => {
   const [editRewardLabel, setEditRewardLabel] = useState('');
   const [editRewardIsChoice, setEditRewardIsChoice] = useState(false);
   const [editRewardGold, setEditRewardGold] = useState(0);
+  const [editRewardTime, setEditRewardTime] = useState(0);
   const [editRewardItems, setEditRewardItems] = useState('');
   const [editRewardTags, setEditRewardTags] = useState('');
 
@@ -112,7 +118,8 @@ export const QuestInspectorDrawer: React.FC = () => {
       edges,
       simulator.activeRewardChoices,
       simulator.completedQuestIds,
-      simulator.customTags
+      simulator.customTags,
+      simulator.manualTimeOffset || 0
     );
   }, [quests, edges, simulator]);
 
@@ -327,6 +334,7 @@ export const QuestInspectorDrawer: React.FC = () => {
       label: newRewardLabel.trim(),
       isExclusiveChoice: newRewardIsChoice,
       gold: Number(newRewardGold) || 0,
+      timeAdvance: Number(newRewardTime) || 0,
       items: cleanItems,
       grantsStateTags: cleanTags
     };
@@ -335,6 +343,7 @@ export const QuestInspectorDrawer: React.FC = () => {
     setNewRewardLabel('');
     setNewRewardIsChoice(false);
     setNewRewardGold(0);
+    setNewRewardTime(0);
     setNewRewardItems('');
     setNewRewardTags('');
     setIsAddingReward(false);
@@ -345,6 +354,7 @@ export const QuestInspectorDrawer: React.FC = () => {
     setEditRewardLabel(reward.label);
     setEditRewardIsChoice(reward.isExclusiveChoice);
     setEditRewardGold(reward.gold);
+    setEditRewardTime(reward.timeAdvance || 0);
     setEditRewardItems(reward.items.join(', '));
     setEditRewardTags(reward.grantsStateTags.join(', '));
     setIsAddingReward(false);
@@ -375,6 +385,7 @@ export const QuestInspectorDrawer: React.FC = () => {
       label: editRewardLabel.trim(),
       isExclusiveChoice: editRewardIsChoice,
       gold: Number(editRewardGold) || 0,
+      timeAdvance: Number(editRewardTime) || 0,
       items: cleanItems,
       grantsStateTags: cleanTags
     });
@@ -722,6 +733,151 @@ export const QuestInspectorDrawer: React.FC = () => {
           </div>
         </div>
 
+        {/* Dragon Eclipse World Exploration Stage & Time Track */}
+        <div className="p-3 rounded-xl bg-teal-950/20 border border-teal-900/50 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={Boolean(currentQuest.isExplorationStage || currentQuest.category === 'EXPLORATION' || currentQuest.explorationConfig)}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  updateQuestField(currentQuest.uid, 'isExplorationStage', checked);
+                  if (checked && !currentQuest.explorationConfig) {
+                    updateQuestField(currentQuest.uid, 'explorationConfig', createDefaultExplorationConfig());
+                  }
+                }}
+                className="rounded border-teal-700 bg-slate-900 text-teal-500 focus:ring-0"
+              />
+              <span className="text-xs font-semibold text-teal-300 flex items-center gap-1.5">
+                <Compass className="w-3.5 h-3.5 text-teal-400" />
+                World Exploration Stage (Time Track)
+              </span>
+            </label>
+
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] text-teal-400 font-semibold flex items-center gap-0.5">
+                <Clock className="w-3 h-3" />
+                Base Cost:
+              </span>
+              <input
+                type="number"
+                min={0}
+                max={10}
+                value={currentQuest.timeAdvance || 0}
+                onChange={(e) => updateQuestField(currentQuest.uid, 'timeAdvance', Number(e.target.value) || 0)}
+                className="w-12 bg-slate-950 border border-teal-800/80 rounded px-1.5 py-0.5 text-xs text-teal-300 font-mono text-center"
+                title="Base exploration time cost to enter/complete this quest"
+              />
+            </div>
+          </div>
+
+          {Boolean(currentQuest.isExplorationStage || currentQuest.category === 'EXPLORATION' || currentQuest.explorationConfig) && (
+            <div className="space-y-2 pt-2 border-t border-teal-900/40 text-xs animate-in fade-in duration-150">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  Track Length
+                </span>
+                <input
+                  type="number"
+                  min={4}
+                  max={24}
+                  value={currentQuest.explorationConfig?.trackLength || 8}
+                  onChange={(e) => {
+                    const newLength = Number(e.target.value) || 8;
+                    const existingConfig = currentQuest.explorationConfig || createDefaultExplorationConfig();
+                    updateQuestField(currentQuest.uid, 'explorationConfig', {
+                      ...existingConfig,
+                      trackLength: newLength
+                    });
+                  }}
+                  className="w-14 bg-slate-950 border border-slate-700 rounded px-1.5 py-0.5 text-xs text-teal-300 font-mono text-center"
+                />
+              </div>
+
+              {/* Event Slots Config */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                    <Zap className="w-3 h-3 text-amber-400" />
+                    Event Slots
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const existingConfig = currentQuest.explorationConfig || createDefaultExplorationConfig();
+                      const nextSlotNum = Math.min(
+                        existingConfig.trackLength,
+                        (existingConfig.eventSlots[existingConfig.eventSlots.length - 1]?.slotNumber || 2) + 2
+                      );
+                      const newSlot: DragonEclipseEventSlot = {
+                        slotNumber: nextSlotNum,
+                        title: `Event Slot ${existingConfig.eventSlots.length + 1}`,
+                        description: 'Draw an Event card from the Exploration Event deck.',
+                        grantsStateTag: `+Event_Slot_${nextSlotNum}`
+                      };
+                      updateQuestField(currentQuest.uid, 'explorationConfig', {
+                        ...existingConfig,
+                        eventSlots: [...existingConfig.eventSlots, newSlot]
+                      });
+                    }}
+                    className="text-[10px] text-teal-400 hover:text-teal-300 font-semibold flex items-center gap-0.5 cursor-pointer"
+                  >
+                    <Plus className="w-3 h-3" />
+                    Add Event Slot
+                  </button>
+                </div>
+
+                <div className="space-y-1">
+                  {(currentQuest.explorationConfig?.eventSlots || []).map((slot, sIdx) => (
+                    <div
+                      key={sIdx}
+                      className="p-1.5 rounded bg-slate-950/80 border border-slate-800 flex items-center justify-between gap-1.5 text-[11px]"
+                    >
+                      <div className="flex items-center gap-1.5 truncate">
+                        <span className="font-mono text-amber-400 font-bold px-1 py-0.2 rounded bg-amber-950/60 border border-amber-800/60 text-[10px]">
+                          Slot {slot.slotNumber}
+                        </span>
+                        <input
+                          type="text"
+                          value={slot.title}
+                          onChange={(e) => {
+                            const existingConfig = currentQuest.explorationConfig || createDefaultExplorationConfig();
+                            const updatedSlots = existingConfig.eventSlots.map((s, idx) =>
+                              idx === sIdx ? { ...s, title: e.target.value } : s
+                            );
+                            updateQuestField(currentQuest.uid, 'explorationConfig', {
+                              ...existingConfig,
+                              eventSlots: updatedSlots
+                            });
+                          }}
+                          className="bg-transparent border-none text-slate-200 text-xs focus:outline-none w-36 truncate"
+                          placeholder="Event Title"
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const existingConfig = currentQuest.explorationConfig || createDefaultExplorationConfig();
+                          const updatedSlots = existingConfig.eventSlots.filter((_, idx) => idx !== sIdx);
+                          updateQuestField(currentQuest.uid, 'explorationConfig', {
+                            ...existingConfig,
+                            eventSlots: updatedSlots
+                          });
+                        }}
+                        className="text-slate-500 hover:text-rose-400 p-0.5 transition-colors"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Dragon Eclipse Skill Test Section (Page 11) */}
         {(currentQuest.category === 'TEST' || Boolean(currentQuest.testConfig)) ? (
           <div className="pt-3 border-t border-slate-800">
@@ -1032,17 +1188,34 @@ export const QuestInspectorDrawer: React.FC = () => {
                         />
                         <span>Pick-1 Exclusive Choice</span>
                       </label>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] text-amber-400 font-semibold flex items-center gap-0.5">
-                          <Coins className="w-3 h-3" />
-                          Gold:
-                        </span>
-                        <input
-                          type="number"
-                          value={editRewardGold}
-                          onChange={(e) => setEditRewardGold(Number(e.target.value))}
-                          className="w-16 bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-xs text-amber-400 font-mono text-center"
-                        />
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
+                          <span className="text-[11px] text-amber-400 font-semibold flex items-center gap-0.5">
+                            <Coins className="w-3 h-3" />
+                            Gold:
+                          </span>
+                          <input
+                            type="number"
+                            value={editRewardGold}
+                            onChange={(e) => setEditRewardGold(Number(e.target.value))}
+                            className="w-14 bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-xs text-amber-400 font-mono text-center"
+                          />
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-[11px] text-teal-400 font-semibold flex items-center gap-0.5">
+                            <Clock className="w-3 h-3" />
+                            +Time:
+                          </span>
+                          <input
+                            type="number"
+                            min={0}
+                            max={10}
+                            value={editRewardTime}
+                            onChange={(e) => setEditRewardTime(Number(e.target.value))}
+                            className="w-12 bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-xs text-teal-300 font-mono text-center"
+                            title="Exploration Time Track advance"
+                          />
+                        </div>
                       </div>
                     </div>
 
@@ -1204,6 +1377,12 @@ export const QuestInspectorDrawer: React.FC = () => {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-400 pl-5">
+                    {Boolean(reward.timeAdvance && reward.timeAdvance > 0) && (
+                      <span className="flex items-center gap-1 font-mono text-[10px] px-1.5 py-0.5 rounded bg-teal-950/80 text-teal-300 border border-teal-800/80 font-bold">
+                        <Clock className="w-2.5 h-2.5 text-teal-400" />
+                        +{reward.timeAdvance} Time
+                      </span>
+                    )}
                     {reward.gold > 0 && (
                       <span className="flex items-center gap-1 text-amber-400">
                         <Coins className="w-3 h-3" />
@@ -1254,7 +1433,7 @@ export const QuestInspectorDrawer: React.FC = () => {
                 className="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
               />
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between gap-2">
                 <label className="flex items-center gap-1 text-xs text-slate-300 cursor-pointer">
                   <input
                     type="checkbox"
@@ -1264,14 +1443,37 @@ export const QuestInspectorDrawer: React.FC = () => {
                   />
                   <span>Pick-1 Exclusive Choice</span>
                 </label>
-                <div className="flex-1" />
-                <input
-                  type="number"
-                  value={newRewardGold}
-                  onChange={(e) => setNewRewardGold(Number(e.target.value))}
-                  placeholder="Gold"
-                  className="w-16 bg-slate-900 border border-slate-800 rounded px-1.5 py-0.5 text-xs text-amber-400 font-mono"
-                />
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] text-amber-400 font-semibold flex items-center gap-0.5">
+                      <Coins className="w-3 h-3" />
+                      Gold:
+                    </span>
+                    <input
+                      type="number"
+                      value={newRewardGold}
+                      onChange={(e) => setNewRewardGold(Number(e.target.value))}
+                      placeholder="Gold"
+                      className="w-14 bg-slate-900 border border-slate-800 rounded px-1.5 py-0.5 text-xs text-amber-400 font-mono text-center"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] text-teal-400 font-semibold flex items-center gap-0.5">
+                      <Clock className="w-3 h-3" />
+                      +Time:
+                    </span>
+                    <input
+                      type="number"
+                      min={0}
+                      max={10}
+                      value={newRewardTime}
+                      onChange={(e) => setNewRewardTime(Number(e.target.value))}
+                      placeholder="0"
+                      className="w-12 bg-slate-900 border border-slate-800 rounded px-1.5 py-0.5 text-xs text-teal-300 font-mono text-center"
+                      title="Exploration Time Track advance"
+                    />
+                  </div>
+                </div>
               </div>
 
               <input

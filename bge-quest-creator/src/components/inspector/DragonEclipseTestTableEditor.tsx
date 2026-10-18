@@ -15,7 +15,8 @@ import {
   Play,
   CheckCircle2,
   Layers,
-  ArrowRight
+  ArrowRight,
+  Clock
 } from 'lucide-react';
 import {
   QuestModel,
@@ -108,7 +109,8 @@ export const DragonEclipseTestTableEditor: React.FC<DragonEclipseTestTableEditor
       narrative: 'A remarkable discovery beyond all expectations.',
       gold: 15,
       items: [],
-      grantsStateTags: []
+      grantsStateTags: [],
+      timeAdvance: 0
     };
     handleUpdateConfig({
       ...testConfig,
@@ -387,18 +389,34 @@ export const DragonEclipseTestTableEditor: React.FC<DragonEclipseTestTableEditor
                   />
                 </div>
 
-                {/* Rewards & State Tags */}
-                <div className="grid grid-cols-2 gap-2 pt-1">
+                {/* Rewards, Time & State Tags */}
+                <div className="grid grid-cols-3 gap-2 pt-1">
                   <div>
                     <label className="block text-[10px] font-medium text-amber-400 mb-0.5 flex items-center gap-1">
                       <Coins className="w-3 h-3" />
-                      Gold Reward
+                      Gold
                     </label>
                     <input
                       type="number"
                       value={outcome.gold || 0}
                       onChange={(e) => handleUpdateOutcome(idx, { gold: Number(e.target.value) || 0 })}
                       className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-amber-300"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-medium text-teal-400 mb-0.5 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      +Time
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={10}
+                      value={outcome.timeAdvance || 0}
+                      onChange={(e) => handleUpdateOutcome(idx, { timeAdvance: Number(e.target.value) || 0 })}
+                      className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-teal-300"
+                      title="Exploration Time Track advance for this outcome"
                     />
                   </div>
 
@@ -419,7 +437,7 @@ export const DragonEclipseTestTableEditor: React.FC<DragonEclipseTestTableEditor
                         className="text-[9px] font-mono text-cyan-400 hover:underline cursor-pointer"
                         title="Toggle Global (++) or Act Local (+)"
                       >
-                        Toggle ++/＋
+                        ++ / +
                       </button>
                     </div>
                     <input

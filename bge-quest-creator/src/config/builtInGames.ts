@@ -22,7 +22,8 @@ export const CORE_GENERAL_GAME: GameProfile = {
     { id: 'FACTION', label: 'Faction Quest', color: 'purple', defaultCodePrefix: 'F', badgeStyle: 'border-purple-500/60 bg-purple-950/40 text-purple-300' },
     { id: 'BOSS', label: 'Act Boss', color: 'rose', defaultCodePrefix: 'B', badgeStyle: 'border-rose-500/70 bg-rose-950/40 text-rose-300' },
     { id: 'ACT_TRANSITION', label: 'Act Transition', color: 'amber', defaultCodePrefix: 'ACT_TRANS', badgeStyle: 'border-amber-400/80 bg-amber-950/50 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.25)]' },
-    { id: 'TEST', label: 'Skill Test / Check', color: 'amber', defaultCodePrefix: 'T', badgeStyle: 'border-amber-500/70 bg-amber-950/50 text-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.2)]' }
+    { id: 'TEST', label: 'Skill Test / Check', color: 'amber', defaultCodePrefix: 'T', badgeStyle: 'border-amber-500/70 bg-amber-950/50 text-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.2)]' },
+    { id: 'EXPLORATION', label: 'World Exploration', color: 'teal', defaultCodePrefix: 'E', badgeStyle: 'border-teal-500/70 bg-teal-950/50 text-teal-300 shadow-[0_0_8px_rgba(20,184,166,0.25)]' }
   ],
   rewardResources: [
     { key: 'gold', label: 'Gold', type: 'number', icon: 'Coins', color: 'amber', defaultValue: 0 },
@@ -58,7 +59,8 @@ export const DRAGON_ECLIPSE_GAME: GameProfile = {
     { id: 'FACTION', label: 'Faction Encounter', color: 'purple', defaultCodePrefix: 'F', badgeStyle: 'border-purple-500/60 bg-purple-950/40 text-purple-300' },
     { id: 'BOSS', label: 'Apex Encounter (Boss)', color: 'rose', defaultCodePrefix: 'B', badgeStyle: 'border-rose-500/70 bg-rose-950/40 text-rose-300' },
     { id: 'ACT_TRANSITION', label: 'Chapter Transition', color: 'amber', defaultCodePrefix: 'CH_TRANS', badgeStyle: 'border-amber-400/80 bg-amber-950/50 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.25)]' },
-    { id: 'TEST', label: 'Skill Test (Page 11)', color: 'amber', defaultCodePrefix: 'T', badgeStyle: 'border-amber-500/70 bg-amber-950/50 text-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.2)]' }
+    { id: 'TEST', label: 'Skill Test (Page 11)', color: 'amber', defaultCodePrefix: 'T', badgeStyle: 'border-amber-500/70 bg-amber-950/50 text-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.2)]' },
+    { id: 'EXPLORATION', label: 'World Exploration (Time Track)', color: 'teal', defaultCodePrefix: 'E', badgeStyle: 'border-teal-500/70 bg-teal-950/50 text-teal-300 shadow-[0_0_8px_rgba(20,184,166,0.25)]' }
   ],
   rewardResources: [
     { key: 'gold', label: 'Gold', type: 'number', icon: 'Coins', color: 'amber', defaultValue: 0 },

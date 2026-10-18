@@ -15,7 +15,9 @@ import {
   ArrowRightCircle,
   Milestone,
   ChevronRight,
-  Dices
+  Dices,
+  Compass,
+  Clock
 } from 'lucide-react';
 import { useCampaignStore } from '../../store/useCampaignStore';
 import {
@@ -24,7 +26,9 @@ import {
   RewardOutcome,
   DragonEclipseTestConfig,
   createDefaultDragonEclipseTestConfig,
-  syncTestOutcomesToRewardOutcomes
+  syncTestOutcomesToRewardOutcomes,
+  DragonEclipseExplorationConfig,
+  createDefaultExplorationConfig
 } from '../../types/campaign';
 
 export interface ContextMenuState {
@@ -131,6 +135,7 @@ export const CanvasContextMenu: React.FC<CanvasContextMenuProps> = ({
     else if (cat === 'FACTION') prefix = 'F';
     else if (cat === 'BOSS') prefix = 'B';
     else if (cat === 'TEST') prefix = 'T';
+    else if (cat === 'EXPLORATION') prefix = 'E';
     else if (cat === 'ACT_TRANSITION') prefix = 'ACT_TRANS';
     else {
       prefix = cat.slice(0, 2).toUpperCase();
@@ -160,6 +165,10 @@ export const CanvasContextMenu: React.FC<CanvasContextMenuProps> = ({
     const newUid = `q-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 5)}`;
     
     let testConfig: DragonEclipseTestConfig | undefined = undefined;
+    let isExplorationStage: boolean | undefined = undefined;
+    let timeAdvance: number | undefined = undefined;
+    let explorationConfig: DragonEclipseExplorationConfig | undefined = undefined;
+
     let defaultRewards: RewardOutcome[] = [
       {
         id: `r-${newUid}-1`,
@@ -174,12 +183,43 @@ export const CanvasContextMenu: React.FC<CanvasContextMenuProps> = ({
     if (category === 'TEST') {
       testConfig = createDefaultDragonEclipseTestConfig(`Skill Test ${code}`);
       defaultRewards = syncTestOutcomesToRewardOutcomes(testConfig);
+    } else if (category === 'EXPLORATION') {
+      isExplorationStage = true;
+      timeAdvance = 1;
+      explorationConfig = createDefaultExplorationConfig();
+      defaultRewards = [
+        {
+          id: `r-${newUid}-1`,
+          label: 'Quick Scout (+1 Time)',
+          isExclusiveChoice: true,
+          gold: 20,
+          items: ['Field Map'],
+          grantsStateTags: ['+Hex_Scouted'],
+          timeAdvance: 1
+        },
+        {
+          id: `r-${newUid}-2`,
+          label: 'Thorough Search (+2 Time)',
+          isExclusiveChoice: true,
+          gold: 40,
+          items: ['Rare Sample'],
+          grantsStateTags: ['+Deep_Secrets'],
+          timeAdvance: 2
+        }
+      ];
     }
 
     const newQuest: QuestModel = {
       uid: newUid,
       code,
-      title: category === 'TEST' ? `Skill Test: ${code}` : category === 'ACT_TRANSITION' ? `Act ${actId} Transition Bridge` : `New Quest ${code}`,
+      title:
+        category === 'TEST'
+          ? `Skill Test: ${code}`
+          : category === 'EXPLORATION'
+          ? `World Exploration: ${code}`
+          : category === 'ACT_TRANSITION'
+          ? `Act ${actId} Transition Bridge`
+          : `New Quest ${code}`,
       act: actId,
       tier: inferredTier,
       category,
@@ -188,11 +228,29 @@ export const CanvasContextMenu: React.FC<CanvasContextMenuProps> = ({
         x: Math.round(menuState.flowPos.x),
         y: Math.round(menuState.flowPos.y)
       },
-      flavorText: category === 'TEST' ? 'Draw cards from the Item deck and add up their Test Values to determine your outcome.' : 'A new adventure awaits the heroes...',
-      setupInstructions: category === 'TEST' ? 'Consult the Dragon Eclipse Test Table (Page 11). Verify element & item modifiers.' : 'Place hero standees on the entrance hex.',
-      objectives: category === 'TEST' ? 'Perform the Test and resolve the corresponding outcome tier.' : 'Complete the scenario objectives to proceed.',
+      flavorText:
+        category === 'TEST'
+          ? 'Draw cards from the Item deck and add up their Test Values to determine your outcome.'
+          : category === 'EXPLORATION'
+          ? 'Traversing dangerous terrain. Choices made will advance the World Exploration Time Track.'
+          : 'A new adventure awaits the heroes...',
+      setupInstructions:
+        category === 'TEST'
+          ? 'Consult the Dragon Eclipse Test Table (Page 11). Verify element & item modifiers.'
+          : category === 'EXPLORATION'
+          ? 'Set Time Track marker to current stage time. Reveal Event Slots as time advances.'
+          : 'Place hero standees on the entrance hex.',
+      objectives:
+        category === 'TEST'
+          ? 'Perform the Test and resolve the corresponding outcome tier.'
+          : category === 'EXPLORATION'
+          ? 'Explore the region and make your choices before time runs out.'
+          : 'Complete the scenario objectives to proceed.',
       devStatus: 'DRAFT',
       testConfig,
+      isExplorationStage,
+      timeAdvance,
+      explorationConfig,
       rewardOutcomes: defaultRewards,
       variants: []
     };
@@ -330,6 +388,15 @@ export const CanvasContextMenu: React.FC<CanvasContextMenuProps> = ({
           >
             <Dices className="w-3.5 h-3.5 text-amber-400" />
             <span>Add Skill Test (p.11) Here</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleCreateQuest('EXPLORATION')}
+            className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-800/80 text-left transition-colors text-teal-300 hover:text-teal-200 cursor-pointer"
+          >
+            <Compass className="w-3.5 h-3.5 text-teal-400" />
+            <span>Add Exploration Quest Here</span>
           </button>
 
           {/* Add Categorized Quest Submenu */}
