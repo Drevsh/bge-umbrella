@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   X,
   Trash2,
@@ -86,6 +86,55 @@ export const QuestInspectorDrawer: React.FC = () => {
 
   const [showCardPreview, setShowCardPreview] = useState(true);
 
+  // Drawer Resizing State & Persistence
+  const [drawerWidth, setDrawerWidth] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('questflow_drawer_width');
+      if (saved) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed) && parsed >= 320 && parsed <= 1200) return parsed;
+      }
+    } catch {}
+    return 400;
+  });
+
+  const [isResizing, setIsResizing] = useState<boolean>(false);
+  const startXRef = useRef<number>(0);
+  const startWidthRef = useRef<number>(drawerWidth);
+
+  const handleMouseDownResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+    startXRef.current = e.clientX;
+    startWidthRef.current = drawerWidth;
+  };
+
+  useEffect(() => {
+    if (!isResizing) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const deltaX = startXRef.current - e.clientX;
+      const minW = 320;
+      const maxW = Math.min(1200, Math.floor(window.innerWidth * 0.85));
+      const newWidth = Math.max(minW, Math.min(maxW, startWidthRef.current + deltaX));
+      setDrawerWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      try {
+        localStorage.setItem('questflow_drawer_width', String(drawerWidth));
+      } catch {}
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizing, drawerWidth]);
+
   // New reward outcome form state
   const [newRewardLabel, setNewRewardLabel] = useState('');
   const [newRewardIsChoice, setNewRewardIsChoice] = useState(false);
@@ -172,7 +221,21 @@ export const QuestInspectorDrawer: React.FC = () => {
           className="fixed inset-0 bg-black/60 backdrop-blur-xs z-30 md:hidden"
           onClick={() => selectEdge(null)}
         />
-        <div className="w-full sm:w-[400px] md:w-[390px] h-full bg-slate-900 border-l border-slate-800 flex flex-col overflow-hidden shadow-2xl z-40 fixed md:relative inset-y-0 right-0 animate-in slide-in-from-right duration-200">
+        {isResizing && (
+          <div className="fixed inset-0 z-50 cursor-ew-resize select-none" />
+        )}
+        <div
+          style={{ width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${drawerWidth}px` : undefined }}
+          className="w-full md:w-auto h-full bg-slate-900 border-l border-slate-800 flex flex-col overflow-hidden shadow-2xl z-40 fixed md:relative inset-y-0 right-0 animate-in slide-in-from-right duration-200 shrink-0"
+        >
+          {/* Drag Handle on Left Edge (desktop) */}
+          <div
+            onMouseDown={handleMouseDownResize}
+            className="hidden md:flex absolute top-0 bottom-0 -left-1.5 w-3 cursor-ew-resize hover:bg-indigo-500/30 active:bg-indigo-500/60 transition-colors z-50 group items-center justify-center select-none"
+            title="Drag to resize inspector drawer"
+          >
+            <div className="w-1 h-10 rounded-full bg-slate-600/60 group-hover:bg-indigo-400 group-active:bg-indigo-300 transition-colors" />
+          </div>
         {/* Header */}
         <div className="p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90 backdrop-blur-md">
           <div className="flex items-center gap-2">
@@ -694,7 +757,21 @@ export const QuestInspectorDrawer: React.FC = () => {
         className="fixed inset-0 bg-black/60 backdrop-blur-xs z-30 md:hidden"
         onClick={() => selectQuest(null)}
       />
-      <div className="w-full sm:w-[400px] md:w-[390px] h-full bg-slate-900 border-l border-slate-800 flex flex-col overflow-hidden shadow-2xl z-40 fixed md:relative inset-y-0 right-0 animate-in slide-in-from-right duration-200">
+      {isResizing && (
+        <div className="fixed inset-0 z-50 cursor-ew-resize select-none" />
+      )}
+      <div
+        style={{ width: typeof window !== 'undefined' && window.innerWidth >= 768 ? `${drawerWidth}px` : undefined }}
+        className="w-full md:w-auto h-full bg-slate-900 border-l border-slate-800 flex flex-col overflow-hidden shadow-2xl z-40 fixed md:relative inset-y-0 right-0 animate-in slide-in-from-right duration-200 shrink-0"
+      >
+        {/* Drag Handle on Left Edge (desktop) */}
+        <div
+          onMouseDown={handleMouseDownResize}
+          className="hidden md:flex absolute top-0 bottom-0 -left-1.5 w-3 cursor-ew-resize hover:bg-indigo-500/30 active:bg-indigo-500/60 transition-colors z-50 group items-center justify-center select-none"
+          title="Drag to resize inspector drawer"
+        >
+          <div className="w-1 h-10 rounded-full bg-slate-600/60 group-hover:bg-indigo-400 group-active:bg-indigo-300 transition-colors" />
+        </div>
       {/* Drawer Header */}
       <div className="p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90 backdrop-blur-md">
         <div className="flex items-center gap-2">

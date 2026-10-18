@@ -107,7 +107,7 @@ export const TopHeaderBar: React.FC = () => {
   const isSecret = simulator.activeRewardChoices.includes('out-secret');
 
   return (
-    <header className="h-14 bg-slate-900 border-b border-slate-800 px-2 sm:px-4 flex items-center justify-between gap-1.5 sm:gap-3 select-none shrink-0 z-30 pt-[env(safe-area-inset-top)] overflow-x-auto scrollbar-none">
+    <header className="h-14 bg-slate-900 border-b border-slate-800 px-2 sm:px-4 flex items-center justify-between gap-1.5 sm:gap-3 select-none shrink-0 relative z-50 pt-[env(safe-area-inset-top)]">
       {/* Left: Branding & Campaign Switcher */}
       <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
         <div className="flex items-center gap-1.5 sm:gap-2">

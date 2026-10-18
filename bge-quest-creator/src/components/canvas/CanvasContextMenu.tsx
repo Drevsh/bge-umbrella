@@ -433,7 +433,7 @@ export const CanvasContextMenu: React.FC<CanvasContextMenuProps> = ({
             className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-800/80 text-left transition-colors text-amber-300 hover:text-amber-200 cursor-pointer"
           >
             <Dices className="w-3.5 h-3.5 text-amber-400" />
-            <span>Add Skill Test (p.11) Here</span>
+            <span>Add Skill Test Here</span>
           </button>
 
           <button
@@ -571,7 +571,7 @@ export const CanvasContextMenu: React.FC<CanvasContextMenuProps> = ({
             className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-amber-950/60 text-left transition-colors text-amber-300 hover:text-amber-200 font-semibold cursor-pointer"
           >
             <Dices className="w-3.5 h-3.5 text-amber-400" />
-            <span>Trigger Skill Test (p.11)</span>
+            <span>Trigger Skill Test</span>
           </button>
 
           <button
