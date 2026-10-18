@@ -1,0 +1,51 @@
+# Root gitignore for Board Game Engine Umbrella (bge-umbrella)
+
+# Node / Web / Vite / PWA dependencies & build outputs
+node_modules/
+dist/
+dist-ssr/
+dev-dist/
+*.local
+.npm
+.eslintcache
+
+# Flutter / Dart / Pub related
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+coverage/
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.widget_preview/
+
+# Android build artifacts
+**/android/app/debug
+**/android/app/profile
+**/android/app/release
+**/android/.gradle/
+**/android/local.properties
+
+# OS & Editor generated files
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.bak
+*.swp
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example

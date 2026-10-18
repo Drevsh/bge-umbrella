@@ -1,0 +1,1089 @@
+import { create } from 'zustand';
+import { temporal } from 'zundo';
+import * as idb from 'idb-keyval';
+import {
+  QuestModel,
+  CampaignEdge,
+  CampaignProjectMetadata,
+  CampaignProjectFile,
+  CampaignAct,
+  RewardOutcome,
+  QuestVariantOverride,
+  QuestAudioTrack,
+  EdgeRoutingStyle,
+  EdgeRelationType
+} from '../types/campaign';
+import {
+  DEFAULT_CAMPAIGN_METADATA,
+  DEFAULT_QUESTS,
+  DEFAULT_EDGES,
+  DEFAULT_ACTS
+} from './defaultCampaignData';
+import { computeObstacleAvoidanceRoutes } from '../utils/obstacleRouter';
+import { calculateAutoArrangement } from '../utils/layoutEngine';
+import { deleteQuestAudioBlob } from '../utils/audioStorage';
+
+const IDB_CATALOG_KEY = 'questflow_campaigns_catalog';
+const IDB_CAMPAIGN_PREFIX = 'questflow_campaign_';
+
+export interface CampaignStoreState {
+  // Campaign Metadata
+  activeCampaignId: string;
+  campaignCatalog: CampaignProjectMetadata[];
+  activeMetadata: CampaignProjectMetadata;
+
+  // Domain Data
+  acts: CampaignAct[];
+  activeActId: number | 'ALL';
+  quests: Record<string, QuestModel>;
+  edges: CampaignEdge[];
+
+  // Selection & UI State
+  selectedQuestId: string | null;
+  selectedEdgeId: string | null;
+  activeVariantTab: string; // 'base' or variant.id
+  viewMode: 'SPLIT' | 'FULL_GRAPH' | 'OVERVIEW';
+  edgeRoutingStyle: EdgeRoutingStyle;
+  edgeVisibility: {
+    unlocks: boolean;
+    choices: boolean;
+    mutations: boolean;
+    lockouts: boolean;
+  };
+  hSpacingPreset: 'COMPACT' | 'BALANCED' | 'WIDE';
+  vSpacingScale: number;
+  snapToGrid: boolean;
+  geminiApiKey: string;
+  isActDrawerOpen: boolean;
+
+  // Simulator State
+  simulator: {
+    activeRewardChoices: string[]; // RewardOutcome.id
+    completedQuestIds: string[];   // Quest uid
+    customTags: string[];          // Manually enabled tags
+  };
+
+  // Modals & Creation Config
+  wizardInitOptions?: {
+    tier?: number;
+    parentQuestId?: string;
+    parentPortId?: string | null;
+    canvasPos?: { x: number; y: number };
+  };
+  modals: {
+    wizard: boolean;
+    campaignManager: boolean;
+    exportModal: boolean;
+    printModal: boolean;
+    apiKeyModal: boolean;
+  };
+
+  // Actions
+  initStore: () => Promise<void>;
+  selectQuest: (id: string | null) => void;
+  selectEdge: (id: string | null) => void;
+  setActiveVariantTab: (tab: string) => void;
+  setViewMode: (mode: 'SPLIT' | 'FULL_GRAPH' | 'OVERVIEW') => void;
+  setEdgeRoutingStyle: (style: EdgeRoutingStyle) => void;
+  toggleEdgeVisibility: (key: keyof CampaignStoreState['edgeVisibility']) => void;
+  setSpacing: (hPreset: 'COMPACT' | 'BALANCED' | 'WIDE', vScale: number) => void;
+  toggleSnapToGrid: () => void;
+  setModalOpen: (modal: keyof CampaignStoreState['modals'], open: boolean) => void;
+  openWizardWithConfig: (config?: CampaignStoreState['wizardInitOptions']) => void;
+  setActDrawerOpen: (open: boolean) => void;
+  toggleActDrawer: () => void;
+
+  // Act Actions
+  setActiveActId: (actId: number | 'ALL') => void;
+  addAct: (title?: string) => void;
+  updateAct: (actId: number, partial: Partial<CampaignAct>) => void;
+  deleteAct: (actId: number) => void;
+  reorderActs: (fromIndex: number, toIndex: number) => void;
+
+  // Quest Actions
+  updateQuestPosition: (uid: string, pos: { x: number; y: number }) => void;
+  updateQuestField: <K extends keyof QuestModel>(uid: string, field: K, value: QuestModel[K]) => void;
+  addQuest: (quest: QuestModel) => void;
+  duplicateQuest: (uid: string, offset?: { x: number; y: number }) => void;
+  deleteQuest: (uid: string) => void;
+  attachQuestAudioTrack: (questUid: string, track: QuestAudioTrack) => void;
+  deleteQuestAudioTrack: (questUid: string, trackId: string) => Promise<void>;
+  setGeminiApiKey: (key: string) => void;
+
+  // Reward Outcome Actions
+  addRewardOutcome: (questUid: string, reward: RewardOutcome) => void;
+  updateRewardOutcome: (questUid: string, rewardId: string, partial: Partial<RewardOutcome>) => void;
+  reorderRewardOutcome: (questUid: string, rewardId: string, direction: 'UP' | 'DOWN') => void;
+  deleteRewardOutcome: (questUid: string, rewardId: string) => void;
+
+  // Variant Actions
+  addVariant: (questUid: string, variant: QuestVariantOverride) => void;
+  updateVariant: (questUid: string, variantId: string, partial: Partial<QuestVariantOverride>) => void;
+  deleteVariant: (questUid: string, variantId: string) => void;
+
+  // Edge Actions
+  addEdge: (edge: CampaignEdge) => void;
+  deleteEdge: (edgeId: string) => void;
+  updateEdge: (edgeId: string, partial: Partial<CampaignEdge>) => void;
+  reconnectEdge: (
+    oldEdgeId: string,
+    newConnection: { source: string; sourcePortId: string | null; target: string }
+  ) => void;
+  updateEdgeWaypoints: (edgeId: string, waypoints: { x: number; y: number }[]) => void;
+  clearEdgeWaypoints: (edgeId: string) => void;
+  smartRouteAllEdges: () => void;
+  autoArrangeCampaign: (options?: { reorderChoices?: boolean }) => void;
+
+  // Simulator Actions
+  toggleSimulatorRewardChoice: (rewardId: string, questUid: string) => void;
+  toggleSimulatorQuestCompletion: (questUid: string) => void;
+  toggleSimulatorCustomTag: (tag: string) => void;
+  resetSimulator: () => void;
+
+  // Multi-Project DB Actions
+  createCampaign: (name: string, description: string) => Promise<string>;
+  switchCampaign: (campaignId: string) => Promise<void>;
+  duplicateCampaign: (campaignId: string) => Promise<void>;
+  deleteCampaign: (campaignId: string) => Promise<void>;
+  renameActiveCampaign: (name: string, description: string) => Promise<void>;
+  importCampaign: (projectFile: CampaignProjectFile) => Promise<void>;
+  saveToStorage: () => Promise<void>;
+}
+
+export const useCampaignStore = create<CampaignStoreState>()(
+  temporal(
+    (set, get) => ({
+      // Initial defaults
+      activeCampaignId: DEFAULT_CAMPAIGN_METADATA.id,
+      campaignCatalog: [DEFAULT_CAMPAIGN_METADATA],
+      activeMetadata: DEFAULT_CAMPAIGN_METADATA,
+
+      acts: DEFAULT_ACTS,
+      activeActId: 1,
+      quests: DEFAULT_QUESTS,
+      edges: DEFAULT_EDGES,
+
+      selectedQuestId: null,
+      selectedEdgeId: null,
+      activeVariantTab: 'base',
+      viewMode: 'SPLIT',
+      edgeRoutingStyle: 'BEZIER',
+      edgeVisibility: {
+        unlocks: true,
+        choices: true,
+        mutations: false,
+        lockouts: false
+      },
+      hSpacingPreset: 'BALANCED',
+      vSpacingScale: 1.0,
+      snapToGrid: true,
+      geminiApiKey: (typeof window !== 'undefined' ? localStorage.getItem('questflow_gemini_api_key') : '') || '',
+      isActDrawerOpen: false,
+
+      simulator: {
+        activeRewardChoices: ['out-always'],
+        completedQuestIds: ['M01'],
+        customTags: []
+      },
+
+      modals: {
+        wizard: false,
+        campaignManager: false,
+        exportModal: false,
+        printModal: false,
+        apiKeyModal: false
+      },
+
+      initStore: async () => {
+        try {
+          const storedCatalog = (await idb.get(IDB_CATALOG_KEY)) as CampaignProjectMetadata[] | undefined;
+          if (storedCatalog && storedCatalog.length > 0) {
+            const firstId = storedCatalog[0].id;
+            const campaignData = (await idb.get(`${IDB_CAMPAIGN_PREFIX}${firstId}`)) as {
+              metadata: CampaignProjectMetadata;
+              acts?: CampaignAct[];
+              quests: Record<string, QuestModel>;
+              edges: CampaignEdge[];
+            } | undefined;
+
+            if (campaignData) {
+              set({
+                campaignCatalog: storedCatalog,
+                activeCampaignId: firstId,
+                activeMetadata: campaignData.metadata,
+                acts: campaignData.acts || DEFAULT_ACTS,
+                activeActId: 1,
+                quests: campaignData.quests,
+                edges: campaignData.edges,
+                selectedQuestId: Object.keys(campaignData.quests)[0] || null,
+                selectedEdgeId: null
+              });
+              return;
+            }
+          }
+
+          // If no stored campaigns exist, seed initial default campaign
+          await idb.set(IDB_CATALOG_KEY, [DEFAULT_CAMPAIGN_METADATA]);
+          await idb.set(`${IDB_CAMPAIGN_PREFIX}${DEFAULT_CAMPAIGN_METADATA.id}`, {
+            metadata: DEFAULT_CAMPAIGN_METADATA,
+            quests: DEFAULT_QUESTS,
+            edges: DEFAULT_EDGES
+          });
+        } catch (err) {
+          console.warn('IndexedDB initial load error:', err);
+        }
+      },
+
+      selectQuest: (id) =>
+        set((state) => ({
+          selectedQuestId: id,
+          selectedEdgeId: id ? null : state.selectedEdgeId,
+          activeVariantTab: 'base',
+          viewMode: state.viewMode === 'FULL_GRAPH' && id ? 'SPLIT' : state.viewMode
+        })),
+
+      selectEdge: (id) =>
+        set((state) => ({
+          selectedEdgeId: id,
+          selectedQuestId: id ? null : state.selectedQuestId,
+          viewMode: state.viewMode === 'FULL_GRAPH' && id ? 'SPLIT' : state.viewMode
+        })),
+
+      setActiveVariantTab: (tab) => set({ activeVariantTab: tab }),
+
+      setViewMode: (mode) => set({ viewMode: mode }),
+
+      setEdgeRoutingStyle: (style) => set({ edgeRoutingStyle: style }),
+
+      toggleEdgeVisibility: (key) =>
+        set((state) => ({
+          edgeVisibility: {
+            ...state.edgeVisibility,
+            [key]: !state.edgeVisibility[key]
+          }
+        })),
+
+      setSpacing: (hPreset, vScale) =>
+        set({ hSpacingPreset: hPreset, vSpacingScale: vScale }),
+
+      toggleSnapToGrid: () =>
+        set((state) => ({ snapToGrid: !state.snapToGrid })),
+
+      setModalOpen: (modal, open) =>
+        set((state) => ({
+          modals: { ...state.modals, [modal]: open }
+        })),
+
+      openWizardWithConfig: (config) =>
+        set((state) => ({
+          wizardInitOptions: config,
+          modals: { ...state.modals, wizard: true }
+        })),
+
+      setActDrawerOpen: (open) => set({ isActDrawerOpen: open }),
+
+      toggleActDrawer: () => set((state) => ({ isActDrawerOpen: !state.isActDrawerOpen })),
+
+      setActiveActId: (actId) => {
+        set({ activeActId: actId });
+      },
+
+      addAct: (title) => {
+        set((state) => {
+          const nextId = Math.max(0, ...state.acts.map((a) => a.id)) + 1;
+          const newAct: CampaignAct = {
+            id: nextId,
+            code: `ACT_${nextId}`,
+            title: title || `Act ${nextId}: New Chapter`,
+            description: ''
+          };
+          return {
+            acts: [...state.acts, newAct],
+            activeActId: nextId
+          };
+        });
+        get().saveToStorage();
+      },
+
+      updateAct: (actId, partial) => {
+        set((state) => ({
+          acts: state.acts.map((a) => (a.id === actId ? { ...a, ...partial } : a))
+        }));
+        get().saveToStorage();
+      },
+
+      deleteAct: (actId) => {
+        set((state) => {
+          if (state.acts.length <= 1) return state;
+          const remainingActs = state.acts.filter((a) => a.id !== actId);
+          const fallbackActId = remainingActs[0].id;
+          const updatedQuests = { ...state.quests };
+          Object.values(updatedQuests).forEach((q) => {
+            if (q.act === actId) {
+              updatedQuests[q.uid] = { ...q, act: fallbackActId };
+            }
+          });
+          return {
+            acts: remainingActs,
+            quests: updatedQuests,
+            activeActId: state.activeActId === actId ? fallbackActId : state.activeActId
+          };
+        });
+        get().saveToStorage();
+      },
+
+      reorderActs: (fromIndex, toIndex) => {
+        set((state) => {
+          if (
+            fromIndex < 0 ||
+            fromIndex >= state.acts.length ||
+            toIndex < 0 ||
+            toIndex >= state.acts.length
+          )
+            return state;
+          const newActs = [...state.acts];
+          const [moved] = newActs.splice(fromIndex, 1);
+          newActs.splice(toIndex, 0, moved);
+          return { acts: newActs };
+        });
+        get().saveToStorage();
+      },
+
+      updateQuestPosition: (uid, pos) => {
+        set((state) => {
+          const quest = state.quests[uid];
+          if (!quest) return state;
+          return {
+            quests: {
+              ...state.quests,
+              [uid]: { ...quest, position: pos }
+            }
+          };
+        });
+        get().saveToStorage();
+      },
+
+      updateQuestField: (uid, field, value) => {
+        set((state) => {
+          const quest = state.quests[uid];
+          if (!quest) return state;
+          return {
+            quests: {
+              ...state.quests,
+              [uid]: { ...quest, [field]: value }
+            }
+          };
+        });
+        get().saveToStorage();
+      },
+
+      addQuest: (quest) => {
+        set((state) => {
+          const defaultAct = typeof state.activeActId === 'number' ? state.activeActId : 1;
+          const questWithAct = { ...quest, act: quest.act || defaultAct };
+          return {
+            quests: { ...state.quests, [quest.uid]: questWithAct },
+            selectedQuestId: quest.uid
+          };
+        });
+        get().saveToStorage();
+      },
+
+      duplicateQuest: (uid, offset = { x: 260, y: 50 }) => {
+        set((state) => {
+          const original = state.quests[uid];
+          if (!original) return state;
+
+          const newUid = `q-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
+          
+          // Smart code increment: if e.g. "S02" -> look for next available S03, S04 etc.
+          // Otherwise fall back to base_COPY
+          let newCode = '';
+          const matchNum = original.code.match(/^([A-Za-z]+)(\d+)$/);
+          if (matchNum) {
+            const prefix = matchNum[1];
+            const digits = matchNum[2].length;
+            let num = parseInt(matchNum[2], 10) + 1;
+            while (Object.values(state.quests).some((q) => q.code === `${prefix}${String(num).padStart(digits, '0')}`)) {
+              num++;
+            }
+            newCode = `${prefix}${String(num).padStart(digits, '0')}`;
+          } else {
+            const codeBase = original.code.replace(/_COPY\d*$/, '');
+            newCode = `${codeBase}_COPY`;
+            let counter = 2;
+            while (Object.values(state.quests).some((q) => q.code === newCode)) {
+              newCode = `${codeBase}_COPY${counter++}`;
+            }
+          }
+
+          const clonedRewards = original.rewardOutcomes.map((r, idx) => ({
+            ...r,
+            id: `r-${newUid}-${idx + 1}`
+          }));
+
+          const clonedVariants = original.variants.map((v, idx) => ({
+            ...v,
+            id: `var-${newUid}-${idx + 1}`
+          }));
+
+          const clonedQuest: QuestModel = {
+            ...original,
+            uid: newUid,
+            code: newCode,
+            title: `${original.title} (Copy)`,
+            position: {
+              x: (original.position?.x ?? 0) + offset.x,
+              y: (original.position?.y ?? 0) + offset.y
+            },
+            rewardOutcomes: clonedRewards,
+            variants: clonedVariants
+          };
+
+          return {
+            quests: {
+              ...state.quests,
+              [newUid]: clonedQuest
+            },
+            selectedQuestId: newUid
+          };
+        });
+        get().saveToStorage();
+      },
+
+      deleteQuest: (uid) => {
+        set((state) => {
+          const { [uid]: deleted, ...remainingQuests } = state.quests;
+          const filteredEdges = state.edges.filter(
+            (e) => e.source !== uid && e.target !== uid
+          );
+          return {
+            quests: remainingQuests,
+            edges: filteredEdges,
+            selectedQuestId: state.selectedQuestId === uid ? null : state.selectedQuestId
+          };
+        });
+        get().saveToStorage();
+      },
+
+      attachQuestAudioTrack: (questUid, track) => {
+        set((state) => {
+          const quest = state.quests[questUid];
+          if (!quest) return state;
+          const currentTracks = quest.audioTracks || [];
+          const updatedTracks = [...currentTracks.filter((t) => t.id !== track.id), track];
+          return {
+            quests: {
+              ...state.quests,
+              [questUid]: {
+                ...quest,
+                audioTracks: updatedTracks
+              }
+            }
+          };
+        });
+        get().saveToStorage();
+      },
+
+      deleteQuestAudioTrack: async (questUid, trackId) => {
+        const state = get();
+        const quest = state.quests[questUid];
+        const track = quest?.audioTracks?.find((t) => t.id === trackId);
+        if (track) {
+          try {
+            await deleteQuestAudioBlob(track.blobKey);
+          } catch (err) {
+            console.error('Failed to delete audio blob from IndexedDB:', err);
+          }
+        }
+        set((s) => {
+          const q = s.quests[questUid];
+          if (!q) return s;
+          return {
+            quests: {
+              ...s.quests,
+              [questUid]: {
+                ...q,
+                audioTracks: (q.audioTracks || []).filter((t) => t.id !== trackId)
+              }
+            }
+          };
+        });
+        get().saveToStorage();
+      },
+
+      setGeminiApiKey: (key) => {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('questflow_gemini_api_key', key);
+        }
+        set({ geminiApiKey: key });
+      },
+
+      addRewardOutcome: (questUid, reward) => {
+        set((state) => {
+          const quest = state.quests[questUid];
+          if (!quest) return state;
+          return {
+            quests: {
+              ...state.quests,
+              [questUid]: {
+                ...quest,
+                rewardOutcomes: [...quest.rewardOutcomes, reward]
+              }
+            }
+          };
+        });
+        get().saveToStorage();
+      },
+
+      updateRewardOutcome: (questUid, rewardId, partial) => {
+        set((state) => {
+          const quest = state.quests[questUid];
+          if (!quest) return state;
+
+          const updatedRewards = quest.rewardOutcomes.map((r) =>
+            r.id === rewardId ? { ...r, ...partial } : r
+          );
+
+          // Auto-sync connected edges
+          const updatedEdges = state.edges.map((e) => {
+            if (e.source === questUid && e.sourcePortId === rewardId) {
+              const updatedEdge = { ...e };
+              if (partial.isExclusiveChoice !== undefined) {
+                if (e.type === 'CHOICE_BRANCH' || e.type === 'UNLOCKS') {
+                  updatedEdge.type = partial.isExclusiveChoice ? 'CHOICE_BRANCH' : 'UNLOCKS';
+                }
+              }
+              if (partial.grantsStateTags !== undefined) {
+                updatedEdge.stateTag = partial.grantsStateTags[0] || null;
+              }
+              return updatedEdge;
+            }
+            return e;
+          });
+
+          return {
+            quests: {
+              ...state.quests,
+              [questUid]: {
+                ...quest,
+                rewardOutcomes: updatedRewards
+              }
+            },
+            edges: updatedEdges
+          };
+        });
+        get().saveToStorage();
+      },
+
+      reorderRewardOutcome: (questUid, rewardId, direction) => {
+        set((state) => {
+          const quest = state.quests[questUid];
+          if (!quest) return state;
+          const index = quest.rewardOutcomes.findIndex((r) => r.id === rewardId);
+          if (index === -1) return state;
+          const targetIndex = direction === 'UP' ? index - 1 : index + 1;
+          if (targetIndex < 0 || targetIndex >= quest.rewardOutcomes.length) return state;
+
+          const newRewards = [...quest.rewardOutcomes];
+          const [moved] = newRewards.splice(index, 1);
+          newRewards.splice(targetIndex, 0, moved);
+
+          return {
+            quests: {
+              ...state.quests,
+              [questUid]: {
+                ...quest,
+                rewardOutcomes: newRewards
+              }
+            }
+          };
+        });
+        get().saveToStorage();
+      },
+
+      deleteRewardOutcome: (questUid, rewardId) => {
+        set((state) => {
+          const quest = state.quests[questUid];
+          if (!quest) return state;
+          return {
+            quests: {
+              ...state.quests,
+              [questUid]: {
+                ...quest,
+                rewardOutcomes: quest.rewardOutcomes.filter((r) => r.id !== rewardId)
+              }
+            },
+            edges: state.edges.filter(
+              (e) => !(e.source === questUid && e.sourcePortId === rewardId)
+            )
+          };
+        });
+        get().saveToStorage();
+      },
+
+      addVariant: (questUid, variant) => {
+        set((state) => {
+          const quest = state.quests[questUid];
+          if (!quest) return state;
+          return {
+            quests: {
+              ...state.quests,
+              [questUid]: {
+                ...quest,
+                variants: [...quest.variants, variant]
+              }
+            },
+            activeVariantTab: variant.id
+          };
+        });
+        get().saveToStorage();
+      },
+
+      updateVariant: (questUid, variantId, partial) => {
+        set((state) => {
+          const quest = state.quests[questUid];
+          if (!quest) return state;
+          return {
+            quests: {
+              ...state.quests,
+              [questUid]: {
+                ...quest,
+                variants: quest.variants.map((v) =>
+                  v.id === variantId ? { ...v, ...partial } : v
+                )
+              }
+            }
+          };
+        });
+        get().saveToStorage();
+      },
+
+      deleteVariant: (questUid, variantId) => {
+        set((state) => {
+          const quest = state.quests[questUid];
+          if (!quest) return state;
+          return {
+            quests: {
+              ...state.quests,
+              [questUid]: {
+                ...quest,
+                variants: quest.variants.filter((v) => v.id !== variantId)
+              }
+            },
+            activeVariantTab: state.activeVariantTab === variantId ? 'base' : state.activeVariantTab
+          };
+        });
+        get().saveToStorage();
+      },
+
+      addEdge: (edge) => {
+        set((state) => {
+          // Avoid duplicate edges
+          if (state.edges.some((e) => e.source === edge.source && e.target === edge.target && e.sourcePortId === edge.sourcePortId && e.type === edge.type)) {
+            return state;
+          }
+          return { edges: [...state.edges, edge] };
+        });
+        get().saveToStorage();
+      },
+
+      deleteEdge: (edgeId) => {
+        set((state) => ({
+          edges: state.edges.filter((e) => e.id !== edgeId),
+          selectedEdgeId: state.selectedEdgeId === edgeId ? null : state.selectedEdgeId
+        }));
+        get().saveToStorage();
+      },
+
+      updateEdge: (edgeId, partial) => {
+        set((state) => ({
+          edges: state.edges.map((e) => (e.id === edgeId ? { ...e, ...partial } : e))
+        }));
+        get().saveToStorage();
+      },
+
+      reconnectEdge: (oldEdgeId, newConn) => {
+        set((state) => {
+          const oldEdge = state.edges.find((e) => e.id === oldEdgeId);
+          if (!oldEdge) return state;
+
+          const sourceQuest = state.quests[newConn.source];
+          const reward = sourceQuest?.rewardOutcomes.find((r) => r.id === newConn.sourcePortId);
+          const isChoice = Boolean(reward?.isExclusiveChoice);
+          const carriedTag = reward?.grantsStateTags?.[0] || null;
+          const edgeRelation: EdgeRelationType = isChoice
+            ? 'CHOICE_BRANCH'
+            : oldEdge.type === 'LOCKOUT'
+            ? 'LOCKOUT'
+            : 'UNLOCKS';
+
+          const updatedEdges: CampaignEdge[] = state.edges.map((e) => {
+            if (e.id === oldEdgeId) {
+              return {
+                ...e,
+                source: newConn.source,
+                sourcePortId: newConn.sourcePortId,
+                target: newConn.target,
+                type: edgeRelation,
+                stateTag: carriedTag,
+                label: isChoice ? `+${carriedTag || 'Choice'}` : e.label,
+                waypoints: [] // reset custom waypoints on reconnection
+              };
+            }
+            return e;
+          });
+
+          return { edges: updatedEdges };
+        });
+        get().saveToStorage();
+      },
+
+      updateEdgeWaypoints: (edgeId, waypoints) => {
+        set((state) => ({
+          edges: state.edges.map((e) => (e.id === edgeId ? { ...e, waypoints } : e))
+        }));
+        get().saveToStorage();
+      },
+
+      clearEdgeWaypoints: (edgeId) => {
+        set((state) => ({
+          edges: state.edges.map((e) => (e.id === edgeId ? { ...e, waypoints: [] } : e))
+        }));
+        get().saveToStorage();
+      },
+
+      smartRouteAllEdges: () => {
+        const state = get();
+        const routes = computeObstacleAvoidanceRoutes(state.quests, state.edges);
+        set((s) => ({
+          edges: s.edges.map((e) => ({
+            ...e,
+            waypoints: routes[e.id] !== undefined ? routes[e.id] : e.waypoints || []
+          }))
+        }));
+        get().saveToStorage();
+      },
+
+      autoArrangeCampaign: (options = {}) => {
+        const state = get();
+        const shouldReorder = options.reorderChoices ?? true;
+        const { positions, reorderedChoices } = calculateAutoArrangement(
+          state.quests,
+          state.edges,
+          {
+            hSpacing: state.hSpacingPreset,
+            vScale: state.vSpacingScale,
+            reorderChoices: shouldReorder
+          }
+        );
+
+        set((curr) => {
+          const nextQuests = { ...curr.quests };
+
+          Object.entries(positions).forEach(([uid, pos]) => {
+            if (nextQuests[uid]) {
+              nextQuests[uid] = {
+                ...nextQuests[uid],
+                position: pos,
+                rewardOutcomes:
+                  shouldReorder && reorderedChoices[uid]
+                    ? reorderedChoices[uid]
+                    : nextQuests[uid].rewardOutcomes
+              };
+            }
+          });
+
+          // Reset manual edge waypoints so lines render clean default curves
+          const nextEdges = curr.edges.map((e) => ({
+            ...e,
+            waypoints: []
+          }));
+
+          return {
+            quests: nextQuests,
+            edges: nextEdges
+          };
+        });
+
+        get().saveToStorage();
+      },
+
+      // Simulator
+      toggleSimulatorRewardChoice: (rewardId, questUid) => {
+        set((state) => {
+          const quest = state.quests[questUid];
+          const outcome = quest?.rewardOutcomes.find((r) => r.id === rewardId);
+          if (!outcome) return state;
+
+          const isCurrentlyActive = state.simulator.activeRewardChoices.includes(rewardId);
+          let newChoices: string[];
+
+          if (outcome.isExclusiveChoice) {
+            // Uncheck other exclusive choices on the same quest
+            const siblingExclusiveIds = quest.rewardOutcomes
+              .filter((r) => r.isExclusiveChoice)
+              .map((r) => r.id);
+            const withoutSiblings = state.simulator.activeRewardChoices.filter(
+              (id) => !siblingExclusiveIds.includes(id)
+            );
+            newChoices = isCurrentlyActive
+              ? withoutSiblings
+              : [...withoutSiblings, rewardId];
+          } else {
+            newChoices = isCurrentlyActive
+              ? state.simulator.activeRewardChoices.filter((id) => id !== rewardId)
+              : [...state.simulator.activeRewardChoices, rewardId];
+          }
+
+          // Ensure quest is marked completed if choice is made
+          const completed = state.simulator.completedQuestIds.includes(questUid)
+            ? state.simulator.completedQuestIds
+            : [...state.simulator.completedQuestIds, questUid];
+
+          return {
+            simulator: {
+              ...state.simulator,
+              activeRewardChoices: newChoices,
+              completedQuestIds: completed
+            }
+          };
+        });
+      },
+
+      toggleSimulatorQuestCompletion: (questUid) => {
+        set((state) => {
+          const isCompleted = state.simulator.completedQuestIds.includes(questUid);
+          return {
+            simulator: {
+              ...state.simulator,
+              completedQuestIds: isCompleted
+                ? state.simulator.completedQuestIds.filter((id) => id !== questUid)
+                : [...state.simulator.completedQuestIds, questUid]
+            }
+          };
+        });
+      },
+
+      toggleSimulatorCustomTag: (tag) => {
+        set((state) => {
+          const hasTag = state.simulator.customTags.includes(tag);
+          return {
+            simulator: {
+              ...state.simulator,
+              customTags: hasTag
+                ? state.simulator.customTags.filter((t) => t !== tag)
+                : [...state.simulator.customTags, tag]
+            }
+          };
+        });
+      },
+
+      resetSimulator: () => {
+        set({
+          simulator: {
+            activeRewardChoices: [],
+            completedQuestIds: [],
+            customTags: []
+          }
+        });
+      },
+
+      // Storage
+      saveToStorage: async () => {
+        const state = get();
+        try {
+          const payload = {
+            metadata: {
+              ...state.activeMetadata,
+              updatedAt: new Date().toISOString()
+            },
+            acts: state.acts,
+            quests: state.quests,
+            edges: state.edges
+          };
+          await idb.set(`${IDB_CAMPAIGN_PREFIX}${state.activeCampaignId}`, payload);
+
+          // Update catalog
+          const updatedCatalog = state.campaignCatalog.map((c) =>
+            c.id === state.activeCampaignId ? payload.metadata : c
+          );
+          await idb.set(IDB_CATALOG_KEY, updatedCatalog);
+        } catch (err) {
+          console.error('Failed saving to IndexedDB:', err);
+        }
+      },
+
+      createCampaign: async (name, description) => {
+        const id = 'campaign_' + crypto.randomUUID().slice(0, 8);
+        const newMeta: CampaignProjectMetadata = {
+          id,
+          name,
+          description,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        const state = get();
+        const updatedCatalog = [...state.campaignCatalog, newMeta];
+        await idb.set(IDB_CATALOG_KEY, updatedCatalog);
+        await idb.set(`${IDB_CAMPAIGN_PREFIX}${id}`, {
+          metadata: newMeta,
+          acts: DEFAULT_ACTS,
+          quests: {},
+          edges: []
+        });
+
+        set({
+          campaignCatalog: updatedCatalog,
+          activeCampaignId: id,
+          activeMetadata: newMeta,
+          acts: DEFAULT_ACTS,
+          activeActId: 1,
+          quests: {},
+          edges: [],
+          selectedQuestId: null
+        });
+
+        return id;
+      },
+
+      switchCampaign: async (campaignId) => {
+        const data = (await idb.get(`${IDB_CAMPAIGN_PREFIX}${campaignId}`)) as {
+          metadata: CampaignProjectMetadata;
+          acts?: CampaignAct[];
+          quests: Record<string, QuestModel>;
+          edges: CampaignEdge[];
+        } | undefined;
+
+        if (data) {
+          set({
+            activeCampaignId: campaignId,
+            activeMetadata: data.metadata,
+            acts: data.acts || DEFAULT_ACTS,
+            activeActId: 1,
+            quests: data.quests,
+            edges: data.edges,
+            selectedQuestId: Object.keys(data.quests)[0] || null,
+            simulator: {
+              activeRewardChoices: [],
+              completedQuestIds: [],
+              customTags: []
+            }
+          });
+        }
+      },
+
+      duplicateCampaign: async (campaignId) => {
+        const data = (await idb.get(`${IDB_CAMPAIGN_PREFIX}${campaignId}`)) as {
+          metadata: CampaignProjectMetadata;
+          acts?: CampaignAct[];
+          quests: Record<string, QuestModel>;
+          edges: CampaignEdge[];
+        } | undefined;
+
+        if (!data) return;
+
+        const newId = 'campaign_' + crypto.randomUUID().slice(0, 8);
+        const newMeta: CampaignProjectMetadata = {
+          id: newId,
+          name: `${data.metadata.name} (Copy)`,
+          description: data.metadata.description,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        const state = get();
+        const updatedCatalog = [...state.campaignCatalog, newMeta];
+        await idb.set(IDB_CATALOG_KEY, updatedCatalog);
+        await idb.set(`${IDB_CAMPAIGN_PREFIX}${newId}`, {
+          metadata: newMeta,
+          acts: data.acts || state.acts,
+          quests: data.quests,
+          edges: data.edges
+        });
+
+        set({
+          campaignCatalog: updatedCatalog,
+          activeCampaignId: newId,
+          activeMetadata: newMeta,
+          acts: data.acts || state.acts,
+          activeActId: 1,
+          quests: data.quests,
+          edges: data.edges,
+          selectedQuestId: Object.keys(data.quests)[0] || null
+        });
+      },
+
+      deleteCampaign: async (campaignId) => {
+        const state = get();
+        if (state.campaignCatalog.length <= 1) return; // Keep at least one
+
+        const updatedCatalog = state.campaignCatalog.filter((c) => c.id !== campaignId);
+        await idb.del(`${IDB_CAMPAIGN_PREFIX}${campaignId}`);
+        await idb.set(IDB_CATALOG_KEY, updatedCatalog);
+
+        const nextCampaign = updatedCatalog[0];
+        set({ campaignCatalog: updatedCatalog });
+        await get().switchCampaign(nextCampaign.id);
+      },
+
+      renameActiveCampaign: async (name, description) => {
+        set((state) => {
+          const updatedMeta = {
+            ...state.activeMetadata,
+            name,
+            description,
+            updatedAt: new Date().toISOString()
+          };
+          return {
+            activeMetadata: updatedMeta,
+            campaignCatalog: state.campaignCatalog.map((c) =>
+              c.id === updatedMeta.id ? updatedMeta : c
+            )
+          };
+        });
+        await get().saveToStorage();
+      },
+
+      importCampaign: async (projectFile) => {
+        const id = 'campaign_' + crypto.randomUUID().slice(0, 8);
+        const meta: CampaignProjectMetadata = {
+          id,
+          name: projectFile.metadata.name || 'Imported Campaign',
+          description: projectFile.metadata.description || '',
+          createdAt: projectFile.metadata.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        const state = get();
+        const updatedCatalog = [...state.campaignCatalog, meta];
+        await idb.set(IDB_CATALOG_KEY, updatedCatalog);
+        await idb.set(`${IDB_CAMPAIGN_PREFIX}${id}`, {
+          metadata: meta,
+          acts: projectFile.acts || DEFAULT_ACTS,
+          quests: projectFile.quests,
+          edges: projectFile.edges
+        });
+
+        set({
+          campaignCatalog: updatedCatalog,
+          activeCampaignId: id,
+          activeMetadata: meta,
+          acts: projectFile.acts || DEFAULT_ACTS,
+          activeActId: 1,
+          quests: projectFile.quests,
+          edges: projectFile.edges,
+          selectedQuestId: Object.keys(projectFile.quests)[0] || null
+        });
+      }
+    }),
+    {
+      limit: 50,
+      partialize: (state) => ({
+        quests: state.quests,
+        edges: state.edges
+      })
+    }
+  )
+);

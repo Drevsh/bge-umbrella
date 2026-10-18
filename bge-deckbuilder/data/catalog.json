@@ -1,0 +1,6790 @@
+{
+  "schemaVersion": 4,
+  "status": "complete",
+  "mystlings": [
+    {
+      "id": "alukah",
+      "name": "Alukah",
+      "statCardId": "1A",
+      "mainElement": "air",
+      "stats": {
+        "willpower": 0,
+        "defense": 0,
+        "health": 40,
+        "strength": 4,
+        "swiftness": 1
+      },
+      "resourceCaps": {},
+      "statCardImagePath": "images/mystlings/alukah/cards/stat_1A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182351.jpg",
+      "subtype": {
+        "element": "dark",
+        "maxCards": 2
+      },
+      "pvpStatCard": {
+        "cardId": "1B",
+        "stats": {
+          "willpower": 0,
+          "defense": 0,
+          "health": 40,
+          "strength": 4,
+          "swiftness": 1
+        },
+        "resourceCaps": {},
+        "imagePath": "images/mystlings/alukah/cards/stat_1B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/2026-10-11_184213.jpg"
+      },
+      "specialAbility": {
+        "cardId": "5A",
+        "bonusActions": [
+          {
+            "name": "Steal Breath",
+            "powerCost": 3,
+            "effect": "Deal Silence in range 3."
+          }
+        ],
+        "imagePath": "images/mystlings/alukah/cards/ability_5A.png",
+        "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+      }
+    },
+    {
+      "id": "artios",
+      "name": "Artios",
+      "statCardId": "12A",
+      "mainElement": "light",
+      "stats": {
+        "willpower": 1,
+        "defense": 0,
+        "health": 25,
+        "strength": 3,
+        "swiftness": 3
+      },
+      "resourceCaps": {},
+      "statCardImagePath": "images/mystlings/artios/cards/stat_12A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/2026-10-11_182925.jpg",
+      "subtype": null,
+      "subtypes": [
+        {
+          "element": "fire",
+          "maxCards": 1
+        },
+        {
+          "element": "water",
+          "maxCards": 1
+        },
+        {
+          "element": "earth",
+          "maxCards": 1
+        },
+        {
+          "element": "air",
+          "maxCards": 1
+        }
+      ],
+      "printedResourceCaps": [
+        {
+          "maxEach": 3,
+          "icons": [
+            "air",
+            "fire",
+            "water"
+          ]
+        },
+        {
+          "maxEach": 1,
+          "icons": [
+            "air",
+            "water",
+            "fire",
+            "earth",
+            "light"
+          ]
+        }
+      ],
+      "pvpStatCard": {
+        "cardId": "12B",
+        "stats": {
+          "willpower": 1,
+          "defense": 0,
+          "health": 25,
+          "strength": 3,
+          "swiftness": 3
+        },
+        "resourceCaps": {},
+        "imagePath": "images/mystlings/artios/cards/stat_12B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183344.jpg",
+        "printedResourceCaps": [
+          {
+            "maxEach": 1,
+            "icons": [
+              "air",
+              "water",
+              "fire",
+              "earth",
+              "light"
+            ]
+          }
+        ]
+      },
+      "specialAbility": {
+        "cardId": "17A",
+        "bonusActions": [
+          {
+            "name": "Power Up",
+            "powerCost": 4,
+            "effect": "Gain 1 of the following: Green Gleam, Blue Gleam, Red Gleam, or Azure Gleam."
+          },
+          {
+            "name": "Elemental Rage",
+            "powerCost": 5,
+            "effect": "If you have Green Gleam, Azure Gleam, Blue Gleam, and Red Gleam, deal 10 damage in range 2."
+          }
+        ],
+        "imagePath": "images/mystlings/artios/cards/ability_17A.png",
+        "sourceScanPath": "images/mystlings/mystling_specific/Document_2026-10-13_172900.jpg"
+      }
+    },
+    {
+      "id": "blazereef",
+      "name": "Blazereef",
+      "statCardId": "18A",
+      "mainElement": "fire",
+      "stats": {
+        "willpower": 0,
+        "defense": 1,
+        "health": 30,
+        "strength": 4,
+        "swiftness": 2
+      },
+      "resourceCaps": {},
+      "statCardImagePath": "images/mystlings/blazereef/cards/stat_18A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182351.jpg",
+      "subtype": {
+        "element": "water",
+        "maxCards": 4
+      },
+      "pvpStatCard": {
+        "cardId": "18B",
+        "stats": {
+          "willpower": 0,
+          "defense": 1,
+          "health": 30,
+          "strength": 4,
+          "swiftness": 2
+        },
+        "resourceCaps": {},
+        "imagePath": "images/mystlings/blazereef/cards/stat_18B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_184021 (4).jpg"
+      },
+      "specialAbility": {
+        "cardId": "22A",
+        "bonusActions": [
+          {
+            "name": "Scorching Heat and Soothing Waters",
+            "powerCost": 10,
+            "effect": "Deal 1 damage in range 1 for each Fire card in your discard pile. Heal 2 for each Water card in your discard pile."
+          }
+        ],
+        "imagePath": "images/mystlings/blazereef/cards/ability_22A.png",
+        "sourceScanPath": "images/mystlings/mystling_specific/Document_2026-10-13_172900.jpg"
+      }
+    },
+    {
+      "id": "bolb",
+      "name": "Bolb",
+      "statCardId": "24A",
+      "mainElement": "earth",
+      "stats": {
+        "willpower": 0,
+        "defense": 1,
+        "health": 30,
+        "strength": 4,
+        "swiftness": 3
+      },
+      "resourceCaps": {
+        "earth_icon": 5
+      },
+      "statCardImagePath": "images/mystlings/bolb/cards/stat_24A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/2026-10-11_182925.jpg",
+      "subtype": {
+        "element": "air",
+        "maxCards": 3
+      },
+      "pvpStatCard": {
+        "cardId": "24B",
+        "stats": {
+          "willpower": 0,
+          "defense": 1,
+          "health": 30,
+          "strength": 4,
+          "swiftness": 3
+        },
+        "resourceCaps": {
+          "earth_icon": 5
+        },
+        "imagePath": "images/mystlings/bolb/cards/stat_24B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183344.jpg"
+      },
+      "specialAbility": {
+        "cardId": "28A",
+        "bonusActions": [
+          {
+            "name": "Flutter",
+            "powerCost": 1,
+            "effect": "Move 1 Butterfly in any range by 1 space."
+          },
+          {
+            "name": "Summon the Rabble",
+            "powerCost": 3,
+            "effect": "Place 1 Butterfly in range 2."
+          }
+        ],
+        "imagePath": "images/mystlings/bolb/cards/ability_28A.png",
+        "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+      }
+    },
+    {
+      "id": "chrysomallon",
+      "name": "Chrysomallon",
+      "statCardId": "35A",
+      "mainElement": "fire",
+      "subtype": {
+        "element": "earth",
+        "maxCards": 2
+      },
+      "stats": {
+        "willpower": 0,
+        "defense": 3,
+        "health": 25,
+        "strength": 5,
+        "swiftness": 1
+      },
+      "resourceCaps": {
+        "fire_icon": 5
+      },
+      "statCardImagePath": "images/mystlings/chrysomallon/cards/stat_35A.png",
+      "pvpStatCard": {
+        "cardId": "35B",
+        "stats": {
+          "willpower": 0,
+          "defense": 3,
+          "health": 25,
+          "strength": 5,
+          "swiftness": 1
+        },
+        "resourceCaps": {},
+        "imagePath": "images/mystlings/chrysomallon/cards/stat_35B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183516 (2).jpg"
+      },
+      "specialAbility": {
+        "cardId": "39A",
+        "bonusActions": [
+          {
+            "name": "Burn to the Ground",
+            "powerCost": 4,
+            "effect": "Deal 1 Burn in range 2 for each space you moved during this turn."
+          }
+        ],
+        "imagePath": "images/mystlings/chrysomallon/cards/ability_39A.png",
+        "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+      }
+    },
+    {
+      "id": "darktailen",
+      "name": "Darktailen",
+      "statCardId": "40A",
+      "mainElement": "dark",
+      "stats": {
+        "willpower": 0,
+        "defense": 0,
+        "health": 30,
+        "strength": 3,
+        "swiftness": 3
+      },
+      "resourceCaps": {
+        "dark_icon": 4
+      },
+      "statCardImagePath": "images/mystlings/darktailen/cards/stat_40A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182713 (3).jpg",
+      "subtype": null,
+      "pvpStatCard": {
+        "cardId": "40B",
+        "stats": {
+          "willpower": 0,
+          "defense": 0,
+          "health": 30,
+          "strength": 4,
+          "swiftness": 3
+        },
+        "resourceCaps": {
+          "dark_icon": 4
+        },
+        "imagePath": "images/mystlings/darktailen/cards/stat_40B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183735 (3).jpg"
+      },
+      "specialAbility": {
+        "cardId": "44A",
+        "bonusActions": [
+          {
+            "name": "Taste Thorn",
+            "powerCost": 1,
+            "effect": "Spend any number of Thorns. Your next Attack this turn has +1 Strength for each Thorn spent."
+          },
+          {
+            "name": "Slashing Tail",
+            "powerCost": 4,
+            "effect": "Gain 1 Thorn. Interrupt 2 in any range."
+          }
+        ],
+        "imagePath": "images/mystlings/darktailen/cards/ability_44A.png",
+        "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+      }
+    },
+    {
+      "id": "drosithia",
+      "name": "Drosithia",
+      "statCardId": "183A",
+      "mainElement": "water",
+      "stats": {
+        "willpower": 1,
+        "defense": 2,
+        "health": 20,
+        "strength": 1,
+        "swiftness": 2
+      },
+      "resourceCaps": {
+        "water_icon": 1
+      },
+      "statCardImagePath": "images/mystlings/drosithia/cards/stat_183A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182713 (3).jpg",
+      "subtype": {
+        "element": "light",
+        "maxCards": 1
+      },
+      "pvpStatCard": {
+        "cardId": "PS 183B",
+        "stats": {
+          "willpower": 1,
+          "defense": 2,
+          "health": 20,
+          "strength": 1,
+          "swiftness": 2
+        },
+        "resourceCaps": {
+          "water_icon": 1
+        },
+        "imagePath": "images/mystlings/drosithia/cards/stat_183B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_184021 (4).jpg"
+      },
+      "specialAbility": {
+        "cardId": "189A",
+        "bonusActions": [
+          {
+            "name": "Egg of Rebirth",
+            "powerCost": 7,
+            "effect": "Place 1 Egg in range 3."
+          }
+        ],
+        "imagePath": "images/mystlings/drosithia/cards/ability_189A.png",
+        "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+      }
+    },
+    {
+      "id": "eftus",
+      "name": "Eftus",
+      "statCardId": "190A",
+      "mainElement": "water",
+      "stats": {
+        "willpower": 2,
+        "defense": 0,
+        "health": 24,
+        "strength": 2,
+        "swiftness": 2
+      },
+      "resourceCaps": {
+        "water_icon": 3
+      },
+      "statCardImagePath": "images/mystlings/eftus/cards/stat_190A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182713 (3).jpg",
+      "subtype": {
+        "element": "dark",
+        "maxCards": 1
+      },
+      "pvpStatCard": {
+        "cardId": "PS 190B",
+        "stats": {
+          "willpower": 2,
+          "defense": 0,
+          "health": 24,
+          "strength": 2,
+          "swiftness": 2
+        },
+        "resourceCaps": {
+          "water_icon": 3
+        },
+        "imagePath": "images/mystlings/eftus/cards/stat_190B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183516 (2).jpg"
+      },
+      "specialAbility": {
+        "cardId": "194A",
+        "bonusActions": [
+          {
+            "name": "Lucky Stumble",
+            "powerCost": 1,
+            "effect": "Move. Attack in range 2."
+          },
+          {
+            "name": "Spurt",
+            "powerCost": 3,
+            "effect": "Spend up to 3 Water. If you spent 1, deal 4 Damage in range 3. If you spent 2, deal 6 Damage and Weak in range 3. If you spent 3, deal 8 Damage and Weak in range 3. Move the opponent in range 3 by up to 2 spaces."
+          }
+        ],
+        "imagePath": "images/mystlings/eftus/cards/ability_194A.png",
+        "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+      }
+    },
+    {
+      "id": "eldrithia",
+      "name": "Eldrithia",
+      "statCardId": "46A",
+      "mainElement": "light",
+      "subtype": {
+        "element": "dark",
+        "maxCards": 1
+      },
+      "stats": {
+        "willpower": 0,
+        "defense": 0,
+        "health": 28,
+        "strength": 1,
+        "swiftness": 3
+      },
+      "resourceCaps": {
+        "glow": 4,
+        "gloam": 4
+      },
+      "statCardImagePath": "images/mystlings/eldrithia/cards/stat_46A.png",
+      "specialAbility": {
+        "cardId": "50A",
+        "bonusActions": [
+          {
+            "name": "Seek Equilibrium",
+            "powerCost": 2,
+            "effect": "Choose one: Spend up to 4 Glow, then gain 1 Gloam for each Glow spent; or spend up to 4 Gloam, then gain 1 Glow for each Gloam spent."
+          },
+          {
+            "name": "Contrast",
+            "powerCost": 5,
+            "effect": "If you have more Gloam than Glow, Attack +5 Strength. If you have more Glow than Gloam, deal 4 Damage in any range."
+          }
+        ],
+        "imagePath": "images/mystlings/eldrithia/cards/ability_50A.png"
+      },
+      "pvpStatCard": {
+        "cardId": "46B",
+        "stats": {
+          "willpower": 0,
+          "defense": 0,
+          "health": 28,
+          "strength": 1,
+          "swiftness": 3
+        },
+        "resourceCaps": {
+          "glow": 4,
+          "gloam": 4
+        },
+        "imagePath": "images/mystlings/eldrithia/cards/stat_46B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183344.jpg"
+      }
+    },
+    {
+      "id": "elkthorn",
+      "name": "Elkthorn",
+      "statCardId": "51A",
+      "mainElement": "earth",
+      "subtype": null,
+      "stats": {
+        "willpower": 0,
+        "defense": 0,
+        "health": 20,
+        "strength": 3,
+        "swiftness": 2
+      },
+      "resourceCaps": {
+        "earth_icon": 1
+      },
+      "statCardImagePath": "images/mystlings/elkthorn/cards/stat_51A.png",
+      "pvpStatCard": {
+        "cardId": "51B",
+        "stats": {
+          "willpower": 0,
+          "defense": 0,
+          "health": 33,
+          "strength": 4,
+          "swiftness": 2
+        },
+        "resourceCaps": {
+          "earth_icon": 1
+        },
+        "imagePath": "images/mystlings/elkthorn/cards/stat_51B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183516 (2).jpg"
+      },
+      "specialAbility": {
+        "cardId": "55A",
+        "bonusActions": [
+          {
+            "name": "Enrage",
+            "powerCost": 4,
+            "effect": "Gain Rage."
+          },
+          {
+            "name": "Restlessness",
+            "powerCost": 8,
+            "effect": "If you have Rage, Move and Attack +2 Strength. Otherwise, Trigger."
+          }
+        ],
+        "imagePath": "images/mystlings/elkthorn/cards/ability_55A.png",
+        "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+      }
+    },
+    {
+      "id": "emberling",
+      "name": "Emberling",
+      "statCardId": "57A",
+      "mainElement": "fire",
+      "stats": {
+        "willpower": 0,
+        "defense": 0,
+        "health": 30,
+        "strength": 5,
+        "swiftness": 2
+      },
+      "resourceCaps": {},
+      "statCardImagePath": "images/mystlings/emberling/cards/stat_57A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182713 (3).jpg",
+      "subtype": null,
+      "pvpStatCard": {
+        "cardId": "57B",
+        "stats": {
+          "willpower": 0,
+          "defense": 0,
+          "health": 30,
+          "strength": 5,
+          "swiftness": 2
+        },
+        "resourceCaps": {},
+        "imagePath": "images/mystlings/emberling/cards/stat_57B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183344.jpg"
+      },
+      "specialAbility": {
+        "cardId": "61A",
+        "bonusActions": [
+          {
+            "name": "Duo",
+            "powerCost": 1,
+            "effect": "Move Sibling by 1 space. If Sibling is not in the Arena, place the Sibling in range 1. Sibling cannot be dealt Damage. Mystlings cannot move to or be placed in a space with Sibling."
+          },
+          {
+            "name": "Sincere Effort",
+            "powerCost": 2,
+            "effect": "Deal 1 Burn in range 1 of Sibling."
+          },
+          {
+            "name": "Fire Breath",
+            "powerCost": 8,
+            "effect": "Deal 8 Damage in range 3."
+          }
+        ],
+        "imagePath": "images/mystlings/emberling/cards/ability_61A.png",
+        "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+      }
+    },
+    {
+      "id": "fale",
+      "name": "Fale",
+      "statCardId": "195A",
+      "mainElement": "water",
+      "stats": {
+        "willpower": 0,
+        "defense": 1,
+        "health": 31,
+        "strength": 5,
+        "swiftness": 2
+      },
+      "resourceCaps": {},
+      "statCardImagePath": "images/mystlings/fale/cards/stat_195A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182713 (3).jpg",
+      "subtype": null,
+      "pvpStatCard": {
+        "cardId": "PS 195B",
+        "stats": {
+          "willpower": 0,
+          "defense": 1,
+          "health": 31,
+          "strength": 4,
+          "swiftness": 2
+        },
+        "resourceCaps": {},
+        "imagePath": "images/mystlings/fale/cards/stat_195B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183735 (3).jpg"
+      },
+      "specialAbility": {
+        "cardId": "199A",
+        "bonusActions": [
+          {
+            "name": "Lockjaw",
+            "powerCost": 6,
+            "effect": "Attack; this attack has +2 Strength for every 10 Damage on Fale."
+          }
+        ],
+        "imagePath": "images/mystlings/fale/cards/ability_199A.png",
+        "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+      }
+    },
+    {
+      "id": "firple",
+      "name": "Firple",
+      "statCardId": "68A",
+      "mainElement": "water",
+      "subtype": null,
+      "stats": {
+        "willpower": 0,
+        "defense": 1,
+        "health": 20,
+        "strength": 2,
+        "swiftness": 2
+      },
+      "resourceCaps": {
+        "water_icon": 5
+      },
+      "statCardImagePath": "images/mystlings/firple/cards/stat_68A.png",
+      "pvpStatCard": {
+        "cardId": "68B",
+        "stats": {
+          "willpower": 0,
+          "defense": 1,
+          "health": 20,
+          "strength": 2,
+          "swiftness": 2
+        },
+        "resourceCaps": {
+          "water_icon": 5
+        },
+        "imagePath": "images/mystlings/firple/cards/stat_68B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183516 (2).jpg"
+      },
+      "specialAbility": {
+        "cardId": "72A",
+        "bonusActions": [
+          {
+            "name": "Splash",
+            "powerCost": 1,
+            "effect": "Your Attacks have (Pierce 3) this turn."
+          },
+          {
+            "name": "Water Drain",
+            "powerCost": 4,
+            "effect": "In any range, Interrupt 1 for each Puddle within range 2 of the chosen opponent. For each card discarded this way, the opponent gains 1 Damage."
+          }
+        ],
+        "imagePath": "images/mystlings/firple/cards/ability_72A.png",
+        "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+      }
+    },
+    {
+      "id": "flitterspark",
+      "name": "Flitterspark",
+      "statCardId": "200A",
+      "mainElement": "fire",
+      "stats": {
+        "willpower": 1,
+        "defense": 0,
+        "health": 28,
+        "strength": 2,
+        "swiftness": 3
+      },
+      "resourceCaps": {},
+      "statCardImagePath": "images/mystlings/flitterspark/cards/stat_200A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182713 (3).jpg",
+      "subtype": {
+        "element": "air",
+        "maxCards": 2
+      },
+      "pvpStatCard": {
+        "cardId": "PS 200B",
+        "stats": {
+          "willpower": 1,
+          "defense": 0,
+          "health": 28,
+          "strength": 3,
+          "swiftness": 3
+        },
+        "resourceCaps": {},
+        "imagePath": "images/mystlings/flitterspark/cards/stat_200B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183735 (3).jpg"
+      },
+      "specialAbility": {
+        "cardId": "204A",
+        "bonusActions": [
+          {
+            "name": "Blow on Embers",
+            "powerCost": 2,
+            "effect": "Deal 1 Damage in range 2 for each Burn on this opponent."
+          }
+        ],
+        "imagePath": "images/mystlings/flitterspark/cards/ability_204A.png",
+        "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+      }
+    },
+    {
+      "id": "frogmar",
+      "name": "Frogmar",
+      "statCardId": "205A",
+      "mainElement": "fire",
+      "stats": {
+        "willpower": 0,
+        "defense": 2,
+        "health": 32,
+        "strength": 4,
+        "swiftness": 1
+      },
+      "resourceCaps": {
+        "fire_icon": 5
+      },
+      "statCardImagePath": "images/mystlings/frogmar/cards/stat_205A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182713 (3).jpg",
+      "subtype": null,
+      "pvpStatCard": {
+        "cardId": "PS 205B",
+        "stats": {
+          "willpower": 0,
+          "defense": 2,
+          "health": 32,
+          "strength": 4,
+          "swiftness": 1
+        },
+        "resourceCaps": {
+          "fire_icon": 3
+        },
+        "imagePath": "images/mystlings/frogmar/cards/stat_205B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183735 (3).jpg"
+      },
+      "specialAbility": {
+        "cardId": "209A",
+        "bonusActions": [
+          {
+            "name": "Boiling Depths",
+            "powerCost": 3,
+            "effect": "Place 1 Crater in range 1."
+          },
+          {
+            "name": "Eruption",
+            "powerCost": 4,
+            "effect": "Each opponent gains 2 Damage and 1 Burn for each Crater within range 2 of them."
+          }
+        ],
+        "imagePath": "images/mystlings/frogmar/cards/ability_209A.png",
+        "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+      }
+    },
+    {
+      "id": "furwing",
+      "name": "Furwing",
+      "statCardId": "83A",
+      "mainElement": "air",
+      "stats": {
+        "willpower": 0,
+        "defense": 2,
+        "health": 25,
+        "strength": 4,
+        "swiftness": 1
+      },
+      "resourceCaps": {},
+      "statCardImagePath": "images/mystlings/furwing/cards/stat_83A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182534 (2).jpg",
+      "subtype": null,
+      "pvpStatCard": {
+        "cardId": "83B",
+        "stats": {
+          "willpower": 0,
+          "defense": 2,
+          "health": 32,
+          "strength": 4,
+          "swiftness": 1
+        },
+        "resourceCaps": {},
+        "imagePath": "images/mystlings/furwing/cards/stat_83B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183735 (3).jpg"
+      },
+      "specialAbility": {
+        "cardId": "87A",
+        "bonusActions": [
+          {
+            "name": "Reckless Abandon",
+            "powerCost": 6,
+            "effect": "Attack. Attack. Gain 4 Damage."
+          }
+        ],
+        "imagePath": "images/mystlings/furwing/cards/ability_87A.png",
+        "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+      }
+    },
+    {
+      "id": "gaiadon",
+      "name": "Gaiadon",
+      "statCardId": "89A",
+      "mainElement": "earth",
+      "stats": {
+        "willpower": 1,
+        "defense": 0,
+        "health": 35,
+        "strength": 4,
+        "swiftness": 2
+      },
+      "resourceCaps": {
+        "earth_icon": 1
+      },
+      "statCardImagePath": "images/mystlings/gaiadon/cards/stat_89A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182534 (2).jpg",
+      "subtype": null,
+      "pvpStatCard": {
+        "cardId": "89B",
+        "stats": {
+          "willpower": 1,
+          "defense": 0,
+          "health": 35,
+          "strength": 4,
+          "swiftness": 2
+        },
+        "resourceCaps": {
+          "earth_icon": 1
+        },
+        "imagePath": "images/mystlings/gaiadon/cards/stat_89B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_184021 (4).jpg"
+      },
+      "specialAbility": {
+        "cardId": "95A",
+        "bonusActions": [
+          {
+            "name": "Spirit Sapling",
+            "powerCost": 4,
+            "effect": "Place Spiritbound Tree in range 2."
+          },
+          {
+            "name": "Storm of Leaves",
+            "powerCost": 8,
+            "effect": "Deal 4 Damage in range 1, 3 Damage in range 2, and 2 Damage in range 3 of each Spiritbound Tree."
+          }
+        ],
+        "imagePath": "images/mystlings/gaiadon/cards/ability_95A.png",
+        "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+      }
+    },
+    {
+      "id": "glarexus",
+      "name": "Glarexus",
+      "statCardId": "102A",
+      "mainElement": "light",
+      "stats": {
+        "willpower": 1,
+        "defense": 2,
+        "health": 26,
+        "strength": 3,
+        "swiftness": 1
+      },
+      "resourceCaps": {},
+      "statCardImagePath": "images/mystlings/glarexus/cards/stat_102A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182534 (2).jpg",
+      "subtype": null,
+      "pvpStatCard": {
+        "cardId": "102B",
+        "stats": {
+          "willpower": 1,
+          "defense": 2,
+          "health": 26,
+          "strength": 3,
+          "swiftness": 1
+        },
+        "resourceCaps": {},
+        "imagePath": "images/mystlings/glarexus/cards/stat_102B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183735 (3).jpg"
+      },
+      "specialAbility": {
+        "cardId": "106A",
+        "bonusActions": [
+          {
+            "name": "Reflect",
+            "powerCost": 7,
+            "effect": "Cleanse 2. Deal 4 Damage in any range."
+          }
+        ],
+        "imagePath": "images/mystlings/glarexus/cards/ability_106A.png",
+        "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+      }
+    },
+    {
+      "id": "golomo",
+      "name": "Golomo",
+      "statCardId": "107A",
+      "mainElement": "earth",
+      "stats": {
+        "willpower": 0,
+        "defense": 0,
+        "health": 24,
+        "strength": 2,
+        "swiftness": 1
+      },
+      "resourceCaps": {
+        "earth_icon": 5
+      },
+      "statCardImagePath": "images/mystlings/golomo/cards/stat_107A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182534 (2).jpg",
+      "subtype": null,
+      "pvpStatCard": {
+        "cardId": "107B",
+        "stats": {
+          "willpower": 1,
+          "defense": 1,
+          "health": 28,
+          "strength": 3,
+          "swiftness": 1
+        },
+        "resourceCaps": {
+          "earth_icon": 5
+        },
+        "imagePath": "images/mystlings/golomo/cards/stat_107B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183735 (3).jpg"
+      },
+      "specialAbility": {
+        "cardId": "111A",
+        "bonusActions": [
+          {
+            "name": "Tromp",
+            "powerCost": 2,
+            "effect": "Place 1 Quake in range 2."
+          },
+          {
+            "name": "Tremors",
+            "powerCost": 8,
+            "effect": "Each opponent gains 2 Damage for each Quake within range 2 of them."
+          }
+        ],
+        "imagePath": "images/mystlings/golomo/cards/ability_111A.png",
+        "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+      }
+    },
+    {
+      "id": "iceling",
+      "name": "Iceling",
+      "statCardId": "113A",
+      "mainElement": "water",
+      "subtype": null,
+      "stats": {
+        "willpower": 0,
+        "defense": 1,
+        "health": 30,
+        "strength": 4,
+        "swiftness": 2
+      },
+      "resourceCaps": {
+        "ice": 4
+      },
+      "statCardImagePath": "images/mystlings/iceling/cards/stat_113A.png",
+      "specialAbility": {
+        "cardId": "117A",
+        "bonusActions": [
+          {
+            "name": "Frozen Plating",
+            "powerCost": 4,
+            "effect": "Gain 1 Ice."
+          },
+          {
+            "name": "Crushing Weight",
+            "powerCost": 9,
+            "effect": "Attack. You may spend any number of Ice. For each Ice spent, this Attack gains +2 Strength."
+          }
+        ],
+        "imagePath": "images/mystlings/iceling/cards/ability_117A.png"
+      },
+      "pvpStatCard": {
+        "cardId": "113B",
+        "stats": {
+          "willpower": 0,
+          "defense": 1,
+          "health": 30,
+          "strength": 4,
+          "swiftness": 2
+        },
+        "resourceCaps": {
+          "ice": 4
+        },
+        "imagePath": "images/mystlings/iceling/cards/stat_113B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183344.jpg"
+      }
+    },
+    {
+      "id": "luminesca",
+      "name": "Luminesca",
+      "statCardId": "124A",
+      "mainElement": "light",
+      "stats": {
+        "willpower": 0,
+        "defense": 2,
+        "health": 30,
+        "strength": 3,
+        "swiftness": 2
+      },
+      "resourceCaps": {
+        "light_icon": 5
+      },
+      "statCardImagePath": "images/mystlings/luminesca/cards/stat_124A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182351.jpg",
+      "subtype": null,
+      "pvpStatCard": {
+        "cardId": "124B",
+        "stats": {
+          "willpower": 0,
+          "defense": 2,
+          "health": 30,
+          "strength": 3,
+          "swiftness": 2
+        },
+        "resourceCaps": {
+          "light_icon": 5
+        },
+        "imagePath": "images/mystlings/luminesca/cards/stat_124B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_184021 (4).jpg"
+      },
+      "specialAbility": {
+        "cardId": "128A",
+        "bonusActions": [
+          {
+            "name": "Flare-up",
+            "powerCost": 1,
+            "effect": "Spend 1 Brightness to deal 2 Damage in any range."
+          },
+          {
+            "name": "Prismatic Lens",
+            "powerCost": 3,
+            "effect": "Deal 1 Damage in range 4 for each Brightness you have."
+          }
+        ],
+        "imagePath": "images/mystlings/luminesca/cards/ability_128A.png"
+      }
+    },
+    {
+      "id": "prowler",
+      "name": "Prowler",
+      "statCardId": "129A",
+      "mainElement": "air",
+      "stats": {
+        "willpower": 0,
+        "defense": 0,
+        "health": 12,
+        "strength": 4,
+        "swiftness": 4
+      },
+      "resourceCaps": {},
+      "statCardImagePath": "images/mystlings/prowler/cards/stat_129A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182534 (2).jpg",
+      "subtype": null,
+      "pvpStatCard": {
+        "cardId": "129B",
+        "stats": {
+          "willpower": 0,
+          "defense": 0,
+          "health": 18,
+          "strength": 4,
+          "swiftness": 4
+        },
+        "resourceCaps": {},
+        "imagePath": "images/mystlings/prowler/cards/stat_129B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_184021 (4).jpg"
+      },
+      "specialAbility": {
+        "cardId": "133A",
+        "bonusActions": [
+          {
+            "name": "Flee",
+            "powerCost": 3,
+            "effect": "Blink 4."
+          }
+        ],
+        "imagePath": "images/mystlings/prowler/cards/ability_133A.png"
+      }
+    },
+    {
+      "id": "regalian",
+      "name": "Regalian",
+      "statCardId": "135A",
+      "mainElement": "fire",
+      "stats": {
+        "willpower": 0,
+        "defense": 0,
+        "health": 20,
+        "strength": 2,
+        "swiftness": 5
+      },
+      "resourceCaps": {},
+      "statCardImagePath": "images/mystlings/regalian/cards/stat_135A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182534 (2).jpg",
+      "subtype": null,
+      "pvpStatCard": {
+        "cardId": "135B",
+        "stats": {
+          "willpower": 1,
+          "defense": 0,
+          "health": 25,
+          "strength": 2,
+          "swiftness": 5
+        },
+        "resourceCaps": {},
+        "imagePath": "images/mystlings/regalian/cards/stat_135B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_184021 (4).jpg"
+      },
+      "specialAbility": {
+        "cardId": "139A",
+        "bonusActions": [
+          {
+            "name": "Charge",
+            "powerCost": 6,
+            "effect": "Move. You can move through but cannot stop in a space with an opponent. If you move through a space with an opponent, deal 4 Damage to that opponent (once per Charge)."
+          }
+        ],
+        "imagePath": "images/mystlings/regalian/cards/ability_139A.png"
+      }
+    },
+    {
+      "id": "renewed_firple",
+      "name": "Renewed Firple",
+      "statCardId": "78A",
+      "mainElement": "water",
+      "stats": {
+        "willpower": 0,
+        "defense": 1,
+        "health": 35,
+        "strength": 5,
+        "swiftness": 1
+      },
+      "resourceCaps": {
+        "water_icon": 5
+      },
+      "statCardImagePath": "images/mystlings/renewed_firple/cards/stat_78A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182351.jpg",
+      "subtype": null,
+      "pvpStatCard": {
+        "cardId": "78B",
+        "stats": {
+          "willpower": 0,
+          "defense": 1,
+          "health": 35,
+          "strength": 5,
+          "swiftness": 1
+        },
+        "resourceCaps": {
+          "water_icon": 5
+        },
+        "imagePath": "images/mystlings/renewed_firple/cards/stat_78B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_184021 (4).jpg"
+      },
+      "specialAbility": {
+        "cardId": "82A",
+        "bonusActions": [
+          {
+            "name": "Drench",
+            "powerCost": 1,
+            "effect": "Renewed Firple has +1 Swiftness this turn for each Puddle within range 1 of the opponent it Attacks."
+          },
+          {
+            "name": "Rain Song",
+            "powerCost": 3,
+            "effect": "Place 1 Puddle in range 2."
+          }
+        ],
+        "imagePath": "images/mystlings/renewed_firple/cards/ability_82A.png",
+        "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+      }
+    },
+    {
+      "id": "renewed_golomo",
+      "name": "Renewed Golomo",
+      "statCardId": "210A",
+      "mainElement": "earth",
+      "stats": {
+        "willpower": 0,
+        "defense": 0,
+        "health": 34,
+        "strength": 2,
+        "swiftness": 2
+      },
+      "resourceCaps": {
+        "earth_icon": 3
+      },
+      "statCardImagePath": "images/mystlings/renewed_golomo/cards/stat_210A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182534 (2).jpg",
+      "subtype": null,
+      "pvpStatCard": {
+        "cardId": "PS 210B",
+        "stats": {
+          "willpower": 0,
+          "defense": 0,
+          "health": 34,
+          "strength": 3,
+          "swiftness": 2
+        },
+        "resourceCaps": {
+          "earth_icon": 3
+        },
+        "imagePath": "images/mystlings/renewed_golomo/cards/stat_210B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183735 (3).jpg"
+      },
+      "specialAbility": {
+        "cardId": "214A",
+        "bonusActions": [
+          {
+            "name": "Exploding Cone",
+            "powerCost": 3,
+            "effect": "Spend 1 Cone to choose a space in range 3. Deal 4 Damage to an opponent in that space and to each other opponent in range 1 of that space."
+          },
+          {
+            "name": "Forage",
+            "powerCost": 6,
+            "effect": "Gain 2 Cones."
+          }
+        ],
+        "imagePath": "images/mystlings/renewed_golomo/cards/ability_214A.png"
+      }
+    },
+    {
+      "id": "shadeclaw",
+      "name": "Shadeclaw",
+      "statCardId": "141A",
+      "mainElement": "dark",
+      "stats": {
+        "willpower": 1,
+        "defense": 0,
+        "health": 18,
+        "strength": 6,
+        "swiftness": 3
+      },
+      "resourceCaps": {
+        "dark_icon": 2
+      },
+      "statCardImagePath": "images/mystlings/shadeclaw/cards/stat_141A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182534 (2).jpg",
+      "subtype": null,
+      "pvpStatCard": {
+        "cardId": "141B",
+        "stats": {
+          "willpower": 1,
+          "defense": 2,
+          "health": 18,
+          "strength": 5,
+          "swiftness": 2
+        },
+        "resourceCaps": {
+          "dark_icon": 2
+        },
+        "imagePath": "images/mystlings/shadeclaw/cards/stat_141B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/2026-10-11_184213.jpg"
+      },
+      "specialAbility": {
+        "cardId": "146A",
+        "bonusActions": [
+          {
+            "name": "Puppeteer",
+            "powerCost": 1,
+            "effect": "Move each Mirror Image by up to 2 spaces."
+          },
+          {
+            "name": "Smoke and Mirrors",
+            "powerCost": 4,
+            "effect": "Place 1 Mirror Image in range 2."
+          },
+          {
+            "name": "Reflection",
+            "powerCost": 4,
+            "effect": "Deal 1 Damage in range 1 for every 2 neutral cards in your discard pile. Repeat this effect for each Mirror Image within range 1 of the opponent."
+          }
+        ],
+        "imagePath": "images/mystlings/shadeclaw/cards/ability_146A.png"
+      }
+    },
+    {
+      "id": "siren",
+      "name": "Siren",
+      "statCardId": "154A",
+      "mainElement": "water",
+      "stats": {
+        "willpower": 0,
+        "defense": 2,
+        "health": 25,
+        "strength": 3,
+        "swiftness": 2
+      },
+      "resourceCaps": {
+        "water_icon": 5,
+        "air_icon": 1
+      },
+      "statCardImagePath": "images/mystlings/siren/cards/stat_154A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182351.jpg",
+      "subtype": {
+        "element": "air",
+        "maxCards": 4
+      },
+      "pvpStatCard": {
+        "cardId": "154B",
+        "stats": {
+          "willpower": 0,
+          "defense": 2,
+          "health": 25,
+          "strength": 3,
+          "swiftness": 2
+        },
+        "resourceCaps": {
+          "water_icon": 5,
+          "air_icon": 1
+        },
+        "imagePath": "images/mystlings/siren/cards/stat_154B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_184021 (4).jpg"
+      },
+      "specialAbility": {
+        "cardId": "158A",
+        "bonusActions": [
+          {
+            "name": "Enviro Change",
+            "powerCost": 1,
+            "effect": "If you have Resurface, discard it. Otherwise, gain Resurface."
+          },
+          {
+            "name": "Stir Waters",
+            "powerCost": 2,
+            "effect": "Place 1 Whirlpool in range 2."
+          },
+          {
+            "name": "Drag Down",
+            "powerCost": 3,
+            "effect": "Deal 4 Damage and Slow in any range to an opponent in a space with a Whirlpool. Discard that Whirlpool."
+          }
+        ],
+        "imagePath": "images/mystlings/siren/cards/ability_158A.png"
+      }
+    },
+    {
+      "id": "sylphidron",
+      "name": "Sylphidron",
+      "statCardId": "215A",
+      "mainElement": "air",
+      "stats": {
+        "willpower": 0,
+        "defense": 0,
+        "health": 33,
+        "strength": 3,
+        "swiftness": 1
+      },
+      "resourceCaps": {},
+      "statCardImagePath": "images/mystlings/sylphidron/cards/stat_215A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182351.jpg",
+      "subtype": null,
+      "pvpStatCard": {
+        "cardId": "PS 215B",
+        "stats": {
+          "willpower": 0,
+          "defense": 0,
+          "health": 27,
+          "strength": 4,
+          "swiftness": 1
+        },
+        "resourceCaps": {},
+        "imagePath": "images/mystlings/sylphidron/cards/stat_215B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/2026-10-11_184213.jpg"
+      },
+      "specialAbility": {
+        "cardId": "219A",
+        "bonusActions": [
+          {
+            "name": "Sneak Attack",
+            "powerCost": 6,
+            "effect": "Blink 6. Deal 1 Damage in range 1, +1 Damage for each different card in your slots."
+          }
+        ],
+        "imagePath": "images/mystlings/sylphidron/cards/ability_219A.png"
+      }
+    },
+    {
+      "id": "umbra",
+      "name": "Umbra",
+      "statCardId": "159A",
+      "mainElement": "dark",
+      "stats": {
+        "willpower": 1,
+        "defense": 2,
+        "health": 35,
+        "strength": 3,
+        "swiftness": 2
+      },
+      "resourceCaps": {
+        "dark_icon": 4
+      },
+      "statCardImagePath": "images/mystlings/umbra/cards/stat_159A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182351.jpg",
+      "subtype": null,
+      "pvpStatCard": {
+        "cardId": "159B",
+        "stats": {
+          "willpower": 1,
+          "defense": 1,
+          "health": 35,
+          "strength": 3,
+          "swiftness": 2
+        },
+        "resourceCaps": {
+          "dark_icon": 4
+        },
+        "imagePath": "images/mystlings/umbra/cards/stat_159B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/2026-10-11_184213.jpg"
+      },
+      "specialAbility": {
+        "cardId": "163A",
+        "bonusActions": [
+          {
+            "name": "Extract Essence",
+            "powerCost": 1,
+            "effect": "Discard the top 3 cards from your deck. Place each Umbra-specific card discarded this way on top of your deck in any order."
+          },
+          {
+            "name": "Sun Eater",
+            "powerCost": 10,
+            "effect": "If you have 4 Miasma, deal 50 Damage in range 4. Otherwise, deal 1 Damage (Pierce 2) in any range."
+          }
+        ],
+        "imagePath": "images/mystlings/umbra/cards/ability_163A.png"
+      }
+    },
+    {
+      "id": "vogandr",
+      "name": "Vogandr",
+      "statCardId": "164A",
+      "mainElement": "water",
+      "stats": {
+        "willpower": 0,
+        "defense": 1,
+        "health": 36,
+        "strength": 3,
+        "swiftness": 1
+      },
+      "resourceCaps": {
+        "water_icon": 5
+      },
+      "statCardImagePath": "images/mystlings/vogandr/cards/stat_164A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182351.jpg",
+      "subtype": {
+        "element": "dark",
+        "maxCards": 2
+      },
+      "pvpStatCard": {
+        "cardId": "164B",
+        "stats": {
+          "willpower": 0,
+          "defense": 1,
+          "health": 36,
+          "strength": 3,
+          "swiftness": 1
+        },
+        "resourceCaps": {
+          "water_icon": 5
+        },
+        "imagePath": "images/mystlings/vogandr/cards/stat_164B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/2026-10-11_184213.jpg"
+      },
+      "specialAbility": {
+        "cardId": "168A",
+        "bonusActions": [
+          {
+            "name": "Grasping Tide",
+            "powerCost": 4,
+            "effect": "Deal Weak within range 1 of a Flood, or discard 1 Flood from the Arena to Move +2 Swiftness."
+          },
+          {
+            "name": "Crushing Wave",
+            "powerCost": 7,
+            "effect": "If there are 6 Flood in the Arena, deal 15 Damage in range 1. Otherwise, place 1 Flood in range 4."
+          }
+        ],
+        "imagePath": "images/mystlings/vogandr/cards/ability_168A.png"
+      }
+    },
+    {
+      "id": "windraiser",
+      "name": "Windraiser",
+      "statCardId": "171A",
+      "mainElement": "air",
+      "subtype": null,
+      "stats": {
+        "willpower": 0,
+        "defense": 0,
+        "health": 20,
+        "strength": 2,
+        "swiftness": 3
+      },
+      "resourceCaps": {
+        "air_icon": 3
+      },
+      "statCardImagePath": "images/mystlings/windraiser/cards/stat_171A.png",
+      "pvpStatCard": {
+        "cardId": "171B",
+        "stats": {
+          "willpower": 1,
+          "defense": 1,
+          "health": 22,
+          "strength": 3,
+          "swiftness": 3
+        },
+        "resourceCaps": {
+          "air_icon": 3
+        },
+        "imagePath": "images/mystlings/windraiser/cards/stat_171B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183344.jpg"
+      },
+      "specialAbility": {
+        "cardId": "175A",
+        "bonusActions": [
+          {
+            "name": "Airflow",
+            "powerCost": 1,
+            "effect": "If there are no Tornados in the Arena, place 3 Tornados in range 1. Otherwise, move each Tornado up to 1 space."
+          },
+          {
+            "name": "Twister",
+            "powerCost": 6,
+            "effect": "Each opponent gains 3 Damage for each Tornado within range 1 of them."
+          }
+        ],
+        "imagePath": "images/mystlings/windraiser/cards/ability_175A.png"
+      }
+    },
+    {
+      "id": "young_alukah",
+      "name": "Young Alukah",
+      "statCardId": "6A",
+      "mainElement": "air",
+      "stats": {
+        "willpower": 0,
+        "defense": 1,
+        "health": 17,
+        "strength": 3,
+        "swiftness": 2
+      },
+      "resourceCaps": {},
+      "statCardImagePath": "images/mystlings/young_alukah/cards/stat_6A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/2026-10-11_182925.jpg",
+      "subtype": null,
+      "pvpStatCard": {
+        "cardId": "6B",
+        "stats": {
+          "willpower": 0,
+          "defense": 1,
+          "health": 28,
+          "strength": 3,
+          "swiftness": 3
+        },
+        "resourceCaps": {},
+        "imagePath": "images/mystlings/young_alukah/cards/stat_6B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183344.jpg"
+      },
+      "specialAbility": {
+        "cardId": "10A",
+        "bonusActions": [
+          {
+            "name": "Hunt",
+            "powerCost": 3,
+            "effect": "Discard the top card of your deck. If it is a neutral card, Blink to a space within range 1 of the opponent and Attack (Pierce 3). Otherwise, Move."
+          }
+        ],
+        "imagePath": "images/mystlings/young_alukah/cards/ability_10A.png",
+        "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+      }
+    },
+    {
+      "id": "young_bolb",
+      "name": "Young Bolb",
+      "statCardId": "29A",
+      "mainElement": "earth",
+      "subtype": {
+        "element": "water",
+        "maxCards": 2
+      },
+      "stats": {
+        "willpower": 0,
+        "defense": 1,
+        "health": 35,
+        "strength": 2,
+        "swiftness": 1
+      },
+      "resourceCaps": {},
+      "statCardImagePath": "images/mystlings/young_bolb/cards/stat_29A.png",
+      "sourceScanPath": "images/mystlings/scan_pve/Document_2026-10-11_182713 (3).jpg",
+      "pvpStatCard": {
+        "cardId": "29B",
+        "stats": {
+          "willpower": 0,
+          "defense": 1,
+          "health": 40,
+          "strength": 2,
+          "swiftness": 1
+        },
+        "resourceCaps": {},
+        "imagePath": "images/mystlings/young_bolb/cards/stat_29B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183516 (2).jpg"
+      },
+      "specialAbility": {
+        "cardId": "33A",
+        "bonusActions": [
+          {
+            "name": "Drying Mud",
+            "powerCost": 3,
+            "effect": "Deal Slow in range 2."
+          },
+          {
+            "name": "Prophetic Swiftness",
+            "powerCost": 6,
+            "effect": "Blink to a space within range 1 of an opponent with Slow. Attack."
+          }
+        ],
+        "imagePath": "images/mystlings/young_bolb/cards/ability_33A.png",
+        "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+      }
+    },
+    {
+      "id": "young_emberling",
+      "name": "Young Emberling",
+      "statCardId": null,
+      "mainElement": "fire",
+      "subtype": null,
+      "pvpStatCard": {
+        "cardId": "62B",
+        "stats": {
+          "willpower": 0,
+          "defense": 0,
+          "health": 22,
+          "strength": 4,
+          "swiftness": 3
+        },
+        "resourceCaps": {},
+        "imagePath": "images/mystlings/young_emberling/cards/stat_62B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183516 (2).jpg"
+      },
+      "specialAbility": {
+        "cardId": "66A",
+        "bonusActions": [
+          {
+            "name": "Firenova",
+            "powerCost": 8,
+            "effect": "Deal 6 Damage in range 3."
+          }
+        ],
+        "imagePath": "images/mystlings/young_emberling/cards/ability_66A.png",
+        "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+      }
+    },
+    {
+      "id": "young_gaiadon",
+      "name": "Young Gaiadon",
+      "statCardId": "96A",
+      "mainElement": "earth",
+      "subtype": null,
+      "stats": {
+        "willpower": 0,
+        "defense": 0,
+        "health": 11,
+        "strength": 3,
+        "swiftness": 2
+      },
+      "resourceCaps": {},
+      "statCardImagePath": "images/mystlings/young_gaiadon/cards/stat_96A.png",
+      "pvpStatCard": {
+        "cardId": "96B",
+        "stats": {
+          "willpower": 0,
+          "defense": 0,
+          "health": 22,
+          "strength": 4,
+          "swiftness": 2
+        },
+        "resourceCaps": {},
+        "imagePath": "images/mystlings/young_gaiadon/cards/stat_96B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183516 (2).jpg"
+      },
+      "specialAbility": {
+        "cardId": "100A",
+        "bonusActions": [
+          {
+            "name": "Nibble",
+            "powerCost": 4,
+            "effect": "Attack (Pierce 2)."
+          },
+          {
+            "name": "Leaves Storm",
+            "powerCost": 6,
+            "effect": "Discard all cards. Draw 4 cards. Deal 2 Damage in range 2 for each Earth card you drew this way."
+          }
+        ],
+        "imagePath": "images/mystlings/young_gaiadon/cards/ability_100A.png",
+        "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+      }
+    },
+    {
+      "id": "young_iceling",
+      "name": "Young Iceling",
+      "statCardId": "118A",
+      "mainElement": "water",
+      "subtype": null,
+      "stats": {
+        "willpower": 0,
+        "defense": 0,
+        "health": 16,
+        "strength": 4,
+        "swiftness": 2
+      },
+      "resourceCaps": {},
+      "statCardImagePath": "images/mystlings/young_iceling/cards/stat_118A.png",
+      "pvpStatCard": {
+        "cardId": "118B",
+        "stats": {
+          "willpower": 0,
+          "defense": 0,
+          "health": 22,
+          "strength": 4,
+          "swiftness": 3
+        },
+        "resourceCaps": {},
+        "imagePath": "images/mystlings/young_iceling/cards/stat_118B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183516 (2).jpg"
+      },
+      "specialAbility": {
+        "cardId": "122A",
+        "bonusActions": [
+          {
+            "name": "Cold Drain",
+            "powerCost": 6,
+            "effect": "Deal 3 Damage (Drain) in range 2."
+          }
+        ],
+        "imagePath": "images/mystlings/young_iceling/cards/ability_122A.png"
+      }
+    },
+    {
+      "id": "young_shadeclaw",
+      "name": "Young Shadeclaw",
+      "statCardId": "147A",
+      "mainElement": "dark",
+      "subtype": {
+        "element": "air",
+        "maxCards": 2
+      },
+      "stats": {
+        "willpower": 0,
+        "defense": 0,
+        "health": 15,
+        "strength": 5,
+        "swiftness": 3
+      },
+      "resourceCaps": {
+        "dark_icon": 2
+      },
+      "statCardImagePath": "images/mystlings/young_shadeclaw/cards/stat_147A.png",
+      "pvpStatCard": {
+        "cardId": "147B",
+        "stats": {
+          "willpower": 0,
+          "defense": 0,
+          "health": 19,
+          "strength": 5,
+          "swiftness": 3
+        },
+        "resourceCaps": {
+          "dark_icon": 2
+        },
+        "imagePath": "images/mystlings/young_shadeclaw/cards/stat_147B.png",
+        "sourceScanPath": "images/mystlings/scan_pvp/Document_2026-10-11_183344.jpg"
+      },
+      "specialAbility": {
+        "cardId": "152A",
+        "bonusActions": [
+          {
+            "name": "Gloom Manipulation",
+            "powerCost": 1,
+            "effect": "Move each Shadow by up to 2 spaces."
+          },
+          {
+            "name": "Vengeful Shadows",
+            "powerCost": 4,
+            "effect": "Each Shadow deals 3 Damage in range 1."
+          },
+          {
+            "name": "Reconstruction",
+            "powerCost": 10,
+            "effect": "Move and Attack. Discard all Shadows from the Arena. For each Shadow discarded this way, Move and Attack."
+          }
+        ],
+        "imagePath": "images/mystlings/young_shadeclaw/cards/ability_152A.png"
+      }
+    }
+  ],
+  "bonusActions": {
+    "usesPerTurnPerAction": 1,
+    "shared": [
+      {
+        "name": "Dash",
+        "powerCost": 1,
+        "effect": "Move."
+      },
+      {
+        "name": "Prepare",
+        "powerCost": 1,
+        "effect": "Discard 1 card. You may draw 1 card."
+      }
+    ],
+    "elemental": [
+      {
+        "element": "air",
+        "name": "Accelerate",
+        "powerCost": 5,
+        "effect": "Look at the top card of your deck. You may resolve it or place it back on top of your deck.",
+        "imagePath": "images/elemental_bonus_actions/air.png"
+      },
+      {
+        "element": "dark",
+        "name": "Foresight",
+        "powerCost": 7,
+        "effect": "Take any card from your discard pile, resolve its active effect. Then, remove it from play.",
+        "imagePath": "images/elemental_bonus_actions/dark.png"
+      },
+      {
+        "element": "earth",
+        "name": "Unity",
+        "powerCost": 4,
+        "effect": "Place any card from your discard pile on the top of your discard pile.",
+        "imagePath": "images/elemental_bonus_actions/earth.png"
+      },
+      {
+        "element": "fire",
+        "name": "Fury",
+        "powerCost": 5,
+        "effect": "Attack.",
+        "imagePath": "images/elemental_bonus_actions/fire.png"
+      },
+      {
+        "element": "light",
+        "name": "Exchange",
+        "powerCost": 1,
+        "effect": "Deal 1 Damage (Pierce 2) in any range. Gain 1 Damage.",
+        "imagePath": "images/elemental_bonus_actions/light.png"
+      },
+      {
+        "element": "water",
+        "name": "Flow",
+        "powerCost": 4,
+        "effect": "Move the opponent by its Swiftness. Heal 1.",
+        "imagePath": "images/elemental_bonus_actions/water.png"
+      }
+    ]
+  },
+  "cards": [
+    {
+      "id": "DE-CB-100/125",
+      "type": "action",
+      "name": "Inner Light",
+      "element": "light",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Gain 1 Power. Do not discard your other upgrades when you play this card."
+        },
+        {
+          "type": "upgrade",
+          "text": "You may have 3 different upgrades (including this one)."
+        }
+      ],
+      "imagePath": "images/light/cards/DE-CB-100-125.png",
+      "keywords": [
+        "Power Ramp",
+        "Discard",
+        "Active",
+        "Upgrade"
+      ]
+    },
+    {
+      "id": "DE-CB-101/125",
+      "type": "action",
+      "name": "Low Wavelength",
+      "element": "light",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Attack in any range. If your opponent is in a [terrain-arch], [terrain-chevron], or [terrain-cross] space, Trigger."
+        }
+      ],
+      "imagePath": "images/light/cards/DE-CB-101-125.png",
+      "keywords": [
+        "Attack",
+        "Trigger",
+        "Active"
+      ]
+    },
+    {
+      "id": "DE-CB-102/125",
+      "type": "action",
+      "name": "Luminous Infusion",
+      "element": "light",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 3 Damage in any range. Gain +1 Defense, +1 Willpower, +1 Strength, and +1 Swiftness for each upgrade you have."
+        }
+      ],
+      "imagePath": "images/light/cards/DE-CB-102-125.png",
+      "keywords": [
+        "Defense",
+        "Active",
+        "Mobility",
+        "Burst Damage",
+        "Tank & Sustain"
+      ]
+    },
+    {
+      "id": "DE-CB-103/125",
+      "type": "action",
+      "name": "Malleable Light",
+      "element": "light",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Choose and resolve 2 different effects: Attack; Deal 3 Damage in any range; Gain 3 Power; or you or your ally Cleanse 2."
+        }
+      ],
+      "imagePath": "images/light/cards/DE-CB-103-125.png",
+      "keywords": [
+        "Attack",
+        "Resolve",
+        "Cleanse",
+        "Power Ramp",
+        "Active",
+        "Burst Damage",
+        "Tank & Sustain"
+      ]
+    },
+    {
+      "id": "DE-CB-104/125",
+      "type": "action",
+      "name": "Photosynthesis",
+      "element": "light",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Gain 2 Power."
+        },
+        {
+          "type": "upgrade",
+          "text": "At the start of your turn, gain 1 Power."
+        }
+      ],
+      "imagePath": "images/light/cards/DE-CB-104-125.png",
+      "keywords": [
+        "Power Ramp",
+        "Active",
+        "Upgrade"
+      ]
+    },
+    {
+      "id": "DE-CB-105/125",
+      "type": "action",
+      "name": "Restoration",
+      "element": "light",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "You and your ally: Cleanse 2, Heal 2. Against Dark: Deal Silence and Weak in range 1."
+        }
+      ],
+      "imagePath": "images/light/cards/DE-CB-105-125.png",
+      "keywords": [
+        "Weak",
+        "Silence",
+        "Cleanse",
+        "Heal",
+        "Active",
+        "Against Dark",
+        "Tank & Sustain",
+        "Crowd Control"
+      ]
+    },
+    {
+      "id": "DE-CB-106/125",
+      "type": "action",
+      "name": "Searing Radiance",
+      "element": "light",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 3 Damage in any range. Against Dark: Deal 3 Damage in any range."
+        }
+      ],
+      "imagePath": "images/light/cards/DE-CB-106-125.png",
+      "keywords": [
+        "Active",
+        "Against Dark",
+        "Burst Damage"
+      ]
+    },
+    {
+      "id": "DE-CB-107/125",
+      "type": "action",
+      "name": "Solar Flash",
+      "element": "light",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Discard all cards to the left or to the right of this card. Deal 2 Damage to an opponent in range 2 for each card discarded."
+        }
+      ],
+      "imagePath": "images/light/cards/DE-CB-107-125.png",
+      "keywords": [
+        "Discard",
+        "Active",
+        "Burst Damage"
+      ]
+    },
+    {
+      "id": "DE-CB-108/125",
+      "type": "action",
+      "name": "Storm of Colors",
+      "element": "light",
+      "rarity": "legendary",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Attack or Move. Discard 1 card. Choose any card from your deck and place it in any empty slot. Then, shuffle your deck. Against Dark: Trigger."
+        }
+      ],
+      "imagePath": "images/light/cards/DE-CB-108-125.png",
+      "keywords": [
+        "Attack",
+        "Move",
+        "Trigger",
+        "Discard",
+        "Slot Synergies",
+        "Active",
+        "Against Dark",
+        "Mobility"
+      ]
+    },
+    {
+      "id": "DE-CB-109/125",
+      "type": "action",
+      "name": "Sundering Glare",
+      "element": "light",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Gain 1 Power."
+        },
+        {
+          "type": "upgrade",
+          "text": "Your effects dealing Damage have (Pierce 2)."
+        }
+      ],
+      "imagePath": "images/light/cards/DE-CB-109-125.png",
+      "keywords": [
+        "Pierce",
+        "Power Ramp",
+        "Active",
+        "Upgrade"
+      ]
+    },
+    {
+      "id": "DE-CB-11/125",
+      "type": "action",
+      "name": "According to Plan",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move. Slot 3: Attack."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-11-125.png",
+      "keywords": [
+        "Attack",
+        "Move",
+        "Slot Synergies",
+        "Active",
+        "Mobility"
+      ],
+      "startingDeck": "A"
+    },
+    {
+      "id": "DE-CB-110/125",
+      "type": "action",
+      "name": "Undying Light",
+      "element": "light",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Reshuffle your deck (do not discard your upgrades). Trigger."
+        }
+      ],
+      "imagePath": "images/light/cards/DE-CB-110-125.png",
+      "keywords": [
+        "Trigger",
+        "Discard",
+        "Active"
+      ]
+    },
+    {
+      "id": "DE-CB-111/125",
+      "type": "action",
+      "name": "Storm",
+      "element": "water",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 2 Damage and Weak to each other Mystling (including allies) in any range. Against Fire: Deal 3 Damage in any range."
+        }
+      ],
+      "imagePath": "images/water/cards/DE-CB-111-125.png",
+      "keywords": [
+        "Weak",
+        "Active",
+        "Against Fire",
+        "Burst Damage",
+        "Crowd Control"
+      ]
+    },
+    {
+      "id": "DE-CB-112/125",
+      "type": "action",
+      "name": "Cost in Blood",
+      "element": "water",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 3 Damage in range 3. Search 3."
+        }
+      ],
+      "imagePath": "images/water/cards/DE-CB-112-125.png",
+      "keywords": [
+        "Search",
+        "Active",
+        "Burst Damage"
+      ]
+    },
+    {
+      "id": "DE-CB-113/125",
+      "type": "action",
+      "name": "Droplet Aftersound",
+      "element": "water",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "You or your ally may: Cleanse 2 and Heal 2. You may spend 3 Power to Trigger."
+        }
+      ],
+      "imagePath": "images/water/cards/DE-CB-113-125.png",
+      "keywords": [
+        "Trigger",
+        "Cleanse",
+        "Heal",
+        "Power Ramp",
+        "Active",
+        "Tank & Sustain"
+      ]
+    },
+    {
+      "id": "DE-CB-114/125",
+      "type": "action",
+      "name": "Erratic Torrent",
+      "element": "water",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "If you are in a [terrain-chevron] space: Move. Move. In a [terrain-arch] space: Attack. Attack. In a [terrain-cross] space: Attack +2 Strength (Drain)."
+        }
+      ],
+      "imagePath": "images/water/cards/DE-CB-114-125.png",
+      "keywords": [
+        "Attack",
+        "Move",
+        "Drain",
+        "Active",
+        "Mobility"
+      ]
+    },
+    {
+      "id": "DE-CB-115/125",
+      "type": "action",
+      "name": "Eternal Waters",
+      "element": "water",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Heal 3. Cleanse 3. Search 3."
+        }
+      ],
+      "imagePath": "images/water/cards/DE-CB-115-125.png",
+      "keywords": [
+        "Cleanse",
+        "Heal",
+        "Search",
+        "Active",
+        "Tank & Sustain"
+      ]
+    },
+    {
+      "id": "DE-CB-116/125",
+      "type": "action",
+      "name": "Fathomless Tide",
+      "element": "water",
+      "rarity": "legendary",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Gain 1 Power."
+        },
+        {
+          "type": "upgrade",
+          "text": "Whenever you Search X, gain X Power."
+        }
+      ],
+      "imagePath": "images/water/cards/DE-CB-116-125.png",
+      "keywords": [
+        "Power Ramp",
+        "Search",
+        "Active",
+        "Upgrade"
+      ]
+    },
+    {
+      "id": "DE-CB-117/125",
+      "type": "action",
+      "name": "Hydraulic Pump",
+      "element": "water",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 4 Damage in any range in line. You may move the opponent that received any Damage this way by up to 2 spaces. Against Fire: Trigger."
+        }
+      ],
+      "imagePath": "images/water/cards/DE-CB-117-125.png",
+      "keywords": [
+        "Move",
+        "Trigger",
+        "Active",
+        "Against Fire",
+        "Mobility",
+        "Burst Damage",
+        "Crowd Control"
+      ]
+    },
+    {
+      "id": "DE-CB-118/125",
+      "type": "action",
+      "name": "Ice Shard",
+      "element": "water",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Attack +2 Strength in range 2. Against Fire: Attack."
+        }
+      ],
+      "imagePath": "images/water/cards/DE-CB-118-125.png",
+      "keywords": [
+        "Attack",
+        "Active",
+        "Against Fire"
+      ]
+    },
+    {
+      "id": "DE-CB-119/125",
+      "type": "action",
+      "name": "Laminar Flow",
+      "element": "water",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Search X and deal X Damage in range 2, where X is this card's slot."
+        }
+      ],
+      "imagePath": "images/water/cards/DE-CB-119-125.png",
+      "keywords": [
+        "Search",
+        "Slot Synergies",
+        "Active"
+      ]
+    },
+    {
+      "id": "DE-CB-12/125",
+      "type": "action",
+      "name": "Bite Back",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move. If you are in a Moon space, Attack."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-12-125.png",
+      "keywords": [
+        "Attack",
+        "Move",
+        "Active",
+        "Mobility"
+      ],
+      "startingDeck": "A"
+    },
+    {
+      "id": "DE-CB-120/125",
+      "type": "action",
+      "name": "Opalescent Bubbles",
+      "element": "water",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Attack in range 2. Deal Silence or Slow in range X, where X is this card's slot."
+        }
+      ],
+      "imagePath": "images/water/cards/DE-CB-120-125.png",
+      "keywords": [
+        "Attack",
+        "Slow",
+        "Silence",
+        "Slot Synergies",
+        "Active",
+        "Crowd Control"
+      ]
+    },
+    {
+      "id": "DE-CB-121/125",
+      "type": "action",
+      "name": "Revitalizing Cascade",
+      "element": "water",
+      "rarity": "legendary",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Heal 4. Gain 1 Power for each Damage Healed this way."
+        }
+      ],
+      "imagePath": "images/water/cards/DE-CB-121-125.png",
+      "keywords": [
+        "Heal",
+        "Power Ramp",
+        "Active",
+        "Tank & Sustain"
+      ]
+    },
+    {
+      "id": "DE-CB-122/125",
+      "type": "action",
+      "name": "Roiling Waters",
+      "element": "water",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Search 3."
+        },
+        {
+          "type": "upgrade",
+          "text": "Your Attacks have +1 range and (Pierce 1)."
+        }
+      ],
+      "imagePath": "images/water/cards/DE-CB-122-125.png",
+      "keywords": [
+        "Pierce",
+        "Search",
+        "Active",
+        "Upgrade"
+      ]
+    },
+    {
+      "id": "DE-CB-123/125",
+      "type": "action",
+      "name": "Seeking Tendrils",
+      "element": "water",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Attack in range 2. Search 3."
+        }
+      ],
+      "imagePath": "images/water/cards/DE-CB-123-125.png",
+      "keywords": [
+        "Attack",
+        "Search",
+        "Active"
+      ]
+    },
+    {
+      "id": "DE-CB-124/125",
+      "type": "action",
+      "name": "Tide of Variety",
+      "element": "water",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Choose an opponent in any range. If they are in a [terrain-chevron] space: Heal 2. Search 2. In a [terrain-arch] space: Deal them Weak, Silence, and Slow. In a [terrain-cross] space: Deal them 4 Damage."
+        }
+      ],
+      "imagePath": "images/water/cards/DE-CB-124-125.png",
+      "keywords": [
+        "Slow",
+        "Weak",
+        "Silence",
+        "Heal",
+        "Search",
+        "Active",
+        "Burst Damage",
+        "Tank & Sustain",
+        "Crowd Control"
+      ]
+    },
+    {
+      "id": "DE-CB-13/125",
+      "type": "action",
+      "name": "Blind Fury",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Attack. You may gain 4 Willpower to Attack again."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-13-125.png",
+      "keywords": [
+        "Attack",
+        "Active"
+      ],
+      "startingDeck": "A"
+    },
+    {
+      "id": "DE-CB-14/125",
+      "type": "action",
+      "name": "Channeling",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Gain 1 Power. Slot 3: Gain an additional 2 Power."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-14-125.png",
+      "keywords": [
+        "Power Ramp",
+        "Slot Synergies",
+        "Active"
+      ],
+      "startingDeck": "A"
+    },
+    {
+      "id": "DE-CB-15/125",
+      "type": "action",
+      "name": "Dash",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move +2 Swiftness. You may spend 2 Power to Move +2 Swiftness again."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-15-125.png",
+      "keywords": [
+        "Move",
+        "Power Ramp",
+        "Active",
+        "Mobility"
+      ],
+      "startingDeck": "A"
+    },
+    {
+      "id": "DE-CB-16/125",
+      "type": "action",
+      "name": "Defensive Position",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "You may discard another card."
+        },
+        {
+          "type": "upgrade",
+          "text": "+2 Defense, -1 Strength."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-16-125.png",
+      "keywords": [
+        "Defense",
+        "Discard",
+        "Active",
+        "Upgrade",
+        "Tank & Sustain"
+      ],
+      "startingDeck": "A"
+    },
+    {
+      "id": "DE-CB-17/125",
+      "type": "action",
+      "name": "Deliberate Strike",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Attack. Attack again if you have at least 8 cards in your discard pile."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-17-125.png",
+      "keywords": [
+        "Attack",
+        "Discard",
+        "Active"
+      ],
+      "startingDeck": "A"
+    },
+    {
+      "id": "DE-CB-18/125",
+      "type": "action",
+      "name": "Heavy Strike",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Attack. Move an opponent in range 1 by up to 2 spaces."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-18-125.png",
+      "keywords": [
+        "Attack",
+        "Move",
+        "Active",
+        "Mobility",
+        "Crowd Control"
+      ],
+      "startingDeck": "A"
+    },
+    {
+      "id": "DE-CB-19/125",
+      "type": "action",
+      "name": "Honed to Perfection",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move."
+        },
+        {
+          "type": "upgrade",
+          "text": "Bonus Action: Spend 1 Power to Sharpen — your Attacks this turn have +1 Strength."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-19-125.png",
+      "keywords": [
+        "Move",
+        "Power Ramp",
+        "Active",
+        "Upgrade",
+        "Mobility"
+      ],
+      "startingDeck": "A"
+    },
+    {
+      "id": "DE-CB-20/125",
+      "type": "action",
+      "name": "Push",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move an opponent in range 3 by up to 2 spaces away from you (each space must be farther from you than the previous one). You may spend 2 Power to Trigger."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-20-125.png",
+      "keywords": [
+        "Move",
+        "Trigger",
+        "Power Ramp",
+        "Active",
+        "Mobility",
+        "Crowd Control"
+      ],
+      "startingDeck": "A"
+    },
+    {
+      "id": "DE-CB-21/125",
+      "type": "action",
+      "name": "Reach",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Gain 1 Power."
+        },
+        {
+          "type": "passive",
+          "text": "Your Attacks have +1 range."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-21-125.png",
+      "keywords": [
+        "Power Ramp",
+        "Active",
+        "Passive"
+      ],
+      "startingDeck": "A"
+    },
+    {
+      "id": "DE-CB-22/125",
+      "type": "action",
+      "name": "Regeneration",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Slot 3: Move +1 Swiftness. You and your ally in range 1 Heal 2."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-22-125.png",
+      "keywords": [
+        "Move",
+        "Heal",
+        "Slot Synergies",
+        "Active",
+        "Mobility",
+        "Tank & Sustain"
+      ],
+      "startingDeck": "A"
+    },
+    {
+      "id": "DE-CB-23/125",
+      "type": "action",
+      "name": "Smart Approach",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move. Place 1 card from your discard pile on the top of your deck."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-23-125.png",
+      "keywords": [
+        "Move",
+        "Discard",
+        "Active",
+        "Mobility"
+      ],
+      "startingDeck": "A"
+    },
+    {
+      "id": "DE-CB-24/125",
+      "type": "action",
+      "name": "Strike",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Attack. Gain 1 Power."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-24-125.png",
+      "keywords": [
+        "Attack",
+        "Power Ramp",
+        "Active"
+      ],
+      "startingDeck": "A"
+    },
+    {
+      "id": "DE-CB-25/125",
+      "type": "action",
+      "name": "Swiftness",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move. Move."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-25-125.png",
+      "keywords": [
+        "Move",
+        "Active",
+        "Mobility"
+      ],
+      "startingDeck": "A"
+    },
+    {
+      "id": "DE-CB-26/125",
+      "type": "action",
+      "name": "Defensive Stance",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Gain 1 Power."
+        },
+        {
+          "type": "upgrade",
+          "text": "+2 Defense, +2 Damage."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-26-125.png",
+      "keywords": [
+        "Defense",
+        "Power Ramp",
+        "Active",
+        "Upgrade",
+        "Tank & Sustain"
+      ],
+      "startingDeck": "B"
+    },
+    {
+      "id": "DE-CB-27/125",
+      "type": "action",
+      "name": "Disperse",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Gain 1 Power."
+        },
+        {
+          "type": "passive",
+          "text": "Whenever an opponent deals you Damage, reduce it by 1 for each space between you and that opponent."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-27-125.png",
+      "keywords": [
+        "Power Ramp",
+        "Active",
+        "Passive"
+      ],
+      "startingDeck": "B"
+    },
+    {
+      "id": "DE-CB-28/125",
+      "type": "action",
+      "name": "Double Strike",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Attack. You may spend 3 Power to Attack again."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-28-125.png",
+      "keywords": [
+        "Attack",
+        "Power Ramp",
+        "Active"
+      ],
+      "startingDeck": "B"
+    },
+    {
+      "id": "DE-CB-29/125",
+      "type": "action",
+      "name": "Energetic Infusion",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Slot 1: Gain 3 Power. Slot 2 or 3: Gain 2 Power. Slot 4: Gain 1 Power."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-29-125.png",
+      "keywords": [
+        "Power Ramp",
+        "Slot Synergies",
+        "Active"
+      ],
+      "startingDeck": "B"
+    },
+    {
+      "id": "DE-CB-30/125",
+      "type": "action",
+      "name": "Energy Flow",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Gain 1 Power from all slots to the left of this card."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-30-125.png",
+      "keywords": [
+        "Power Ramp",
+        "Slot Synergies",
+        "Active"
+      ],
+      "startingDeck": "B"
+    },
+    {
+      "id": "DE-CB-31/125",
+      "type": "action",
+      "name": "Energy Geyser",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Discard 4 Power."
+        },
+        {
+          "type": "passive",
+          "text": "All your Action card effects that deal Damage deal an additional 2 Damage (once per Action card)."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-31-125.png",
+      "keywords": [
+        "Discard",
+        "Active",
+        "Passive"
+      ],
+      "startingDeck": "B"
+    },
+    {
+      "id": "DE-CB-32/125",
+      "type": "action",
+      "name": "Full Focus",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move."
+        },
+        {
+          "type": "upgrade",
+          "text": "+1 Swiftness, +1 Defense, +1 Damage."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-32-125.png",
+      "keywords": [
+        "Move",
+        "Defense",
+        "Active",
+        "Upgrade",
+        "Mobility",
+        "Tank & Sustain"
+      ],
+      "startingDeck": "B"
+    },
+    {
+      "id": "DE-CB-33/125",
+      "type": "action",
+      "name": "Grapple",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move an opponent in range 3 by up to 2 spaces toward you (each space must be closer to you than the previous one). You may spend 2 Power to Trigger."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-33-125.png",
+      "keywords": [
+        "Move",
+        "Trigger",
+        "Power Ramp",
+        "Active",
+        "Mobility",
+        "Crowd Control"
+      ],
+      "startingDeck": "B"
+    },
+    {
+      "id": "DE-CB-34/125",
+      "type": "action",
+      "name": "Haste",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move. +2 Swiftness."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-34-125.png",
+      "keywords": [
+        "Move",
+        "Active",
+        "Mobility"
+      ],
+      "startingDeck": "B"
+    },
+    {
+      "id": "DE-CB-35/125",
+      "type": "action",
+      "name": "Hunch",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move. Trigger one chosen card to the left of this card."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-35-125.png",
+      "keywords": [
+        "Move",
+        "Trigger",
+        "Active",
+        "Mobility"
+      ],
+      "startingDeck": "B"
+    },
+    {
+      "id": "DE-CB-36/125",
+      "type": "action",
+      "name": "Inertia",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Choose one: Move +2 Swiftness and Attack -2 Strength; or Attack +2 Strength and Move -2 Swiftness."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-36-125.png",
+      "keywords": [
+        "Attack",
+        "Move",
+        "Active",
+        "Mobility"
+      ],
+      "startingDeck": "B"
+    },
+    {
+      "id": "DE-CB-37/125",
+      "type": "action",
+      "name": "Projectile",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 4 Damage in any range in line."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-37-125.png",
+      "keywords": [
+        "Active",
+        "Burst Damage"
+      ],
+      "startingDeck": "B"
+    },
+    {
+      "id": "DE-CB-38/125",
+      "type": "action",
+      "name": "Quick Learner",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Gain 1 Power."
+        },
+        {
+          "type": "passive",
+          "text": "Your Special abilities cost 2 less (to a minimum of 1)."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-38-125.png",
+      "keywords": [
+        "Power Ramp",
+        "Active",
+        "Passive"
+      ],
+      "startingDeck": "B"
+    },
+    {
+      "id": "DE-CB-39/125",
+      "type": "action",
+      "name": "Spectral Blast",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 3 Damage in range 3."
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-39-125.png",
+      "keywords": [
+        "Active",
+        "Burst Damage"
+      ],
+      "startingDeck": "B"
+    },
+    {
+      "id": "DE-CB-40/125",
+      "type": "action",
+      "name": "Sundering Roar",
+      "element": null,
+      "rarity": "common",
+      "source": "starting",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Gain 2 Damage. Gain 2 Power. Discard 2 cards. Interrupt 2 in any range. (Damage you gain is reduced by your Defense.)"
+        }
+      ],
+      "imagePath": "images/basic/cards/DE-CB-40-125.png",
+      "keywords": [
+        "Interrupt",
+        "Defense",
+        "Power Ramp",
+        "Discard",
+        "Active",
+        "Tank & Sustain"
+      ],
+      "startingDeck": "B"
+    },
+    {
+      "id": "DE-CB-41/125",
+      "type": "action",
+      "name": "Airborne",
+      "element": "air",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move an opponent in any range by up to 3 spaces. This opponent gains Slow."
+        }
+      ],
+      "imagePath": "images/wind/cards/DE-CB-41-125.png",
+      "keywords": [
+        "Move",
+        "Slow",
+        "Active",
+        "Mobility",
+        "Crowd Control"
+      ]
+    },
+    {
+      "id": "DE-CB-42/125",
+      "type": "action",
+      "name": "Dive",
+      "element": "air",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Cleanse 1. Attack (Pierce 4)."
+        },
+        {
+          "type": "passive",
+          "text": "+X Defense, where X is your Swiftness."
+        }
+      ],
+      "imagePath": "images/wind/cards/DE-CB-42-125.png",
+      "keywords": [
+        "Attack",
+        "Pierce",
+        "Cleanse",
+        "Defense",
+        "Active",
+        "Passive",
+        "Mobility",
+        "Tank & Sustain"
+      ]
+    },
+    {
+      "id": "DE-CB-43/125",
+      "type": "action",
+      "name": "Elemental Ball",
+      "element": "air",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 1 Damage in range 3 for each Air card in your slots (including this card). You may spend 3 Power to Trigger."
+        }
+      ],
+      "imagePath": "images/wind/cards/DE-CB-43-125.png",
+      "keywords": [
+        "Trigger",
+        "Power Ramp",
+        "Slot Synergies",
+        "Active",
+        "Burst Damage"
+      ]
+    },
+    {
+      "id": "DE-CB-44/125",
+      "type": "action",
+      "name": "Ethereal Insight",
+      "element": "air",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "You or your ally in any range Cleanse 2. Against Earth: Discard 1 card, draw 1 card."
+        },
+        {
+          "type": "upgrade",
+          "text": "You may look at the topmost card of your deck at any time."
+        }
+      ],
+      "imagePath": "images/wind/cards/DE-CB-44-125.png",
+      "keywords": [
+        "Cleanse",
+        "Draw",
+        "Discard",
+        "Active",
+        "Upgrade",
+        "Against Earth",
+        "Tank & Sustain",
+        "Card Advantage"
+      ]
+    },
+    {
+      "id": "DE-CB-45/125",
+      "type": "action",
+      "name": "Galeforce Gambit",
+      "element": "air",
+      "rarity": "legendary",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Reveal the top two cards from your deck. Resolve them in a chosen order, then remove them from play. Remove this card from play."
+        }
+      ],
+      "imagePath": "images/wind/cards/DE-CB-45-125.png",
+      "keywords": [
+        "Resolve",
+        "Remove from Play",
+        "Active",
+        "Burst Damage",
+        "Card Advantage"
+      ]
+    },
+    {
+      "id": "DE-CB-46/125",
+      "type": "action",
+      "name": "Galeforce Strike",
+      "element": "air",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Blink X, where X is this card's slot. You may spend 2 Power to Attack (Pierce 1). Against Earth: Gain 2 Power."
+        }
+      ],
+      "imagePath": "images/wind/cards/DE-CB-46-125.png",
+      "keywords": [
+        "Attack",
+        "Blink",
+        "Pierce",
+        "Power Ramp",
+        "Slot Synergies",
+        "Active",
+        "Against Earth",
+        "Mobility"
+      ]
+    },
+    {
+      "id": "DE-CB-47/125",
+      "type": "action",
+      "name": "Lightning Strike",
+      "element": "air",
+      "rarity": "legendary",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Choose a space in any range. Deal 6 Damage to an opponent in that space and 3 Damage to each opponent in range 1 of that space."
+        }
+      ],
+      "imagePath": "images/wind/cards/DE-CB-47-125.png",
+      "keywords": [
+        "Active",
+        "Burst Damage"
+      ]
+    },
+    {
+      "id": "DE-CB-48/125",
+      "type": "action",
+      "name": "Skyward Assault",
+      "element": "air",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move or Attack (Pierce 1). Spend any number of Power. For every 5 Power spent, Move or Attack (Pierce 1)."
+        }
+      ],
+      "imagePath": "images/wind/cards/DE-CB-48-125.png",
+      "keywords": [
+        "Attack",
+        "Move",
+        "Pierce",
+        "Active",
+        "Mobility"
+      ]
+    },
+    {
+      "id": "DE-CB-49/125",
+      "type": "action",
+      "name": "Stormborn Veil",
+      "element": "air",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Attack (Pierce 1). Against Earth: Attack (Pierce 1)."
+        },
+        {
+          "type": "passive",
+          "text": "If your opponent is not in range 1 from you, each time you gain any Damage, reduce it to 1."
+        }
+      ],
+      "imagePath": "images/wind/cards/DE-CB-49-125.png",
+      "keywords": [
+        "Attack",
+        "Pierce",
+        "Active",
+        "Passive",
+        "Against Earth",
+        "Tank & Sustain"
+      ]
+    },
+    {
+      "id": "DE-CB-50/125",
+      "type": "action",
+      "name": "Tailwind",
+      "element": "air",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move. If you are in a [terrain-cross] space, Attack (Pierce 2). Against Earth: Move."
+        }
+      ],
+      "imagePath": "images/wind/cards/DE-CB-50-125.png",
+      "keywords": [
+        "Attack",
+        "Move",
+        "Pierce",
+        "Active",
+        "Against Earth",
+        "Mobility"
+      ]
+    },
+    {
+      "id": "DE-CB-51/125",
+      "type": "action",
+      "name": "Tempest Embrace",
+      "element": "air",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 2 Damage in range 3, +X Damage, where X is your Swiftness."
+        }
+      ],
+      "imagePath": "images/wind/cards/DE-CB-51-125.png",
+      "keywords": [
+        "Active",
+        "Mobility",
+        "Burst Damage"
+      ]
+    },
+    {
+      "id": "DE-CB-52/125",
+      "type": "action",
+      "name": "Wind Tunnel",
+      "element": "air",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Blink X, where X is your Swiftness. Trigger."
+        }
+      ],
+      "imagePath": "images/wind/cards/DE-CB-52-125.png",
+      "keywords": [
+        "Blink",
+        "Trigger",
+        "Active",
+        "Mobility"
+      ]
+    },
+    {
+      "id": "DE-CB-53/125",
+      "type": "action",
+      "name": "Wind Walk",
+      "element": "air",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Against Earth: Gain 2 Power. Blink 7. You may spend 6 Power to Trigger."
+        },
+        {
+          "type": "passive",
+          "text": "If you are in a [terrain-chevron] space, +3 Strength."
+        }
+      ],
+      "imagePath": "images/wind/cards/DE-CB-53-125.png",
+      "keywords": [
+        "Blink",
+        "Trigger",
+        "Power Ramp",
+        "Active",
+        "Passive",
+        "Against Earth",
+        "Mobility"
+      ]
+    },
+    {
+      "id": "DE-CB-54/125",
+      "type": "action",
+      "name": "Zephyr Speed",
+      "element": "air",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Blink 2. Attack (Pierce 1). Blink 2."
+        }
+      ],
+      "imagePath": "images/wind/cards/DE-CB-54-125.png",
+      "keywords": [
+        "Attack",
+        "Blink",
+        "Pierce",
+        "Active",
+        "Mobility"
+      ]
+    },
+    {
+      "id": "DE-CB-55/125",
+      "type": "action",
+      "name": "Burning Demise",
+      "element": "fire",
+      "rarity": "legendary",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal X Burn to each Mystling (including you) in any range, where X is this card's slot number."
+        }
+      ],
+      "imagePath": "images/fire/cards/DE-CB-55-125.png",
+      "keywords": [
+        "Burn",
+        "Slot Synergies",
+        "Active"
+      ]
+    },
+    {
+      "id": "DE-CB-56/125",
+      "type": "action",
+      "name": "Combustion",
+      "element": "fire",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 2 Damage (Pierce 1) in range 2 for each Burn on the opponent."
+        }
+      ],
+      "imagePath": "images/fire/cards/DE-CB-56-125.png",
+      "keywords": [
+        "Pierce",
+        "Burn",
+        "Active",
+        "Burst Damage"
+      ]
+    },
+    {
+      "id": "DE-CB-57/125",
+      "type": "action",
+      "name": "Fire Barrier",
+      "element": "fire",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "You or your ally gains 1 Power."
+        },
+        {
+          "type": "passive",
+          "text": "Each time an opponent finishes their Move within range 1 of you, deal them 1 Burn."
+        }
+      ],
+      "imagePath": "images/fire/cards/DE-CB-57-125.png",
+      "keywords": [
+        "Move",
+        "Burn",
+        "Active",
+        "Passive",
+        "Mobility"
+      ]
+    },
+    {
+      "id": "DE-CB-58/125",
+      "type": "action",
+      "name": "Fiery Rage",
+      "element": "fire",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Discard all Power. For every 3 Power discarded, Attack."
+        }
+      ],
+      "imagePath": "images/fire/cards/DE-CB-58-125.png",
+      "keywords": [
+        "Attack",
+        "Discard",
+        "Active"
+      ]
+    },
+    {
+      "id": "DE-CB-60/125",
+      "type": "action",
+      "name": "Fire Bolt",
+      "element": "fire",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 4 Damage and 2 Burn in any range in line. Against Air: Trigger."
+        }
+      ],
+      "imagePath": "images/fire/cards/DE-CB-60-125.png",
+      "keywords": [
+        "Trigger",
+        "Burn",
+        "Active",
+        "Against Air",
+        "Burst Damage"
+      ]
+    },
+    {
+      "id": "DE-CB-61/125",
+      "type": "action",
+      "name": "Flaming Spear",
+      "element": "fire",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 3 Damage in range 2. You may spend 1 Power to deal 1 Burn in range 2. Against Water: Deal 2 Damage in range 2."
+        }
+      ],
+      "imagePath": "images/fire/cards/DE-CB-61-125.png",
+      "keywords": [
+        "Burn",
+        "Power Ramp",
+        "Active",
+        "Against Water",
+        "Burst Damage"
+      ]
+    },
+    {
+      "id": "DE-CB-62/125",
+      "type": "action",
+      "name": "Growing Flames",
+      "element": "fire",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move."
+        },
+        {
+          "type": "passive",
+          "text": "Whenever you deal Burn, deal 1 additional Burn."
+        }
+      ],
+      "imagePath": "images/fire/cards/DE-CB-62-125.png",
+      "keywords": [
+        "Move",
+        "Burn",
+        "Active",
+        "Passive",
+        "Mobility"
+      ]
+    },
+    {
+      "id": "DE-CB-63/125",
+      "type": "action",
+      "name": "Kindling",
+      "element": "fire",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Attack. Gain 1 Power for every 2 Damage dealt with this Attack."
+        }
+      ],
+      "imagePath": "images/fire/cards/DE-CB-63-125.png",
+      "keywords": [
+        "Attack",
+        "Power Ramp",
+        "Active"
+      ]
+    },
+    {
+      "id": "DE-CB-64/125",
+      "type": "action",
+      "name": "Melting Embrace",
+      "element": "fire",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move. Attack. You may discard 1 Burn from your Mystling or from an opponent in any range to add +2 Strength."
+        }
+      ],
+      "imagePath": "images/fire/cards/DE-CB-64-125.png",
+      "keywords": [
+        "Attack",
+        "Move",
+        "Burn",
+        "Discard",
+        "Active",
+        "Mobility"
+      ]
+    },
+    {
+      "id": "DE-CB-65/125",
+      "type": "action",
+      "name": "Outburst",
+      "element": "fire",
+      "rarity": "legendary",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "For every 2 cards in your discard pile, deal 1 Damage to an opponent in range 1, then to you. If the opponent has Burn, deal them an additional 5 Damage. Remove this card from play."
+        }
+      ],
+      "imagePath": "images/fire/cards/DE-CB-65-125.png",
+      "keywords": [
+        "Burn",
+        "Discard",
+        "Remove from Play",
+        "Active",
+        "Burst Damage"
+      ]
+    },
+    {
+      "id": "DE-CB-66/125",
+      "type": "action",
+      "name": "Rain of Cinders",
+      "element": "fire",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 3 Damage in any range to each other Mystling in the Arena (including allies). Against Air: Deal 1 Burn in any range."
+        }
+      ],
+      "imagePath": "images/fire/cards/DE-CB-66-125.png",
+      "keywords": [
+        "Burn",
+        "Active",
+        "Against Air",
+        "Burst Damage"
+      ]
+    },
+    {
+      "id": "DE-CB-67/125",
+      "type": "action",
+      "name": "Set Ablaze",
+      "element": "fire",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 3 Burn in range 1. Against Air: Trigger."
+        }
+      ],
+      "imagePath": "images/fire/cards/DE-CB-67-125.png",
+      "keywords": [
+        "Trigger",
+        "Burn",
+        "Active",
+        "Against Air"
+      ]
+    },
+    {
+      "id": "DE-CB-68/125",
+      "type": "action",
+      "name": "Tasty Inferno",
+      "element": "fire",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Gain 1 Power for each Burn on the chosen opponent."
+        },
+        {
+          "type": "passive",
+          "text": "You don't gain Damage from Burn."
+        }
+      ],
+      "imagePath": "images/fire/cards/DE-CB-68-125.png",
+      "keywords": [
+        "Burn",
+        "Power Ramp",
+        "Active",
+        "Passive"
+      ]
+    },
+    {
+      "id": "DE-CB-69/125",
+      "type": "action",
+      "name": "Volcanic Surge",
+      "element": "fire",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Choose a [terrain-chevron] or [terrain-cross] space. Deal 2 Burn to each other Mystling in range 1 from that space."
+        }
+      ],
+      "imagePath": "images/fire/cards/DE-CB-69-125.png",
+      "keywords": [
+        "Burn",
+        "Active"
+      ]
+    },
+    {
+      "id": "DE-CB-70/125",
+      "type": "action",
+      "name": "Cast Weakness Aside",
+      "element": "dark",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "You may discard 4 cards from the top of your deck. For each neutral card discarded this way, gain 2 Power."
+        }
+      ],
+      "imagePath": "images/dark/cards/DE-CB-70-125.png",
+      "keywords": [
+        "Power Ramp",
+        "Discard",
+        "Active"
+      ]
+    },
+    {
+      "id": "DE-CB-71/125",
+      "type": "action",
+      "name": "Curse Upon Us",
+      "element": "dark",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Gain up to 3 chosen Condition tokens. Deal the same Condition tokens in any range. For every 4 cards in your discard pile, Cleanse 1. Slot 3: Trigger."
+        }
+      ],
+      "imagePath": "images/dark/cards/DE-CB-71-125.png",
+      "keywords": [
+        "Trigger",
+        "Cleanse",
+        "Discard",
+        "Slot Synergies",
+        "Active",
+        "Tank & Sustain"
+      ]
+    },
+    {
+      "id": "DE-CB-72/125",
+      "type": "action",
+      "name": "Dark Pact",
+      "element": "dark",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Take all your Condition tokens and place them on an opponent in range 1. Gain 1 Damage for each token placed this way. Spend 2 Power to Trigger."
+        }
+      ],
+      "imagePath": "images/dark/cards/DE-CB-72-125.png",
+      "keywords": [
+        "Trigger",
+        "Power Ramp",
+        "Active"
+      ]
+    },
+    {
+      "id": "DE-CB-73/125",
+      "type": "action",
+      "name": "Dark Portals",
+      "element": "dark",
+      "rarity": "legendary",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 2 Damage in range 2 for each other Dark card on your track. Slot 4: Discard all cards to the left of this card, draw 3 cards, and Trigger."
+        }
+      ],
+      "imagePath": "images/dark/cards/DE-CB-73-125.png",
+      "keywords": [
+        "Trigger",
+        "Draw",
+        "Discard",
+        "Slot Synergies",
+        "Active",
+        "Burst Damage",
+        "Card Advantage"
+      ]
+    },
+    {
+      "id": "DE-CB-74/125",
+      "type": "action",
+      "name": "Disrupting Shadows",
+      "element": "dark",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Interrupt 2 in range 2. Move."
+        }
+      ],
+      "imagePath": "images/dark/cards/DE-CB-74-125.png",
+      "keywords": [
+        "Move",
+        "Interrupt",
+        "Active",
+        "Mobility"
+      ]
+    },
+    {
+      "id": "DE-CB-75/125",
+      "type": "action",
+      "name": "Draining Nightfall",
+      "element": "dark",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Discard 2 cards from the top of your deck. Attack (Drain)."
+        }
+      ],
+      "imagePath": "images/dark/cards/DE-CB-75-125.png",
+      "keywords": [
+        "Attack",
+        "Drain",
+        "Discard",
+        "Active"
+      ]
+    },
+    {
+      "id": "DE-CB-76/125",
+      "type": "action",
+      "name": "Evoke Weakness",
+      "element": "dark",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 1 chosen Condition token in any range."
+        },
+        {
+          "type": "upgrade",
+          "text": "When you resolve a neutral card, gain 2 Power."
+        }
+      ],
+      "imagePath": "images/dark/cards/DE-CB-76-125.png",
+      "keywords": [
+        "Resolve",
+        "Power Ramp",
+        "Active",
+        "Upgrade"
+      ]
+    },
+    {
+      "id": "DE-CB-77/125",
+      "type": "action",
+      "name": "From the Shadows",
+      "element": "dark",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Against Light: Attack. Deal 2 Damage in range 2. Slot 4: Discard all cards to the left of this card, draw 3 cards."
+        }
+      ],
+      "imagePath": "images/dark/cards/DE-CB-77-125.png",
+      "keywords": [
+        "Attack",
+        "Draw",
+        "Discard",
+        "Slot Synergies",
+        "Active",
+        "Against Light",
+        "Burst Damage",
+        "Card Advantage"
+      ]
+    },
+    {
+      "id": "DE-CB-78/125",
+      "type": "action",
+      "name": "Lurking Shadow",
+      "element": "dark",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Attack (Drain). This Attack has (Pierce 4) if you have at least 6 cards in your discard pile."
+        }
+      ],
+      "imagePath": "images/dark/cards/DE-CB-78-125.png",
+      "keywords": [
+        "Attack",
+        "Pierce",
+        "Drain",
+        "Discard",
+        "Active"
+      ]
+    },
+    {
+      "id": "DE-CB-79/125",
+      "type": "action",
+      "name": "Morbid Aura",
+      "element": "dark",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "upgrade",
+          "text": "Whenever you reshuffle, instead of discarding this upgrade, deal 4 Damage in range 2 and gain 3 Power."
+        }
+      ],
+      "imagePath": "images/dark/cards/DE-CB-79-125.png",
+      "keywords": [
+        "Power Ramp",
+        "Upgrade",
+        "Burst Damage"
+      ]
+    },
+    {
+      "id": "DE-CB-80/125",
+      "type": "action",
+      "name": "Sprouting Darkness",
+      "element": "dark",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 3 Damage in range 3. If you have at least 10 cards in your discard pile, Trigger."
+        }
+      ],
+      "imagePath": "images/dark/cards/DE-CB-80-125.png",
+      "keywords": [
+        "Trigger",
+        "Discard",
+        "Active",
+        "Burst Damage"
+      ]
+    },
+    {
+      "id": "DE-CB-81/125",
+      "type": "action",
+      "name": "Starving Bolt",
+      "element": "dark",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 3 Damage in range 3 for every 3 neutral cards in your discard pile. Against Light: Trigger."
+        }
+      ],
+      "imagePath": "images/dark/cards/DE-CB-81-125.png",
+      "keywords": [
+        "Trigger",
+        "Discard",
+        "Active",
+        "Against Light",
+        "Burst Damage"
+      ]
+    },
+    {
+      "id": "DE-CB-82/125",
+      "type": "action",
+      "name": "Succumb to Darkness",
+      "element": "dark",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "For every 4 cards in your discard pile, choose one (you may choose the same option multiple times): Move; Attack; or gain 3 Power."
+        }
+      ],
+      "imagePath": "images/dark/cards/DE-CB-82-125.png",
+      "keywords": [
+        "Attack",
+        "Move",
+        "Power Ramp",
+        "Discard",
+        "Active",
+        "Mobility"
+      ]
+    },
+    {
+      "id": "DE-CB-83/125",
+      "type": "action",
+      "name": "Boulder Throw",
+      "element": "earth",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 1 Damage in any range in line, +X Damage where X is your Defense. Against Water: Trigger."
+        }
+      ],
+      "imagePath": "images/earth/cards/DE-CB-83-125.png",
+      "keywords": [
+        "Trigger",
+        "Defense",
+        "Active",
+        "Against Water",
+        "Burst Damage",
+        "Tank & Sustain"
+      ]
+    },
+    {
+      "id": "DE-CB-84/125",
+      "type": "action",
+      "name": "Geokinetic Grasp",
+      "element": "earth",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Attack. Attack each opponent that is in a [terrain-chevron], [terrain-arch], or [terrain-cross] space in any range."
+        }
+      ],
+      "imagePath": "images/earth/cards/DE-CB-84-125.png",
+      "keywords": [
+        "Attack",
+        "Active"
+      ]
+    },
+    {
+      "id": "DE-CB-85/125",
+      "type": "action",
+      "name": "Groundbreaker Slam",
+      "element": "earth",
+      "rarity": "legendary",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 7 Damage in range 1. Reduce this Damage by opponent's Defense instead of Willpower."
+        },
+        {
+          "type": "passive",
+          "text": "At the beginning of your turn, deal Weak or Silence in range 3."
+        }
+      ],
+      "imagePath": "images/earth/cards/DE-CB-85-125.png",
+      "keywords": [
+        "Weak",
+        "Silence",
+        "Defense",
+        "Active",
+        "Passive",
+        "Burst Damage",
+        "Tank & Sustain",
+        "Crowd Control"
+      ]
+    },
+    {
+      "id": "DE-CB-86/125",
+      "type": "action",
+      "name": "Magnetism",
+      "element": "earth",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move the opponent in range 3 by up to 2 spaces. You may spend 3 Power to Trigger."
+        },
+        {
+          "type": "passive",
+          "text": "If you are in a [terrain-chevron] or [terrain-cross] space, +4 Defense."
+        }
+      ],
+      "imagePath": "images/earth/cards/DE-CB-86-125.png",
+      "keywords": [
+        "Move",
+        "Trigger",
+        "Defense",
+        "Power Ramp",
+        "Active",
+        "Passive",
+        "Mobility",
+        "Tank & Sustain",
+        "Crowd Control"
+      ]
+    },
+    {
+      "id": "DE-CB-87/125",
+      "type": "action",
+      "name": "Mudfield",
+      "element": "earth",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Against Water: Deal Weak in any range."
+        },
+        {
+          "type": "upgrade",
+          "text": "At the start of your turn, deal Slow in range 1."
+        }
+      ],
+      "imagePath": "images/earth/cards/DE-CB-87-125.png",
+      "keywords": [
+        "Slow",
+        "Weak",
+        "Active",
+        "Upgrade",
+        "Against Water",
+        "Crowd Control"
+      ]
+    },
+    {
+      "id": "DE-CB-88/125",
+      "type": "action",
+      "name": "Nature's Patience",
+      "element": "earth",
+      "rarity": "legendary",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Gain 1 Power."
+        },
+        {
+          "type": "upgrade",
+          "text": "Bonus Action: spend 1 Power to Release Wrath - Deal X Damage in range 2, where X is your Defense."
+        }
+      ],
+      "imagePath": "images/earth/cards/DE-CB-88-125.png",
+      "keywords": [
+        "Defense",
+        "Power Ramp",
+        "Active",
+        "Upgrade",
+        "Tank & Sustain"
+      ]
+    },
+    {
+      "id": "DE-CB-89/125",
+      "type": "action",
+      "name": "One with Armor",
+      "element": "earth",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Gain 3 Damage. Move. You or your ally gains 3 Power."
+        },
+        {
+          "type": "passive",
+          "text": "+3 Defense."
+        }
+      ],
+      "imagePath": "images/earth/cards/DE-CB-89-125.png",
+      "keywords": [
+        "Move",
+        "Defense",
+        "Active",
+        "Passive",
+        "Mobility",
+        "Tank & Sustain"
+      ]
+    },
+    {
+      "id": "DE-CB-90/125",
+      "type": "action",
+      "name": "Prickly Underbrush",
+      "element": "earth",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "You or your ally gain 1 Power."
+        },
+        {
+          "type": "passive",
+          "text": "Whenever you gain or are dealt Damage, deal 2 Damage in range 1."
+        }
+      ],
+      "imagePath": "images/earth/cards/DE-CB-90-125.png",
+      "keywords": [
+        "Power Ramp",
+        "Active",
+        "Passive",
+        "Burst Damage"
+      ]
+    },
+    {
+      "id": "DE-CB-91/125",
+      "type": "action",
+      "name": "Splintering Armor",
+      "element": "earth",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "If you have at least 15 Damage, Attack +4 Strength. Otherwise, Attack. Against Water: Attack."
+        }
+      ],
+      "imagePath": "images/earth/cards/DE-CB-91-125.png",
+      "keywords": [
+        "Attack",
+        "Active",
+        "Against Water"
+      ]
+    },
+    {
+      "id": "DE-CB-92/125",
+      "type": "action",
+      "name": "Stomp",
+      "element": "earth",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 3 Damage and Silence to each opponent in range 2. Reduce this Damage by opponent's Defense instead of Willpower."
+        },
+        {
+          "type": "passive",
+          "text": "+2 Strength."
+        }
+      ],
+      "imagePath": "images/earth/cards/DE-CB-92-125.png",
+      "keywords": [
+        "Silence",
+        "Defense",
+        "Active",
+        "Passive",
+        "Burst Damage",
+        "Tank & Sustain",
+        "Crowd Control"
+      ]
+    },
+    {
+      "id": "DE-CB-93/125",
+      "type": "action",
+      "name": "Stoneskin",
+      "element": "earth",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move. Attack. Against Water: Attack +2 Strength."
+        },
+        {
+          "type": "passive",
+          "text": "+2 Willpower."
+        }
+      ],
+      "imagePath": "images/earth/cards/DE-CB-93-125.png",
+      "keywords": [
+        "Attack",
+        "Move",
+        "Active",
+        "Passive",
+        "Against Water",
+        "Mobility"
+      ]
+    },
+    {
+      "id": "DE-CB-94/125",
+      "type": "action",
+      "name": "Tectonic Timing",
+      "element": "earth",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Slot 1: Move. Slot 2: Move. Deal 3 Damage in range 1. Slot 3: Move. Deal 3 Damage in range 1. Attack. Slot 4: Gain 1 Power."
+        }
+      ],
+      "imagePath": "images/earth/cards/DE-CB-94-125.png",
+      "keywords": [
+        "Attack",
+        "Move",
+        "Power Ramp",
+        "Slot Synergies",
+        "Active",
+        "Mobility",
+        "Burst Damage"
+      ]
+    },
+    {
+      "id": "DE-CB-95/125",
+      "type": "action",
+      "name": "Veins of Earth",
+      "element": "earth",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Attack +X Strength, where X is your Defense. You may spend 4 Power to Trigger."
+        }
+      ],
+      "imagePath": "images/earth/cards/DE-CB-95-125.png",
+      "keywords": [
+        "Attack",
+        "Trigger",
+        "Defense",
+        "Power Ramp",
+        "Active",
+        "Tank & Sustain"
+      ]
+    },
+    {
+      "id": "DE-CB-96/125",
+      "type": "action",
+      "name": "Vine Tempest",
+      "element": "earth",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 3 Damage and Weak in any range in line. Reduce this Damage by opponent's Defense instead of Willpower."
+        }
+      ],
+      "imagePath": "images/earth/cards/DE-CB-96-125.png",
+      "keywords": [
+        "Weak",
+        "Defense",
+        "Active",
+        "Burst Damage",
+        "Tank & Sustain",
+        "Crowd Control"
+      ]
+    },
+    {
+      "id": "DE-CB-97/125",
+      "type": "action",
+      "name": "Adjusted Frequency",
+      "element": "light",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 2 Damage in any range."
+        },
+        {
+          "type": "upgrade",
+          "text": "Bonus Action: Spend 1 Power to Tune - Blink 1 or your Attacks this turn have (Pierce 1)."
+        }
+      ],
+      "imagePath": "images/light/cards/DE-CB-97-125.png",
+      "keywords": [
+        "Blink",
+        "Pierce",
+        "Power Ramp",
+        "Active",
+        "Upgrade",
+        "Mobility",
+        "Burst Damage"
+      ]
+    },
+    {
+      "id": "DE-CB-98/125",
+      "type": "action",
+      "name": "Aegis of Light",
+      "element": "light",
+      "rarity": "ultra_rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 1,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move +3 Swiftness."
+        },
+        {
+          "type": "upgrade",
+          "text": "At the end of each turn (your and an opponent's), if you gained any Damage, Heal 1."
+        }
+      ],
+      "imagePath": "images/light/cards/DE-CB-98-125.png",
+      "keywords": [
+        "Move",
+        "Heal",
+        "Active",
+        "Upgrade",
+        "Mobility",
+        "Tank & Sustain"
+      ]
+    },
+    {
+      "id": "DE-CB-99/125",
+      "type": "action",
+      "name": "Blinding Radiance",
+      "element": "light",
+      "rarity": "rare",
+      "source": "booster",
+      "mystlingId": null,
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Discard all Power. Resolve the corresponding effect: 0-3 Power discarded - Deal 2 Damage in any range. 4-8 Power discarded - Deal 6 Damage and Slow in any range. 9-10 Power discarded - Deal 9 Damage, Slow and Weak in any range."
+        }
+      ],
+      "imagePath": "images/light/cards/DE-CB-99-125.png",
+      "keywords": [
+        "Resolve",
+        "Slow",
+        "Weak",
+        "Discard",
+        "Active",
+        "Burst Damage",
+        "Crowd Control"
+      ]
+    },
+    {
+      "id": "DE-CB-M1/90",
+      "type": "action",
+      "name": "Crescent Midnight",
+      "element": "air",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "alukah",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/alukah/cards/DE-CB-M1-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M13/90",
+      "type": "action",
+      "name": "Butterfly Dance",
+      "element": "earth",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "bolb",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/bolb/cards/DE-CB-M13-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M14/90",
+      "type": "action",
+      "name": "Debilitating Pollen",
+      "element": "earth",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "bolb",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/bolb/cards/DE-CB-M14-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M15/90",
+      "type": "action",
+      "name": "Swarm of Butterflies",
+      "element": "earth",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "bolb",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/bolb/cards/DE-CB-M15-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M16/90",
+      "type": "action",
+      "name": "Absence of Mind",
+      "element": "earth",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "young_bolb",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/young_bolb/cards/DE-CB-M16-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M17/90",
+      "type": "action",
+      "name": "Mud Toss",
+      "element": "earth",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "young_bolb",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/young_bolb/cards/DE-CB-M17-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M18/90",
+      "type": "action",
+      "name": "Tricky Morass",
+      "element": "earth",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "young_bolb",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/young_bolb/cards/DE-CB-M18-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M19/90",
+      "type": "action",
+      "name": "Lava Trail",
+      "element": "fire",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "chrysomallon",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/chrysomallon/cards/DE-CB-M19-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M2/90",
+      "type": "action",
+      "name": "Intimidation",
+      "element": "air",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "alukah",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/alukah/cards/DE-CB-M2-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M20/90",
+      "type": "action",
+      "name": "Smoldering Grasp",
+      "element": "fire",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "chrysomallon",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/chrysomallon/cards/DE-CB-M20-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M21/90",
+      "type": "action",
+      "name": "Tectonic Stress",
+      "element": "fire",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "chrysomallon",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/chrysomallon/cards/DE-CB-M21-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M22/90",
+      "type": "action",
+      "name": "Bloodlust",
+      "element": "dark",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "darktailen",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/darktailen/cards/DE-CB-M22-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M23/90",
+      "type": "action",
+      "name": "Draw Blood",
+      "element": "dark",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "darktailen",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/darktailen/cards/DE-CB-M23-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M24/90",
+      "type": "action",
+      "name": "Hemomagnetism",
+      "element": "dark",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "darktailen",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/darktailen/cards/DE-CB-M24-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M25/90",
+      "type": "action",
+      "name": "Chiaroscuro",
+      "element": "light",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "eldrithia",
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Gain 1 Glow or 1 Gloam. Interrupt 1 in range 1 for each Gloam you have (max. 3)."
+        },
+        {
+          "type": "passive",
+          "text": "+1 Swiftness for each Glow you have."
+        }
+      ],
+      "imagePath": "images/mystlings/eldrithia/cards/DE-CB-M25-90.png",
+      "keywords": [
+        "Interrupt",
+        "Active",
+        "Passive",
+        "Mobility"
+      ]
+    },
+    {
+      "id": "DE-CB-M26/90",
+      "type": "action",
+      "name": "Consuming Darkness",
+      "element": "light",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "eldrithia",
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Gain 1 Glow or 1 Gloam. Move. Attack (Drain), +2 Strength for each Gloam you have."
+        },
+        {
+          "type": "passive",
+          "text": "+1 Defense for each Glow you have."
+        }
+      ],
+      "imagePath": "images/mystlings/eldrithia/cards/DE-CB-M26-90.png",
+      "keywords": [
+        "Attack",
+        "Move",
+        "Drain",
+        "Defense",
+        "Active",
+        "Passive",
+        "Mobility",
+        "Tank & Sustain"
+      ]
+    },
+    {
+      "id": "DE-CB-M27/90",
+      "type": "action",
+      "name": "Consuming Light",
+      "element": "light",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "eldrithia",
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Gain 1 Glow or 1 Gloam. Deal 1 Damage in any range, +1 Damage for each Gloam you have."
+        },
+        {
+          "type": "passive",
+          "text": "+1 Willpower for each Glow you have."
+        }
+      ],
+      "imagePath": "images/mystlings/eldrithia/cards/DE-CB-M27-90.png",
+      "keywords": [
+        "Active",
+        "Passive",
+        "Burst Damage"
+      ]
+    },
+    {
+      "id": "DE-CB-M28/90",
+      "type": "action",
+      "name": "Barkskin",
+      "element": "earth",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "elkthorn",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/elkthorn/cards/DE-CB-M28-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M29/90",
+      "type": "action",
+      "name": "Gore",
+      "element": "earth",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "elkthorn",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/elkthorn/cards/DE-CB-M29-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M3/90",
+      "type": "action",
+      "name": "Piercing Claws",
+      "element": "air",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "alukah",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/alukah/cards/DE-CB-M3-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M30/90",
+      "type": "action",
+      "name": "Rampage",
+      "element": "earth",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "elkthorn",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/elkthorn/cards/DE-CB-M30-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M31/90",
+      "type": "action",
+      "name": "Burning Fangs",
+      "element": "fire",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "emberling",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/emberling/cards/DE-CB-M31-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M32/90",
+      "type": "action",
+      "name": "Shared Experience",
+      "element": "fire",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "emberling",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/emberling/cards/DE-CB-M32-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M33/90",
+      "type": "action",
+      "name": "Torrid Claws",
+      "element": "fire",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "emberling",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/emberling/cards/DE-CB-M33-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M34/90",
+      "type": "action",
+      "name": "Flame Burst",
+      "element": "fire",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "young_emberling",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/young_emberling/cards/DE-CB-M34-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M35/90",
+      "type": "action",
+      "name": "Flaming Bite",
+      "element": "fire",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "young_emberling",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/young_emberling/cards/DE-CB-M35-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M36/90",
+      "type": "action",
+      "name": "Lava Lash",
+      "element": "fire",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "young_emberling",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/young_emberling/cards/DE-CB-M36-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M37/90",
+      "type": "action",
+      "name": "Plunge",
+      "element": "water",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "firple",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/firple/cards/DE-CB-M37-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M38/90",
+      "type": "action",
+      "name": "Reinvigorating Splash",
+      "element": "water",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "firple",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/firple/cards/DE-CB-M38-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M39/90",
+      "type": "action",
+      "name": "Wave Thrust",
+      "element": "water",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "firple",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/firple/cards/DE-CB-M39-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M4/90",
+      "type": "action",
+      "name": "Conditional Courage",
+      "element": "air",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "young_alukah",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/young_alukah/cards/DE-CB-M4-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M40/90",
+      "type": "action",
+      "name": "Drenching Charge",
+      "element": "water",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "renewed_firple",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/renewed_firple/cards/DE-CB-M40-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M41/90",
+      "type": "action",
+      "name": "Hydro Lance",
+      "element": "water",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "renewed_firple",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/renewed_firple/cards/DE-CB-M41-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M42/90",
+      "type": "action",
+      "name": "Resurgence",
+      "element": "water",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "renewed_firple",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/renewed_firple/cards/DE-CB-M42-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M43/90",
+      "type": "action",
+      "name": "Majestic Flight",
+      "element": "air",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "furwing",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/furwing/cards/DE-CB-M43-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M44/90",
+      "type": "action",
+      "name": "Maul",
+      "element": "air",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "furwing",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/furwing/cards/DE-CB-M44-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M45/90",
+      "type": "action",
+      "name": "Thick Bristle",
+      "element": "air",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "furwing",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/furwing/cards/DE-CB-M45-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M46/90",
+      "type": "action",
+      "name": "Ancient Roots",
+      "element": "earth",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "gaiadon",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/gaiadon/cards/DE-CB-M46-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M47/90",
+      "type": "action",
+      "name": "Branching Knowledge",
+      "element": "earth",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "gaiadon",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/gaiadon/cards/DE-CB-M47-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M48/90",
+      "type": "action",
+      "name": "Hungry Roots",
+      "element": "earth",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "gaiadon",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/gaiadon/cards/DE-CB-M48-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M49/90",
+      "type": "action",
+      "name": "Seedling",
+      "element": "earth",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "young_gaiadon",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/young_gaiadon/cards/DE-CB-M49-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M5/90",
+      "type": "action",
+      "name": "Flight",
+      "element": "air",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "young_alukah",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/young_alukah/cards/DE-CB-M5-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M50/90",
+      "type": "action",
+      "name": "Sheltering Hollow",
+      "element": "earth",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "young_gaiadon",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/young_gaiadon/cards/DE-CB-M50-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M51/90",
+      "type": "action",
+      "name": "Teeth and Vines",
+      "element": "earth",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "young_gaiadon",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/young_gaiadon/cards/DE-CB-M51-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M52/90",
+      "type": "action",
+      "name": "Bouncing Strike",
+      "element": "light",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "glarexus",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/glarexus/cards/DE-CB-M52-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M53/90",
+      "type": "action",
+      "name": "Shell Bash",
+      "element": "light",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "glarexus",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/glarexus/cards/DE-CB-M53-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M54/90",
+      "type": "action",
+      "name": "Solid Light",
+      "element": "light",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "glarexus",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/glarexus/cards/DE-CB-M54-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M55/90",
+      "type": "action",
+      "name": "Earth Shield",
+      "element": "earth",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "golomo",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/golomo/cards/DE-CB-M55-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M56/90",
+      "type": "action",
+      "name": "Soil Feed",
+      "element": "earth",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "golomo",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/golomo/cards/DE-CB-M56-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M57/90",
+      "type": "action",
+      "name": "Stone Roll",
+      "element": "earth",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "golomo",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/golomo/cards/DE-CB-M57-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M58/90",
+      "type": "action",
+      "name": "Biting Blizzard",
+      "element": "water",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "iceling",
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal Slow and Weak in range 3. Deal X Damage in range 3, where X is the Ice you have."
+        },
+        {
+          "type": "passive",
+          "text": "+2 Defense."
+        }
+      ],
+      "imagePath": "images/mystlings/iceling/cards/DE-CB-M58-90.png",
+      "keywords": [
+        "Slow",
+        "Weak",
+        "Defense",
+        "Active",
+        "Passive",
+        "Tank & Sustain",
+        "Crowd Control"
+      ]
+    },
+    {
+      "id": "DE-CB-M59/90",
+      "type": "action",
+      "name": "Icicles",
+      "element": "water",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "iceling",
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Attack (Pierce 2), +1 Strength for each Ice you have."
+        },
+        {
+          "type": "passive",
+          "text": "+2 Defense."
+        }
+      ],
+      "imagePath": "images/mystlings/iceling/cards/DE-CB-M59-90.png",
+      "keywords": [
+        "Attack",
+        "Pierce",
+        "Defense",
+        "Active",
+        "Passive",
+        "Tank & Sustain"
+      ]
+    },
+    {
+      "id": "DE-CB-M6/90",
+      "type": "action",
+      "name": "Shadow Wings",
+      "element": "air",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "young_alukah",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/young_alukah/cards/DE-CB-M6-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M60/90",
+      "type": "action",
+      "name": "Soothing Cold",
+      "element": "water",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "iceling",
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Attack in range 3, +1 Strength for each Ice you have. Search 3."
+        },
+        {
+          "type": "passive",
+          "text": "+2 Defense."
+        }
+      ],
+      "imagePath": "images/mystlings/iceling/cards/DE-CB-M60-90.png",
+      "keywords": [
+        "Attack",
+        "Defense",
+        "Search",
+        "Active",
+        "Passive",
+        "Tank & Sustain"
+      ]
+    },
+    {
+      "id": "DE-CB-M61/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Trigger",
+        "Weak",
+        "Active",
+        "Crowd Control"
+      ],
+      "name": "Freeze Lock",
+      "element": "water",
+      "mystlingId": "young_iceling",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal Weak in range 2. Trigger."
+        }
+      ],
+      "imagePath": "images/mystlings/young_iceling/cards/DE-CB-M61-90.png"
+    },
+    {
+      "id": "DE-CB-M62/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Attack",
+        "Pierce",
+        "Active"
+      ],
+      "name": "Frostbite",
+      "element": "water",
+      "mystlingId": "young_iceling",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Attack +1 Strength (Pierce 2). Fire: Attack."
+        }
+      ],
+      "imagePath": "images/mystlings/young_iceling/cards/DE-CB-M62-90.png"
+    },
+    {
+      "id": "DE-CB-M63/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Drain",
+        "Defense",
+        "Active",
+        "Upgrade",
+        "Burst Damage",
+        "Tank & Sustain"
+      ],
+      "name": "Sap Warmth",
+      "element": "water",
+      "mystlingId": "young_iceling",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 2 Damage in range 2 (Drain)."
+        },
+        {
+          "type": "upgrade",
+          "text": "+1 Defense."
+        }
+      ],
+      "imagePath": "images/mystlings/young_iceling/cards/DE-CB-M63-90.png"
+    },
+    {
+      "id": "DE-CB-M64/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Discard",
+        "Active",
+        "Burst Damage"
+      ],
+      "name": "Bleaching Brightness",
+      "element": "light",
+      "mystlingId": "luminesca",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Discard the top 3 cards from your deck. Deal 3 Damage in range 1 for each neutral card discarded this way. Gain 1 Brightness for each Luminesca-specific card discarded this way."
+        }
+      ],
+      "imagePath": "images/mystlings/luminesca/cards/DE-CB-M64-90.png"
+    },
+    {
+      "id": "DE-CB-M65/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Attack",
+        "Pierce",
+        "Silence",
+        "Active",
+        "Crowd Control"
+      ],
+      "name": "Flare-up",
+      "element": "light",
+      "mystlingId": "luminesca",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Gain 1 Brightness. Deal Silence in range 2. Attack in range 2 or Attack (Pierce 2)."
+        }
+      ],
+      "imagePath": "images/mystlings/luminesca/cards/DE-CB-M65-90.png"
+    },
+    {
+      "id": "DE-CB-M66/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Slow",
+        "Defense",
+        "Active",
+        "Upgrade",
+        "Tank & Sustain",
+        "Crowd Control"
+      ],
+      "name": "Scorching Sun",
+      "element": "light",
+      "mystlingId": "luminesca",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Gain 1 Brightness. Deal Slow in range 2. Moon: Gain 1 Brightness."
+        },
+        {
+          "type": "upgrade",
+          "text": "+3 Defense."
+        }
+      ],
+      "imagePath": "images/mystlings/luminesca/cards/DE-CB-M66-90.png"
+    },
+    {
+      "id": "DE-CB-M67/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Attack",
+        "Trigger",
+        "Active"
+      ],
+      "name": "Cat's Spirit",
+      "element": "air",
+      "mystlingId": "prowler",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Attack. Trigger."
+        }
+      ],
+      "imagePath": "images/mystlings/prowler/cards/DE-CB-M67-90.png"
+    },
+    {
+      "id": "DE-CB-M68/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Move",
+        "Trigger",
+        "Active",
+        "Mobility"
+      ],
+      "name": "Owl's Spirit",
+      "element": "air",
+      "mystlingId": "prowler",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move. Trigger."
+        }
+      ],
+      "imagePath": "images/mystlings/prowler/cards/DE-CB-M68-90.png"
+    },
+    {
+      "id": "DE-CB-M69/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Attack",
+        "Move",
+        "Pierce",
+        "Active",
+        "Mobility"
+      ],
+      "name": "Tentative Attempt",
+      "element": "air",
+      "mystlingId": "prowler",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move -1 Swiftness and Attack -1 Strength (Pierce 2). Leaf: Attack (Pierce 2) and Move."
+        }
+      ],
+      "imagePath": "images/mystlings/prowler/cards/DE-CB-M69-90.png"
+    },
+    {
+      "id": "DE-CB-M70/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Move",
+        "Active",
+        "Mobility",
+        "Burst Damage"
+      ],
+      "name": "Bucking",
+      "element": "fire",
+      "mystlingId": "regalian",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Deal 4 Damage in any range in line. Move."
+        }
+      ],
+      "imagePath": "images/mystlings/regalian/cards/DE-CB-M70-90.png"
+    },
+    {
+      "id": "DE-CB-M71/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Move",
+        "Trigger",
+        "Cleanse",
+        "Power Ramp",
+        "Active",
+        "Mobility",
+        "Tank & Sustain"
+      ],
+      "name": "Grace of a Spark",
+      "element": "fire",
+      "mystlingId": "regalian",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Cleanse all. Move. You may spend 3 Power to Trigger."
+        }
+      ],
+      "imagePath": "images/mystlings/regalian/cards/DE-CB-M71-90.png"
+    },
+    {
+      "id": "DE-CB-M72/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Attack",
+        "Move",
+        "Active",
+        "Mobility"
+      ],
+      "name": "Skewer",
+      "element": "fire",
+      "mystlingId": "regalian",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move in line. For each space moved this way, gain +1 Strength this turn. Attack. Air: Attack +2 Strength."
+        }
+      ],
+      "imagePath": "images/mystlings/regalian/cards/DE-CB-M72-90.png"
+    },
+    {
+      "id": "DE-CB-M73/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Move",
+        "Interrupt",
+        "Active",
+        "Mobility"
+      ],
+      "name": "Eclipse Recollection",
+      "element": "dark",
+      "mystlingId": "shadeclaw",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Interrupt 2 in range 3. Move."
+        }
+      ],
+      "imagePath": "images/mystlings/shadeclaw/cards/DE-CB-M73-90.png"
+    },
+    {
+      "id": "DE-CB-M74/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Attack",
+        "Move",
+        "Discard",
+        "Active",
+        "Passive",
+        "Mobility"
+      ],
+      "name": "Impending Doom",
+      "element": "dark",
+      "mystlingId": "shadeclaw",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move. Attack."
+        },
+        {
+          "type": "passive",
+          "text": "When you gain or are dealt any Willpower, you may discard 1 Mirror Image in range 2 to ignore that Willpower."
+        }
+      ],
+      "imagePath": "images/mystlings/shadeclaw/cards/DE-CB-M74-90.png"
+    },
+    {
+      "id": "DE-CB-M75/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Attack",
+        "Blink",
+        "Drain",
+        "Discard",
+        "Active",
+        "Passive",
+        "Mobility"
+      ],
+      "name": "Sprouting Terror",
+      "element": "dark",
+      "mystlingId": "shadeclaw",
+      "effects": [
+        {
+          "type": "active",
+          "text": "You may Blink to a space with a Mirror Image. Attack (Drain)."
+        },
+        {
+          "type": "passive",
+          "text": "When you gain or are dealt any Willpower, you may discard 1 Mirror Image in range 2 to ignore that Willpower."
+        }
+      ],
+      "imagePath": "images/mystlings/shadeclaw/cards/DE-CB-M75-90.png"
+    },
+    {
+      "id": "DE-CB-M76/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Interrupt",
+        "Active"
+      ],
+      "name": "Power of Flesh",
+      "element": "dark",
+      "mystlingId": "young_shadeclaw",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Gain up to 4 Willpower. Place 1 Shadow in range 2 for each Willpower gained this way. Light: Interrupt 1 in any range."
+        }
+      ],
+      "imagePath": "images/mystlings/young_shadeclaw/cards/DE-CB-M76-90.png"
+    },
+    {
+      "id": "DE-CB-M77/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Attack",
+        "Discard",
+        "Active",
+        "Passive"
+      ],
+      "name": "Raising Contrast",
+      "element": "dark",
+      "mystlingId": "young_shadeclaw",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Place 1 Shadow in range 2 or Attack."
+        },
+        {
+          "type": "passive",
+          "text": "When you gain or are dealt any Willpower, you may discard 1 Shadow in range 2 to ignore that Willpower."
+        }
+      ],
+      "imagePath": "images/mystlings/young_shadeclaw/cards/DE-CB-M77-90.png"
+    },
+    {
+      "id": "DE-CB-M78/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Move",
+        "Discard",
+        "Active",
+        "Passive",
+        "Mobility"
+      ],
+      "name": "Shadow Puppet",
+      "element": "dark",
+      "mystlingId": "young_shadeclaw",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Place 1 Shadow in range 2 or Move."
+        },
+        {
+          "type": "passive",
+          "text": "When you gain or are dealt any Willpower, you may discard 1 Shadow in range 2 to ignore that Willpower."
+        }
+      ],
+      "imagePath": "images/mystlings/young_shadeclaw/cards/DE-CB-M78-90.png"
+    },
+    {
+      "id": "DE-CB-M79/125",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Attack",
+        "Move",
+        "Pierce",
+        "Active",
+        "Mobility",
+        "Burst Damage",
+        "Crowd Control"
+      ],
+      "name": "Draining Tide",
+      "element": "water",
+      "mystlingId": "siren",
+      "effects": [
+        {
+          "type": "active",
+          "text": "If you have Resurface, Attack +2 Strength (Pierce 1). Otherwise, move an opponent in any range by up to its Swiftness. Deal 3 Damage to each opponent in a space with a Whirlpool."
+        }
+      ],
+      "imagePath": "images/mystlings/siren/cards/DE-CB-M79-125.png"
+    },
+    {
+      "id": "DE-CB-M80/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Attack",
+        "Blink",
+        "Defense",
+        "Active",
+        "Upgrade",
+        "Mobility",
+        "Tank & Sustain"
+      ],
+      "name": "Revelation",
+      "element": "water",
+      "mystlingId": "siren",
+      "effects": [
+        {
+          "type": "active",
+          "text": "If you have Resurface, Blink to any space with a Whirlpool. Otherwise, Attack +2 Strength against an opponent in a space with a Whirlpool or an opponent (regardless of range)."
+        },
+        {
+          "type": "upgrade",
+          "text": "If you have Resurface, +2 Swiftness and -2 Defense."
+        }
+      ],
+      "imagePath": "images/mystlings/siren/cards/DE-CB-M80-90.png"
+    },
+    {
+      "id": "DE-CB-M81/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Attack",
+        "Move",
+        "Pierce",
+        "Drain",
+        "Active",
+        "Upgrade",
+        "Mobility"
+      ],
+      "name": "Water Jets",
+      "element": "water",
+      "mystlingId": "siren",
+      "effects": [
+        {
+          "type": "active",
+          "text": "If you have Resurface, Move, Attack (Pierce 2), Move. Otherwise, Attack (Drain). Fire: Place 1 Whirlpool in any range."
+        },
+        {
+          "type": "upgrade",
+          "text": "If you do not have Resurface, +2 Strength."
+        }
+      ],
+      "imagePath": "images/mystlings/siren/cards/DE-CB-M81-90.png"
+    },
+    {
+      "id": "DE-CB-M82/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Move",
+        "Interrupt",
+        "Discard",
+        "Active",
+        "Upgrade",
+        "Mobility"
+      ],
+      "name": "Dusk of Life",
+      "element": "dark",
+      "mystlingId": "umbra",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move. Interrupt 2 in range 1. If you moved at least 6 spaces this turn, gain 1 Miasma."
+        },
+        {
+          "type": "upgrade",
+          "text": "+1 Strength for every 3 cards in your discard pile."
+        }
+      ],
+      "imagePath": "images/mystlings/umbra/cards/DE-CB-M82-90.png"
+    },
+    {
+      "id": "DE-CB-M83/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Attack",
+        "Drain",
+        "Discard",
+        "Active",
+        "Upgrade",
+        "Mobility",
+        "Burst Damage"
+      ],
+      "name": "Netherworld",
+      "element": "dark",
+      "mystlingId": "umbra",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Attack (Drain). If you dealt at least 6 Damage to the opponent this turn, gain 1 Miasma."
+        },
+        {
+          "type": "upgrade",
+          "text": "+1 Swiftness for every 3 cards in your discard pile."
+        }
+      ],
+      "imagePath": "images/mystlings/umbra/cards/DE-CB-M83-90.png"
+    },
+    {
+      "id": "DE-CB-M84/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Defense",
+        "Discard",
+        "Slot Synergies",
+        "Active",
+        "Upgrade",
+        "Tank & Sustain"
+      ],
+      "name": "Seething Darkness",
+      "element": "dark",
+      "mystlingId": "umbra",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Slot 1: Discard 1 card. If you discarded at least 3 cards this turn, gain 1 Miasma."
+        },
+        {
+          "type": "upgrade",
+          "text": "+1 Defense for every 3 cards in your discard pile."
+        }
+      ],
+      "imagePath": "images/mystlings/umbra/cards/DE-CB-M84-90.png"
+    },
+    {
+      "id": "DE-CB-M85/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Attack",
+        "Active"
+      ],
+      "name": "Drag Underwater",
+      "element": "water",
+      "mystlingId": "vogandr",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Place 1 Flood in any range in any space not adjacent to a Flood. Attack, +1 Strength for each Flood in the Arena."
+        }
+      ],
+      "imagePath": "images/mystlings/vogandr/cards/DE-CB-M85-90.png"
+    },
+    {
+      "id": "DE-CB-M86/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Active",
+        "Burst Damage"
+      ],
+      "name": "Foaming Coils",
+      "element": "water",
+      "mystlingId": "vogandr",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Place 1 Flood in any range in any space not adjacent to a Flood. Deal 4 Damage in range 2, +1 Damage for each Flood in the Arena."
+        }
+      ],
+      "imagePath": "images/mystlings/vogandr/cards/DE-CB-M86-90.png"
+    },
+    {
+      "id": "DE-CB-M87/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Power Ramp",
+        "Active"
+      ],
+      "name": "River of Blood",
+      "element": "water",
+      "mystlingId": "vogandr",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Place 1 Flood in any range in any space not adjacent to a Flood. Gain 1 Power for each Flood in the Arena."
+        }
+      ],
+      "imagePath": "images/mystlings/vogandr/cards/DE-CB-M87-90.png"
+    },
+    {
+      "id": "DE-CB-M88/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Attack",
+        "Blink",
+        "Power Ramp",
+        "Active",
+        "Mobility"
+      ],
+      "name": "Air Escape",
+      "element": "air",
+      "mystlingId": "windraiser",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Blink to a space with a Tornado. Gain 1 Power. Leaf: Attack."
+        }
+      ],
+      "imagePath": "images/mystlings/windraiser/cards/DE-CB-M88-90.png"
+    },
+    {
+      "id": "DE-CB-M89/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Move",
+        "Power Ramp",
+        "Active",
+        "Passive",
+        "Mobility",
+        "Burst Damage"
+      ],
+      "name": "Cyclone",
+      "element": "air",
+      "mystlingId": "windraiser",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move. Gain 1 Power for each Tornado in range 1."
+        },
+        {
+          "type": "passive",
+          "text": "When you move a Tornado to a space with an opponent, deal them 4 Damage."
+        }
+      ],
+      "imagePath": "images/mystlings/windraiser/cards/DE-CB-M89-90.png"
+    },
+    {
+      "id": "DE-CB-M90/90",
+      "type": "action",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "copiesInBaseGame": 2,
+      "keywords": [
+        "Attack",
+        "Move",
+        "Pierce",
+        "Active",
+        "Mobility"
+      ],
+      "name": "Whirlwind",
+      "element": "air",
+      "mystlingId": "windraiser",
+      "effects": [
+        {
+          "type": "active",
+          "text": "Attack (Pierce 2). Move each Tornado by up to 1 space."
+        }
+      ],
+      "imagePath": "images/mystlings/windraiser/cards/DE-CB-M90-90.png"
+    },
+    {
+      "id": "DE-PS-M1/21",
+      "type": "action",
+      "name": "Homing Quills",
+      "element": "water",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "drosithia",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/drosithia/cards/DE-PS-M1-21.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-PS-M10/21",
+      "type": "action",
+      "name": "Flitter",
+      "element": "fire",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "flitterspark",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/flitterspark/cards/DE-PS-M10-21.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-PS-M11/21",
+      "type": "action",
+      "name": "Spark",
+      "element": "fire",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "flitterspark",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/flitterspark/cards/DE-PS-M11-21.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-PS-M12/21",
+      "type": "action",
+      "name": "Swoop",
+      "element": "fire",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "flitterspark",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/flitterspark/cards/DE-PS-M12-21.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-PS-M13/21",
+      "type": "action",
+      "name": "Burning Hope",
+      "element": "fire",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "frogmar",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/frogmar/cards/DE-PS-M13-21.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-PS-M14/21",
+      "type": "action",
+      "name": "Magma Explosion",
+      "element": "fire",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "frogmar",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/frogmar/cards/DE-PS-M14-21.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-PS-M15/21",
+      "type": "action",
+      "name": "Rain of Fire",
+      "element": "fire",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "frogmar",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/frogmar/cards/DE-PS-M15-21.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-PS-M16/21",
+      "type": "action",
+      "name": "Sly Escape",
+      "element": "earth",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "renewed_golomo",
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Move, +1 Swiftness for each Cone you have."
+        },
+        {
+          "type": "upgrade",
+          "text": "+1 Defense and +1 Damage for each Cone you have."
+        }
+      ],
+      "imagePath": "images/mystlings/renewed_golomo/cards/DE-PS-M16-21.png",
+      "keywords": [
+        "Move",
+        "Defense",
+        "Active",
+        "Upgrade",
+        "Mobility",
+        "Tank & Sustain"
+      ]
+    },
+    {
+      "id": "DE-PS-M17/21",
+      "type": "action",
+      "name": "Taunting Juggler",
+      "element": "earth",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "renewed_golomo",
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Choose one: Gain 2 Power; or spend 1 Cone to deal 6 Damage in range 1."
+        }
+      ],
+      "imagePath": "images/mystlings/renewed_golomo/cards/DE-PS-M17-21.png",
+      "keywords": [
+        "Power Ramp",
+        "Active",
+        "Burst Damage"
+      ]
+    },
+    {
+      "id": "DE-PS-M18/21",
+      "type": "action",
+      "name": "Trip",
+      "element": "earth",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "renewed_golomo",
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Attack, +2 Strength for each Cone you have. Water: Gain 1 Cone."
+        },
+        {
+          "type": "upgrade",
+          "text": "+1 Defense and +1 Damage for each Cone you have."
+        }
+      ],
+      "imagePath": "images/mystlings/renewed_golomo/cards/DE-PS-M18-21.png",
+      "keywords": [
+        "Attack",
+        "Defense",
+        "Active",
+        "Upgrade",
+        "Tank & Sustain"
+      ]
+    },
+    {
+      "id": "DE-PS-M19/21",
+      "type": "action",
+      "name": "Ethereal",
+      "element": "air",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "sylphidron",
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Gain 3 Power."
+        },
+        {
+          "type": "passive",
+          "text": "Each time you gain any Willpower, reduce it to 1."
+        }
+      ],
+      "imagePath": "images/mystlings/sylphidron/cards/DE-PS-M19-21.png",
+      "keywords": [
+        "Power Ramp",
+        "Active",
+        "Passive",
+        "Tank & Sustain"
+      ]
+    },
+    {
+      "id": "DE-PS-M2/21",
+      "type": "action",
+      "name": "Permafrost",
+      "element": "water",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "drosithia",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/drosithia/cards/DE-PS-M2-21.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-PS-M20/21",
+      "type": "action",
+      "name": "Phantasmal Claw",
+      "element": "air",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "sylphidron",
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Attack. Leaf: Attack (Pierce 2)."
+        },
+        {
+          "type": "passive",
+          "text": "Each time you gain any Willpower, reduce it to 1."
+        }
+      ],
+      "imagePath": "images/mystlings/sylphidron/cards/DE-PS-M20-21.png",
+      "keywords": [
+        "Attack",
+        "Pierce",
+        "Active",
+        "Passive",
+        "Tank & Sustain"
+      ]
+    },
+    {
+      "id": "DE-PS-M21/21",
+      "type": "action",
+      "name": "Spectral Wings",
+      "element": "air",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "sylphidron",
+      "copiesInBaseGame": 2,
+      "effects": [
+        {
+          "type": "active",
+          "text": "Blink 4. Deal Weak and Silence in range 2. Attack (Pierce 2)."
+        }
+      ],
+      "imagePath": "images/mystlings/sylphidron/cards/DE-PS-M21-21.png",
+      "keywords": [
+        "Attack",
+        "Blink",
+        "Pierce",
+        "Weak",
+        "Silence",
+        "Active",
+        "Mobility",
+        "Crowd Control"
+      ]
+    },
+    {
+      "id": "DE-PS-M3/21",
+      "type": "action",
+      "name": "Power of Rebirth",
+      "element": "water",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "drosithia",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/drosithia/cards/DE-PS-M3-21.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-PS-M4/21",
+      "type": "action",
+      "name": "Bait",
+      "element": "water",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "eftus",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/eftus/cards/DE-PS-M4-21.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-PS-M5/21",
+      "type": "action",
+      "name": "Vortex",
+      "element": "water",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "eftus",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/eftus/cards/DE-PS-M5-21.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-PS-M6/21",
+      "type": "action",
+      "name": "Whirling Rod",
+      "element": "water",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "eftus",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/eftus/cards/DE-PS-M6-21.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-PS-M7/21",
+      "type": "action",
+      "name": "Aqua Bite",
+      "element": "water",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "fale",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/fale/cards/DE-PS-M7-21.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-PS-M8/21",
+      "type": "action",
+      "name": "Riptide",
+      "element": "water",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "fale",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/fale/cards/DE-PS-M8-21.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-PS-M9/21",
+      "type": "action",
+      "name": "Sea Embrace",
+      "element": "water",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "fale",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/fale/cards/DE-PS-M9-21.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/2026-10-12_211549"
+    },
+    {
+      "id": "DE-CB-M7/90",
+      "type": "action",
+      "name": "Elemental Wind",
+      "element": "light",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "artios",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/artios/cards/DE-CB-M7-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/Document_2026-10-13_172900.jpg"
+    },
+    {
+      "id": "DE-CB-M8/90",
+      "type": "action",
+      "name": "Helpless Rage",
+      "element": "light",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "artios",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/artios/cards/DE-CB-M8-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/Document_2026-10-13_172900.jpg"
+    },
+    {
+      "id": "DE-CB-M9/90",
+      "type": "action",
+      "name": "Poignant Sphere",
+      "element": "light",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "artios",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/artios/cards/DE-CB-M9-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/Document_2026-10-13_172900.jpg"
+    },
+    {
+      "id": "DE-CB-M12/90",
+      "type": "action",
+      "name": "Wave of Steam",
+      "element": "fire",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "blazereef",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/blazereef/cards/DE-CB-M12-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/Document_2026-10-13_172900.jpg"
+    },
+    {
+      "id": "DE-CB-M10/90",
+      "type": "action",
+      "name": "Coral Barrier",
+      "element": "fire",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "blazereef",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/blazereef/cards/DE-CB-M10-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/Document_2026-10-13_172900.jpg"
+    },
+    {
+      "id": "DE-CB-M11/90",
+      "type": "action",
+      "name": "Scalding Breath",
+      "element": "fire",
+      "rarity": "mystling_specific",
+      "source": "mystling",
+      "mystlingId": "blazereef",
+      "copiesInBaseGame": 2,
+      "effects": [],
+      "imagePath": "images/mystlings/blazereef/cards/DE-CB-M11-90.png",
+      "keywords": [],
+      "sourceScanPath": "images/mystlings/mystling_specific/Document_2026-10-13_172900.jpg"
+    }
+  ]
+}

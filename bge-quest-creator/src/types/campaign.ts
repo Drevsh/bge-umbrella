@@ -1,0 +1,201 @@
+import { z } from 'zod';
+
+export type PrereqLogic = 'START' | 'ALL' | 'ANY'; // Starter vs AND gate vs OR gate
+export type QuestCategory = 'MAIN' | 'MAIN_BRANCH' | 'SIDE' | 'FACTION' | 'BOSS' | 'ACT_TRANSITION';
+export type EdgeRelationType = 'UNLOCKS' | 'CHOICE_BRANCH' | 'MUTATION' | 'LOCKOUT';
+export type EdgeRoutingStyle = 'BEZIER' | 'STEP' | 'STRAIGHT';
+export type DevStatus = 'IDEA' | 'DRAFT' | 'PLAYTESTED' | 'FINAL';
+
+export interface CampaignAct {
+  id: number;
+  code: string;
+  title: string;
+  description?: string;
+}
+
+export type StateTagScope = 'ACT_LOCAL' | 'CAMPAIGN_GLOBAL';
+
+export function getStateTagScope(tag: string): StateTagScope {
+  return tag.startsWith('++') ? 'CAMPAIGN_GLOBAL' : 'ACT_LOCAL';
+}
+
+export function getCleanTagName(tag: string): string {
+  return tag.replace(/^\+{1,2}/, '');
+}
+
+export function formatScopedTag(rawName: string, scope: StateTagScope): string {
+  const clean = getCleanTagName(rawName).trim().replace(/\s+/g, '_');
+  return scope === 'CAMPAIGN_GLOBAL' ? `++${clean}` : `+${clean}`;
+}
+
+export interface RewardOutcome {
+  id: string;                 // Source handle ID (e.g. "out-always", "out-choice-a")
+  label: string;              // e.g. "[Choice A] Keep Blood Idol"
+  isExclusiveChoice: boolean; // false = Always granted; true = Player picks 1 exclusive choice
+  gold: number;
+  items: string[];
+  grantsStateTags: string[];  // e.g. ["++Arnak_saved" or "+Beacon_lit"]
+}
+
+export interface QuestVariantOverride {
+  id: string;
+  requiredStateTag: string;   // e.g. "++Arnak_saved" or "+Beacon_lit"
+  overrideTitle?: string;     // Optional replacement title when tag is active
+  additionalFlavorText: string;
+  setupModifications: string; // e.g. "Malakor gains +15 HP"
+  rewardModifications?: string;
+}
+
+export interface QuestAudioTrack {
+  id: string;               // Unique audio track ID
+  targetField: 'flavorText' | 'setupInstructions' | 'combined';
+  scope?: 'base' | 'mutation' | 'merged';
+  variantId?: string;       // ID of the variant if mutation or merged
+  variantTag?: string;      // State tag triggering the mutation
+  fileName: string;         // Downloadable file name (e.g. m01_merged_arnak_saved_flavor_algenib_dark_fantasy.wav)
+  voice: string;            // Gemini TTS Voice (e.g. Algenib, Charon, Kore, Puck)
+  stylePrompt?: string;     // Speech metadata narration style
+  mimeType: string;         // audio/wav
+  blobKey: string;          // Storage key in audio IndexedDB store
+  createdAt: string;
+}
+
+export interface QuestModel {
+  uid: string;                // Immutable internal ID (used for graph node.id)
+  code: string;               // Designer-facing ID ("M01", "S01", "M02_A", "B01")
+  title: string;
+  act?: number;               // Act number (1, 2, 3...) - defaults to 1
+  tier: number;               // Progression tier column (1, 2, 3...)
+  category: QuestCategory;
+  prereqLogic: PrereqLogic;
+  requiredTag?: string;       // Optional explicit tag required
+  parentSlot?: string | null; // Subflow Slot ID (e.g. "SLOT_M02")
+  position: { x: number; y: number };
+
+  // Tabletop Scenario Card Content
+  flavorText: string;
+  setupInstructions: string;
+  objectives: string;
+
+  // Dynamic Output Ports & Variants
+  rewardOutcomes: RewardOutcome[];
+  variants: QuestVariantOverride[];
+  devStatus: DevStatus;
+  audioTracks?: QuestAudioTrack[];
+}
+
+export interface CampaignEdge {
+  id: string;
+  source: string;             // Source Quest uid
+  sourcePortId: string | null;// RewardOutcome.id (null for node-level LOCKOUT edges)
+  target: string;             // Target Quest uid
+  type: EdgeRelationType;     // Drives color, dash, and simulator evaluation
+  stateTag?: string | null;   // Tag carried across this connection
+  label?: string;
+  waypoints?: { x: number; y: number }[]; // Custom bend points or obstacle avoidance routes
+}
+
+export interface CampaignProjectMetadata {
+  id: string;
+  name: string;
+  description: string;
+  author?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CampaignProjectFile {
+  metadata: CampaignProjectMetadata;
+  version: string;
+  exportedAt: string;
+  acts?: CampaignAct[];
+  quests: Record<string, QuestModel>;
+  edges: CampaignEdge[];
+}
+
+// Zod Schemas for runtime import validation
+export const RewardOutcomeSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  isExclusiveChoice: z.boolean(),
+  gold: z.number().default(0),
+  items: z.array(z.string()).default([]),
+  grantsStateTags: z.array(z.string()).default([])
+});
+
+export const QuestVariantOverrideSchema = z.object({
+  id: z.string(),
+  requiredStateTag: z.string(),
+  overrideTitle: z.string().optional(),
+  additionalFlavorText: z.string().default(''),
+  setupModifications: z.string().default(''),
+  rewardModifications: z.string().optional()
+});
+
+export const QuestAudioTrackSchema = z.object({
+  id: z.string(),
+  targetField: z.enum(['flavorText', 'setupInstructions', 'combined']),
+  scope: z.enum(['base', 'mutation', 'merged']).optional(),
+  variantId: z.string().optional(),
+  variantTag: z.string().optional(),
+  fileName: z.string(),
+  voice: z.string(),
+  stylePrompt: z.string().optional(),
+  mimeType: z.string().default('audio/wav'),
+  blobKey: z.string(),
+  createdAt: z.string()
+});
+
+export const QuestModelSchema = z.object({
+  uid: z.string(),
+  code: z.string(),
+  title: z.string(),
+  act: z.number().default(1),
+  tier: z.number().default(1),
+  category: z.enum(['MAIN', 'MAIN_BRANCH', 'SIDE', 'FACTION', 'BOSS', 'ACT_TRANSITION']),
+  prereqLogic: z.enum(['START', 'ALL', 'ANY']),
+  requiredTag: z.string().optional(),
+  parentSlot: z.string().nullable().optional(),
+  position: z.object({ x: z.number(), y: z.number() }),
+  flavorText: z.string().default(''),
+  setupInstructions: z.string().default(''),
+  objectives: z.string().default(''),
+  rewardOutcomes: z.array(RewardOutcomeSchema).default([]),
+  variants: z.array(QuestVariantOverrideSchema).default([]),
+  devStatus: z.enum(['IDEA', 'DRAFT', 'PLAYTESTED', 'FINAL']).default('DRAFT'),
+  audioTracks: z.array(QuestAudioTrackSchema).optional()
+});
+
+export const CampaignActSchema = z.object({
+  id: z.number(),
+  code: z.string(),
+  title: z.string(),
+  description: z.string().optional()
+});
+
+export const CampaignEdgeSchema = z.object({
+  id: z.string(),
+  source: z.string(),
+  sourcePortId: z.string().nullable(),
+  target: z.string(),
+  type: z.enum(['UNLOCKS', 'CHOICE_BRANCH', 'MUTATION', 'LOCKOUT']),
+  stateTag: z.string().nullable().optional(),
+  label: z.string().optional(),
+  waypoints: z.array(z.object({ x: z.number(), y: z.number() })).optional()
+});
+
+export const CampaignProjectFileSchema = z.object({
+  metadata: z.object({
+    id: z.string(),
+    name: z.string(),
+    description: z.string().default(''),
+    author: z.string().optional(),
+    createdAt: z.string(),
+    updatedAt: z.string()
+  }),
+  version: z.string().default('1.0'),
+  exportedAt: z.string(),
+  acts: z.array(CampaignActSchema).optional(),
+  quests: z.record(QuestModelSchema),
+  edges: z.array(CampaignEdgeSchema)
+});
