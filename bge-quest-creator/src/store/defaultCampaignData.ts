@@ -1,8 +1,34 @@
 import { QuestModel, CampaignEdge, CampaignProjectMetadata, CampaignAct } from '../types/campaign';
 
+export const DEFAULT_GENERAL_CAMPAIGN_METADATA: CampaignProjectMetadata = {
+  id: 'general-campaign-act-1',
+  name: 'Core Campaign: The Sundered Veil',
+  gameId: 'core-general',
+  description: 'The standard universal starter campaign demonstrating storyline branches, secret passages, and boss confrontations.',
+  author: 'Lead Story Designer',
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString()
+};
+
+export const DEFAULT_GENERAL_ACTS: CampaignAct[] = [
+  {
+    id: 1,
+    code: 'ACT_1',
+    title: 'Act I: The Sundered Veil',
+    description: 'The initial frontier beyond the ancient outpost.'
+  },
+  {
+    id: 2,
+    code: 'ACT_2',
+    title: 'Act II: The Inner Sanctum',
+    description: 'Delving deep beneath the obsidian citadel.'
+  }
+];
+
 export const DEFAULT_CAMPAIGN_METADATA: CampaignProjectMetadata = {
   id: 'dragon-eclipse-act-1',
   name: 'Dragon Eclipse: Act I - Shadows Over Highgate',
+  gameId: 'dragon-eclipse',
   description: 'The canonical Act I narrative questline featuring the Blood Idol branching choice, secret smuggler passages, and High Inquisitor Malakor.',
   author: 'Lead Story Designer',
   createdAt: new Date().toISOString(),

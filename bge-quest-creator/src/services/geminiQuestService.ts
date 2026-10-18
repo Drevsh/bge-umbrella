@@ -3,7 +3,7 @@ import { QuestCategory, PrereqLogic, RewardOutcome, QuestVariantOverride } from 
 
 export interface QuestDraftPromptOptions {
   apiKey: string;
-  category: QuestCategory;
+  category: string;
   tier: number;
   act?: number;
   userPrompt?: string;

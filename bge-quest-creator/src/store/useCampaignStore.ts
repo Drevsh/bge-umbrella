@@ -17,16 +17,35 @@ import {
   DEFAULT_CAMPAIGN_METADATA,
   DEFAULT_QUESTS,
   DEFAULT_EDGES,
-  DEFAULT_ACTS
+  DEFAULT_ACTS,
+  DEFAULT_GENERAL_CAMPAIGN_METADATA,
+  DEFAULT_GENERAL_ACTS
 } from './defaultCampaignData';
+import { GameProfile } from '../types/gameProfile';
+import {
+  BUILT_IN_GAMES,
+  DEFAULT_GAME_PROFILE,
+  getGameProfileById,
+  CORE_GENERAL_GAME
+} from '../config/builtInGames';
 import { computeObstacleAvoidanceRoutes } from '../utils/obstacleRouter';
 import { calculateAutoArrangement } from '../utils/layoutEngine';
 import { deleteQuestAudioBlob } from '../utils/audioStorage';
 
-const IDB_CATALOG_KEY = 'questflow_campaigns_catalog';
+const IDB_GAMES_CATALOG_KEY = 'questflow_games_catalog';
+const IDB_LEGACY_CATALOG_KEY = 'questflow_campaigns_catalog';
 const IDB_CAMPAIGN_PREFIX = 'questflow_campaign_';
 
+export function getGameCampaignCatalogKey(gameId: string): string {
+  return `questflow_catalog_${gameId}`;
+}
+
 export interface CampaignStoreState {
+  // Game Workspace & Profiles (Multi-game partitioning)
+  activeGameId: string;
+  activeGameProfile: GameProfile;
+  installedGames: GameProfile[];
+
   // Campaign Metadata
   activeCampaignId: string;
   campaignCatalog: CampaignProjectMetadata[];
@@ -73,6 +92,7 @@ export interface CampaignStoreState {
   modals: {
     wizard: boolean;
     campaignManager: boolean;
+    gameManager: boolean;
     exportModal: boolean;
     printModal: boolean;
     apiKeyModal: boolean;
@@ -92,6 +112,12 @@ export interface CampaignStoreState {
   openWizardWithConfig: (config?: CampaignStoreState['wizardInitOptions']) => void;
   setActDrawerOpen: (open: boolean) => void;
   toggleActDrawer: () => void;
+
+  // Game Workspace Actions
+  switchGame: (gameId: string) => Promise<void>;
+  createGameProfile: (profile: GameProfile) => Promise<void>;
+  updateGameProfile: (gameId: string, partial: Partial<GameProfile>) => Promise<void>;
+  deleteGameProfile: (gameId: string) => Promise<void>;
 
   // Act Actions
   setActiveActId: (actId: number | 'ALL') => void;
@@ -153,15 +179,20 @@ export interface CampaignStoreState {
 export const useCampaignStore = create<CampaignStoreState>()(
   temporal(
     (set, get) => ({
-      // Initial defaults
-      activeCampaignId: DEFAULT_CAMPAIGN_METADATA.id,
-      campaignCatalog: [DEFAULT_CAMPAIGN_METADATA],
-      activeMetadata: DEFAULT_CAMPAIGN_METADATA,
+      // Multi-Game Workspace Defaults
+      activeGameId: CORE_GENERAL_GAME.id,
+      activeGameProfile: CORE_GENERAL_GAME,
+      installedGames: BUILT_IN_GAMES,
 
-      acts: DEFAULT_ACTS,
+      // Initial defaults
+      activeCampaignId: DEFAULT_GENERAL_CAMPAIGN_METADATA.id,
+      campaignCatalog: [DEFAULT_GENERAL_CAMPAIGN_METADATA],
+      activeMetadata: DEFAULT_GENERAL_CAMPAIGN_METADATA,
+
+      acts: DEFAULT_GENERAL_ACTS,
       activeActId: 1,
-      quests: DEFAULT_QUESTS,
-      edges: DEFAULT_EDGES,
+      quests: {},
+      edges: [],
 
       selectedQuestId: null,
       selectedEdgeId: null,
@@ -181,14 +212,15 @@ export const useCampaignStore = create<CampaignStoreState>()(
       isActDrawerOpen: false,
 
       simulator: {
-        activeRewardChoices: ['out-always'],
-        completedQuestIds: ['M01'],
+        activeRewardChoices: [],
+        completedQuestIds: [],
         customTags: []
       },
 
       modals: {
         wizard: false,
         campaignManager: false,
+        gameManager: false,
         exportModal: false,
         printModal: false,
         apiKeyModal: false
@@ -196,39 +228,112 @@ export const useCampaignStore = create<CampaignStoreState>()(
 
       initStore: async () => {
         try {
-          const storedCatalog = (await idb.get(IDB_CATALOG_KEY)) as CampaignProjectMetadata[] | undefined;
-          if (storedCatalog && storedCatalog.length > 0) {
-            const firstId = storedCatalog[0].id;
-            const campaignData = (await idb.get(`${IDB_CAMPAIGN_PREFIX}${firstId}`)) as {
-              metadata: CampaignProjectMetadata;
-              acts?: CampaignAct[];
-              quests: Record<string, QuestModel>;
-              edges: CampaignEdge[];
-            } | undefined;
+          // 1. Load custom installed games and merge with built-ins
+          const customGames = ((await idb.get(IDB_GAMES_CATALOG_KEY)) as GameProfile[]) || [];
+          const installedGamesMap = new Map<string, GameProfile>();
+          BUILT_IN_GAMES.forEach((g) => installedGamesMap.set(g.id, g));
+          customGames.forEach((g) => installedGamesMap.set(g.id, g));
+          const installedGames = Array.from(installedGamesMap.values());
 
-            if (campaignData) {
-              set({
-                campaignCatalog: storedCatalog,
-                activeCampaignId: firstId,
-                activeMetadata: campaignData.metadata,
-                acts: campaignData.acts || DEFAULT_ACTS,
-                activeActId: 1,
-                quests: campaignData.quests,
-                edges: campaignData.edges,
-                selectedQuestId: Object.keys(campaignData.quests)[0] || null,
-                selectedEdgeId: null
-              });
-              return;
+          // 2. Backward compatibility: check for legacy single-game catalog
+          const legacyCatalog = (await idb.get(IDB_LEGACY_CATALOG_KEY)) as CampaignProjectMetadata[] | undefined;
+          if (legacyCatalog && legacyCatalog.length > 0) {
+            const deCatalogKey = getGameCampaignCatalogKey('dragon-eclipse');
+            const existingDeCatalog = await idb.get(deCatalogKey);
+            if (!existingDeCatalog) {
+              const migrated = legacyCatalog.map((c) => ({ ...c, gameId: 'dragon-eclipse' }));
+              await idb.set(deCatalogKey, migrated);
             }
           }
 
-          // If no stored campaigns exist, seed initial default campaign
-          await idb.set(IDB_CATALOG_KEY, [DEFAULT_CAMPAIGN_METADATA]);
-          await idb.set(`${IDB_CAMPAIGN_PREFIX}${DEFAULT_CAMPAIGN_METADATA.id}`, {
-            metadata: DEFAULT_CAMPAIGN_METADATA,
-            quests: DEFAULT_QUESTS,
-            edges: DEFAULT_EDGES
-          });
+          // 3. Determine active game
+          let activeGameId = typeof window !== 'undefined' ? localStorage.getItem('questflow_active_game_id') : null;
+          if (!activeGameId || !installedGamesMap.has(activeGameId)) {
+            // If user had legacy dragon-eclipse data, default to dragon-eclipse, otherwise core-general
+            if (legacyCatalog && legacyCatalog.length > 0) {
+              activeGameId = 'dragon-eclipse';
+            } else {
+              activeGameId = 'core-general';
+            }
+          }
+          const activeGameProfile = installedGamesMap.get(activeGameId) || CORE_GENERAL_GAME;
+
+          // 4. Load the campaign catalog for the active game
+          const catalogKey = getGameCampaignCatalogKey(activeGameId);
+          let storedCatalog = (await idb.get(catalogKey)) as CampaignProjectMetadata[] | undefined;
+
+          if (!storedCatalog || storedCatalog.length === 0) {
+            if (activeGameId === 'dragon-eclipse') {
+              storedCatalog = [DEFAULT_CAMPAIGN_METADATA];
+              await idb.set(catalogKey, storedCatalog);
+              await idb.set(`${IDB_CAMPAIGN_PREFIX}${DEFAULT_CAMPAIGN_METADATA.id}`, {
+                metadata: DEFAULT_CAMPAIGN_METADATA,
+                acts: DEFAULT_ACTS,
+                quests: DEFAULT_QUESTS,
+                edges: DEFAULT_EDGES
+              });
+            } else if (activeGameId === 'core-general') {
+              storedCatalog = [DEFAULT_GENERAL_CAMPAIGN_METADATA];
+              await idb.set(catalogKey, storedCatalog);
+              await idb.set(`${IDB_CAMPAIGN_PREFIX}${DEFAULT_GENERAL_CAMPAIGN_METADATA.id}`, {
+                metadata: DEFAULT_GENERAL_CAMPAIGN_METADATA,
+                acts: DEFAULT_GENERAL_ACTS,
+                quests: {},
+                edges: []
+              });
+            } else {
+              const newMeta: CampaignProjectMetadata = {
+                id: `campaign_${crypto.randomUUID().slice(0, 8)}`,
+                gameId: activeGameId,
+                name: `${activeGameProfile.name} Campaign 1`,
+                description: `Default campaign for ${activeGameProfile.name}`,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+              };
+              storedCatalog = [newMeta];
+              await idb.set(catalogKey, storedCatalog);
+              await idb.set(`${IDB_CAMPAIGN_PREFIX}${newMeta.id}`, {
+                metadata: newMeta,
+                acts: [{ id: 1, code: 'ACT_1', title: `${activeGameProfile.terminology.actTerm} 1`, description: '' }],
+                quests: {},
+                edges: []
+              });
+            }
+          }
+
+          const firstId = storedCatalog[0].id;
+          const campaignData = (await idb.get(`${IDB_CAMPAIGN_PREFIX}${firstId}`)) as {
+            metadata: CampaignProjectMetadata;
+            acts?: CampaignAct[];
+            quests: Record<string, QuestModel>;
+            edges: CampaignEdge[];
+          } | undefined;
+
+          const defaultActs = activeGameId === 'dragon-eclipse' ? DEFAULT_ACTS : DEFAULT_GENERAL_ACTS;
+          if (campaignData) {
+            set({
+              installedGames,
+              activeGameId,
+              activeGameProfile,
+              campaignCatalog: storedCatalog,
+              activeCampaignId: firstId,
+              activeMetadata: campaignData.metadata || storedCatalog[0],
+              acts: campaignData.acts || defaultActs,
+              activeActId: (campaignData.acts && campaignData.acts[0]?.id) || 1,
+              quests: campaignData.quests || {},
+              edges: campaignData.edges || [],
+              selectedQuestId: Object.keys(campaignData.quests || {})[0] || null,
+              selectedEdgeId: null
+            });
+          } else {
+            set({
+              installedGames,
+              activeGameId,
+              activeGameProfile,
+              campaignCatalog: storedCatalog,
+              activeCampaignId: firstId
+            });
+          }
         } catch (err) {
           console.warn('IndexedDB initial load error:', err);
         }
@@ -283,6 +388,142 @@ export const useCampaignStore = create<CampaignStoreState>()(
       setActDrawerOpen: (open) => set({ isActDrawerOpen: open }),
 
       toggleActDrawer: () => set((state) => ({ isActDrawerOpen: !state.isActDrawerOpen })),
+
+      // Game Workspace Actions
+      switchGame: async (gameId: string) => {
+        const state = get();
+        if (state.activeGameId === gameId) return;
+
+        // Save current campaign first
+        await state.saveToStorage();
+
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('questflow_active_game_id', gameId);
+        }
+
+        const profile = state.installedGames.find((g) => g.id === gameId) || CORE_GENERAL_GAME;
+        const catalogKey = getGameCampaignCatalogKey(gameId);
+        let catalog = (await idb.get(catalogKey)) as CampaignProjectMetadata[] | undefined;
+
+        if (!catalog || catalog.length === 0) {
+          if (gameId === 'dragon-eclipse') {
+            catalog = [DEFAULT_CAMPAIGN_METADATA];
+            await idb.set(catalogKey, catalog);
+            await idb.set(`${IDB_CAMPAIGN_PREFIX}${DEFAULT_CAMPAIGN_METADATA.id}`, {
+              metadata: DEFAULT_CAMPAIGN_METADATA,
+              acts: DEFAULT_ACTS,
+              quests: DEFAULT_QUESTS,
+              edges: DEFAULT_EDGES
+            });
+          } else if (gameId === 'core-general') {
+            catalog = [DEFAULT_GENERAL_CAMPAIGN_METADATA];
+            await idb.set(catalogKey, catalog);
+            await idb.set(`${IDB_CAMPAIGN_PREFIX}${DEFAULT_GENERAL_CAMPAIGN_METADATA.id}`, {
+              metadata: DEFAULT_GENERAL_CAMPAIGN_METADATA,
+              acts: DEFAULT_GENERAL_ACTS,
+              quests: {},
+              edges: []
+            });
+          } else {
+            const newMeta: CampaignProjectMetadata = {
+              id: `campaign_${crypto.randomUUID().slice(0, 8)}`,
+              gameId: gameId,
+              name: `${profile.name} Campaign 1`,
+              description: `Default campaign for ${profile.name}`,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            };
+            catalog = [newMeta];
+            await idb.set(catalogKey, catalog);
+            await idb.set(`${IDB_CAMPAIGN_PREFIX}${newMeta.id}`, {
+              metadata: newMeta,
+              acts: [{ id: 1, code: 'ACT_1', title: `${profile.terminology.actTerm} 1`, description: '' }],
+              quests: {},
+              edges: []
+            });
+          }
+        }
+
+        const targetCampaignId = catalog[0].id;
+        const campaignData = (await idb.get(`${IDB_CAMPAIGN_PREFIX}${targetCampaignId}`)) as {
+          metadata: CampaignProjectMetadata;
+          acts?: CampaignAct[];
+          quests: Record<string, QuestModel>;
+          edges: CampaignEdge[];
+        } | undefined;
+
+        const fallbackActs = gameId === 'dragon-eclipse' ? DEFAULT_ACTS : DEFAULT_GENERAL_ACTS;
+        set({
+          activeGameId: gameId,
+          activeGameProfile: profile,
+          campaignCatalog: catalog,
+          activeCampaignId: targetCampaignId,
+          activeMetadata: campaignData?.metadata || catalog[0],
+          acts: campaignData?.acts || fallbackActs,
+          activeActId: (campaignData?.acts && campaignData.acts[0]?.id) || 1,
+          quests: campaignData?.quests || {},
+          edges: campaignData?.edges || [],
+          selectedQuestId: Object.keys(campaignData?.quests || {})[0] || null,
+          selectedEdgeId: null,
+          simulator: {
+            activeRewardChoices: [],
+            completedQuestIds: [],
+            customTags: []
+          }
+        });
+      },
+
+      createGameProfile: async (profile: GameProfile) => {
+        const state = get();
+        const existingIdx = state.installedGames.findIndex((g) => g.id === profile.id);
+        let updated: GameProfile[];
+        if (existingIdx >= 0) {
+          updated = state.installedGames.map((g) => (g.id === profile.id ? profile : g));
+        } else {
+          updated = [...state.installedGames, profile];
+        }
+
+        const customOnly = updated.filter((g) => !g.isBuiltIn);
+        await idb.set(IDB_GAMES_CATALOG_KEY, customOnly);
+        set({ installedGames: updated });
+        await get().switchGame(profile.id);
+      },
+
+      updateGameProfile: async (gameId: string, partial: Partial<GameProfile>) => {
+        const state = get();
+        const updated = state.installedGames.map((g) =>
+          g.id === gameId ? { ...g, ...partial } : g
+        );
+        const customOnly = updated.filter((g) => !g.isBuiltIn);
+        await idb.set(IDB_GAMES_CATALOG_KEY, customOnly);
+
+        const updatedActive =
+          state.activeGameId === gameId
+            ? { ...state.activeGameProfile, ...partial }
+            : state.activeGameProfile;
+
+        set({
+          installedGames: updated,
+          activeGameProfile: updatedActive
+        });
+      },
+
+      deleteGameProfile: async (gameId: string) => {
+        const state = get();
+        const target = state.installedGames.find((g) => g.id === gameId);
+        if (!target || target.isBuiltIn) return;
+
+        const updated = state.installedGames.filter((g) => g.id !== gameId);
+        const customOnly = updated.filter((g) => !g.isBuiltIn);
+        await idb.set(IDB_GAMES_CATALOG_KEY, customOnly);
+
+        await idb.del(getGameCampaignCatalogKey(gameId));
+        set({ installedGames: updated });
+
+        if (state.activeGameId === gameId) {
+          await get().switchGame(CORE_GENERAL_GAME.id);
+        }
+      },
 
       setActiveActId: (actId) => {
         set({ activeActId: actId });
@@ -380,7 +621,11 @@ export const useCampaignStore = create<CampaignStoreState>()(
       addQuest: (quest) => {
         set((state) => {
           const defaultAct = typeof state.activeActId === 'number' ? state.activeActId : 1;
-          const questWithAct = { ...quest, act: quest.act || defaultAct };
+          const questWithAct: QuestModel = {
+            ...quest,
+            act: quest.act || defaultAct,
+            gameId: quest.gameId || state.activeGameId
+          };
           return {
             quests: { ...state.quests, [quest.uid]: questWithAct },
             selectedQuestId: quest.uid
@@ -896,6 +1141,7 @@ export const useCampaignStore = create<CampaignStoreState>()(
           const payload = {
             metadata: {
               ...state.activeMetadata,
+              gameId: state.activeGameId,
               updatedAt: new Date().toISOString()
             },
             acts: state.acts,
@@ -904,32 +1150,45 @@ export const useCampaignStore = create<CampaignStoreState>()(
           };
           await idb.set(`${IDB_CAMPAIGN_PREFIX}${state.activeCampaignId}`, payload);
 
-          // Update catalog
+          // Update catalog for active game
           const updatedCatalog = state.campaignCatalog.map((c) =>
             c.id === state.activeCampaignId ? payload.metadata : c
           );
-          await idb.set(IDB_CATALOG_KEY, updatedCatalog);
+          const catalogKey = getGameCampaignCatalogKey(state.activeGameId);
+          await idb.set(catalogKey, updatedCatalog);
+          set({ campaignCatalog: updatedCatalog });
         } catch (err) {
           console.error('Failed saving to IndexedDB:', err);
         }
       },
 
       createCampaign: async (name, description) => {
+        const state = get();
         const id = 'campaign_' + crypto.randomUUID().slice(0, 8);
         const newMeta: CampaignProjectMetadata = {
           id,
+          gameId: state.activeGameId,
           name,
           description,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         };
 
-        const state = get();
+        const defaultActs: CampaignAct[] = [
+          {
+            id: 1,
+            code: 'ACT_1',
+            title: `${state.activeGameProfile.terminology.actTerm} 1`,
+            description: ''
+          }
+        ];
+
         const updatedCatalog = [...state.campaignCatalog, newMeta];
-        await idb.set(IDB_CATALOG_KEY, updatedCatalog);
+        const catalogKey = getGameCampaignCatalogKey(state.activeGameId);
+        await idb.set(catalogKey, updatedCatalog);
         await idb.set(`${IDB_CAMPAIGN_PREFIX}${id}`, {
           metadata: newMeta,
-          acts: DEFAULT_ACTS,
+          acts: defaultActs,
           quests: {},
           edges: []
         });
@@ -938,7 +1197,7 @@ export const useCampaignStore = create<CampaignStoreState>()(
           campaignCatalog: updatedCatalog,
           activeCampaignId: id,
           activeMetadata: newMeta,
-          acts: DEFAULT_ACTS,
+          acts: defaultActs,
           activeActId: 1,
           quests: {},
           edges: [],
@@ -957,11 +1216,14 @@ export const useCampaignStore = create<CampaignStoreState>()(
         } | undefined;
 
         if (data) {
+          const state = get();
+          const fallbackActs =
+            state.activeGameId === 'dragon-eclipse' ? DEFAULT_ACTS : DEFAULT_GENERAL_ACTS;
           set({
             activeCampaignId: campaignId,
             activeMetadata: data.metadata,
-            acts: data.acts || DEFAULT_ACTS,
-            activeActId: 1,
+            acts: data.acts || fallbackActs,
+            activeActId: (data.acts && data.acts[0]?.id) || 1,
             quests: data.quests,
             edges: data.edges,
             selectedQuestId: Object.keys(data.quests)[0] || null,
@@ -984,18 +1246,20 @@ export const useCampaignStore = create<CampaignStoreState>()(
 
         if (!data) return;
 
+        const state = get();
         const newId = 'campaign_' + crypto.randomUUID().slice(0, 8);
         const newMeta: CampaignProjectMetadata = {
           id: newId,
+          gameId: state.activeGameId,
           name: `${data.metadata.name} (Copy)`,
           description: data.metadata.description,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         };
 
-        const state = get();
         const updatedCatalog = [...state.campaignCatalog, newMeta];
-        await idb.set(IDB_CATALOG_KEY, updatedCatalog);
+        const catalogKey = getGameCampaignCatalogKey(state.activeGameId);
+        await idb.set(catalogKey, updatedCatalog);
         await idb.set(`${IDB_CAMPAIGN_PREFIX}${newId}`, {
           metadata: newMeta,
           acts: data.acts || state.acts,
@@ -1020,8 +1284,9 @@ export const useCampaignStore = create<CampaignStoreState>()(
         if (state.campaignCatalog.length <= 1) return; // Keep at least one
 
         const updatedCatalog = state.campaignCatalog.filter((c) => c.id !== campaignId);
+        const catalogKey = getGameCampaignCatalogKey(state.activeGameId);
         await idb.del(`${IDB_CAMPAIGN_PREFIX}${campaignId}`);
-        await idb.set(IDB_CATALOG_KEY, updatedCatalog);
+        await idb.set(catalogKey, updatedCatalog);
 
         const nextCampaign = updatedCatalog[0];
         set({ campaignCatalog: updatedCatalog });
@@ -1047,21 +1312,24 @@ export const useCampaignStore = create<CampaignStoreState>()(
       },
 
       importCampaign: async (projectFile) => {
+        const state = get();
         const id = 'campaign_' + crypto.randomUUID().slice(0, 8);
+        const targetGameId = projectFile.metadata.gameId || state.activeGameId;
         const meta: CampaignProjectMetadata = {
           id,
+          gameId: targetGameId,
           name: projectFile.metadata.name || 'Imported Campaign',
           description: projectFile.metadata.description || '',
           createdAt: projectFile.metadata.createdAt || new Date().toISOString(),
           updatedAt: new Date().toISOString()
         };
 
-        const state = get();
         const updatedCatalog = [...state.campaignCatalog, meta];
-        await idb.set(IDB_CATALOG_KEY, updatedCatalog);
+        const catalogKey = getGameCampaignCatalogKey(state.activeGameId);
+        await idb.set(catalogKey, updatedCatalog);
         await idb.set(`${IDB_CAMPAIGN_PREFIX}${id}`, {
           metadata: meta,
-          acts: projectFile.acts || DEFAULT_ACTS,
+          acts: projectFile.acts || state.acts,
           quests: projectFile.quests,
           edges: projectFile.edges
         });
@@ -1070,7 +1338,7 @@ export const useCampaignStore = create<CampaignStoreState>()(
           campaignCatalog: updatedCatalog,
           activeCampaignId: id,
           activeMetadata: meta,
-          acts: projectFile.acts || DEFAULT_ACTS,
+          acts: projectFile.acts || state.acts,
           activeActId: 1,
           quests: projectFile.quests,
           edges: projectFile.edges,

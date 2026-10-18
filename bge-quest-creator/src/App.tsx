@@ -6,6 +6,7 @@ import { QuestInspectorDrawer } from './components/inspector/QuestInspectorDrawe
 import { CampaignMatrixTable, StateTagAuditGrid } from './components/overview/CampaignMatrixTable';
 import { NewQuestWizardModal } from './components/wizard/NewQuestWizardModal';
 import { CampaignManagerModal } from './components/modals/CampaignManagerModal';
+import { GameManagerModal } from './components/modals/GameManagerModal';
 import { ExportModal } from './components/modals/ExportModal';
 import { PrintCardsModal } from './components/modals/PrintCardsModal';
 import { ApiKeyModal } from './components/modals/ApiKeyModal';
@@ -104,6 +105,7 @@ export const App: React.FC = () => {
       {/* Modal Dialogs */}
       <NewQuestWizardModal />
       <CampaignManagerModal />
+      <GameManagerModal />
       <ExportModal />
       <PrintCardsModal />
       <ApiKeyModal />

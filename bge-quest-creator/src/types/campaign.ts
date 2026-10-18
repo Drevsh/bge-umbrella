@@ -35,6 +35,7 @@ export interface RewardOutcome {
   gold: number;
   items: string[];
   grantsStateTags: string[];  // e.g. ["++Arnak_saved" or "+Beacon_lit"]
+  customResources?: Record<string, any>; // Dynamic resource bag for game-specific reward types
 }
 
 export interface QuestVariantOverride {
@@ -64,18 +65,22 @@ export interface QuestModel {
   uid: string;                // Immutable internal ID (used for graph node.id)
   code: string;               // Designer-facing ID ("M01", "S01", "M02_A", "B01")
   title: string;
+  gameId?: string;            // Workspace game profile ID (e.g. "core-general", "dragon-eclipse")
   act?: number;               // Act number (1, 2, 3...) - defaults to 1
   tier: number;               // Progression tier column (1, 2, 3...)
-  category: QuestCategory;
+  category: QuestCategory | string;
   prereqLogic: PrereqLogic;
   requiredTag?: string;       // Optional explicit tag required
   parentSlot?: string | null; // Subflow Slot ID (e.g. "SLOT_M02")
   position: { x: number; y: number };
 
-  // Tabletop Scenario Card Content
+  // Tabletop Scenario Card Content (Standard core fields)
   flavorText: string;
   setupInstructions: string;
   objectives: string;
+
+  // Custom Game Payload for specialized game profiles
+  customFields?: Record<string, any>;
 
   // Dynamic Output Ports & Variants
   rewardOutcomes: RewardOutcome[];
@@ -99,6 +104,7 @@ export interface CampaignProjectMetadata {
   id: string;
   name: string;
   description: string;
+  gameId?: string;            // Game profile identifier scoping this campaign
   author?: string;
   createdAt: string;
   updatedAt: string;
@@ -108,6 +114,7 @@ export interface CampaignProjectFile {
   metadata: CampaignProjectMetadata;
   version: string;
   exportedAt: string;
+  gameId?: string;
   acts?: CampaignAct[];
   quests: Record<string, QuestModel>;
   edges: CampaignEdge[];
@@ -120,7 +127,8 @@ export const RewardOutcomeSchema = z.object({
   isExclusiveChoice: z.boolean(),
   gold: z.number().default(0),
   items: z.array(z.string()).default([]),
-  grantsStateTags: z.array(z.string()).default([])
+  grantsStateTags: z.array(z.string()).default([]),
+  customResources: z.record(z.any()).optional()
 });
 
 export const QuestVariantOverrideSchema = z.object({
@@ -150,9 +158,10 @@ export const QuestModelSchema = z.object({
   uid: z.string(),
   code: z.string(),
   title: z.string(),
+  gameId: z.string().optional(),
   act: z.number().default(1),
   tier: z.number().default(1),
-  category: z.enum(['MAIN', 'MAIN_BRANCH', 'SIDE', 'FACTION', 'BOSS', 'ACT_TRANSITION']),
+  category: z.string().default('MAIN'),
   prereqLogic: z.enum(['START', 'ALL', 'ANY']),
   requiredTag: z.string().optional(),
   parentSlot: z.string().nullable().optional(),
@@ -160,6 +169,7 @@ export const QuestModelSchema = z.object({
   flavorText: z.string().default(''),
   setupInstructions: z.string().default(''),
   objectives: z.string().default(''),
+  customFields: z.record(z.any()).optional(),
   rewardOutcomes: z.array(RewardOutcomeSchema).default([]),
   variants: z.array(QuestVariantOverrideSchema).default([]),
   devStatus: z.enum(['IDEA', 'DRAFT', 'PLAYTESTED', 'FINAL']).default('DRAFT'),
@@ -189,12 +199,14 @@ export const CampaignProjectFileSchema = z.object({
     id: z.string(),
     name: z.string(),
     description: z.string().default(''),
+    gameId: z.string().optional(),
     author: z.string().optional(),
     createdAt: z.string(),
     updatedAt: z.string()
   }),
   version: z.string().default('1.0'),
   exportedAt: z.string(),
+  gameId: z.string().optional(),
   acts: z.array(CampaignActSchema).optional(),
   quests: z.record(QuestModelSchema),
   edges: z.array(CampaignEdgeSchema)

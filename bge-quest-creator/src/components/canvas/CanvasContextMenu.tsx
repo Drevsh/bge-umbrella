@@ -112,16 +112,20 @@ export const CanvasContextMenu: React.FC<CanvasContextMenuProps> = ({
   const openWizardWithConfig = useCampaignStore((s) => s.openWizardWithConfig);
   const selectQuest = useCampaignStore((s) => s.selectQuest);
   const addEdge = useCampaignStore((s) => s.addEdge);
+  const activeGameProfile = useCampaignStore((s) => s.activeGameProfile);
 
   // Helper to compute next code for category
-  const computeNextCode = (cat: QuestCategory): string => {
+  const computeNextCode = (cat: string): string => {
     const existing = new Set(Object.values(quests).map((q) => q.code.toUpperCase()));
     let prefix = 'M';
     if (cat === 'MAIN_BRANCH') prefix = 'MB';
-    if (cat === 'SIDE') prefix = 'S';
-    if (cat === 'FACTION') prefix = 'F';
-    if (cat === 'BOSS') prefix = 'B';
-    if (cat === 'ACT_TRANSITION') prefix = 'ACT_TRANS';
+    else if (cat === 'SIDE') prefix = 'S';
+    else if (cat === 'FACTION') prefix = 'F';
+    else if (cat === 'BOSS') prefix = 'B';
+    else if (cat === 'ACT_TRANSITION') prefix = 'ACT_TRANS';
+    else {
+      prefix = cat.slice(0, 2).toUpperCase();
+    }
 
     if (prefix === 'ACT_TRANS') {
       const act = typeof activeActId === 'number' ? activeActId : 1;
@@ -137,7 +141,7 @@ export const CanvasContextMenu: React.FC<CanvasContextMenuProps> = ({
   };
 
   // Helper to create a new quest at click position with inferred tier
-  const handleCreateQuest = (category: QuestCategory = 'MAIN') => {
+  const handleCreateQuest = (category: string = 'MAIN') => {
     const actId = typeof activeActId === 'number' ? activeActId : 1;
     const code = computeNextCode(category);
 
@@ -265,7 +269,10 @@ export const CanvasContextMenu: React.FC<CanvasContextMenuProps> = ({
     onClose();
   };
 
-  const categories: { label: string; value: QuestCategory }[] = [
+  const categories = activeGameProfile?.categories?.map((c) => ({
+    label: c.label,
+    value: c.id
+  })) || [
     { label: 'Main Quest', value: 'MAIN' },
     { label: 'Main Branch', value: 'MAIN_BRANCH' },
     { label: 'Side Quest', value: 'SIDE' },

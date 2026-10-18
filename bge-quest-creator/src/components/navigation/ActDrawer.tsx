@@ -24,6 +24,10 @@ export const ActDrawer: React.FC = () => {
   const updateAct = useCampaignStore((s) => s.updateAct);
   const deleteAct = useCampaignStore((s) => s.deleteAct);
   const quests = useCampaignStore((s) => s.quests);
+  const activeGameProfile = useCampaignStore((s) => s.activeGameProfile);
+
+  const actTerm = activeGameProfile.terminology?.actTerm || 'Act';
+  const questTerm = activeGameProfile.terminology?.questTerm || 'Quest';
 
   const [editingActId, setEditingActId] = useState<number | null>(null);
   const [editTitle, setEditTitle] = useState('');
@@ -70,7 +74,7 @@ export const ActDrawer: React.FC = () => {
               <Layers className="w-4 h-4 text-indigo-400" />
             </div>
             <div>
-              <h3 className="font-bold text-sm text-slate-100">Campaign Acts</h3>
+              <h3 className="font-bold text-sm text-slate-100">{actTerm}s</h3>
               <p className="text-[10px] text-slate-400">Manage campaign narrative chapters</p>
             </div>
           </div>
@@ -113,7 +117,7 @@ export const ActDrawer: React.FC = () => {
                   <Globe className="w-4 h-4" />
                 </div>
                 <div>
-                  <div className="text-xs font-semibold">All Acts (Unified Canvas)</div>
+                  <div className="text-xs font-semibold">All {actTerm}s (Unified Canvas)</div>
                   <div className="text-[10px] text-slate-400">View entire campaign graph</div>
                 </div>
               </div>
@@ -127,7 +131,7 @@ export const ActDrawer: React.FC = () => {
           <div>
             <div className="flex items-center justify-between mb-1.5 px-1">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                Acts ({acts.length})
+                {actTerm}s ({acts.length})
               </span>
               <button
                 type="button"
@@ -135,7 +139,7 @@ export const ActDrawer: React.FC = () => {
                 className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 hover:underline"
               >
                 <Plus className="w-3 h-3" />
-                Add Act
+                Add {actTerm}
               </button>
             </div>
 
@@ -152,7 +156,7 @@ export const ActDrawer: React.FC = () => {
                       className="p-2.5 rounded-xl bg-slate-950 border border-indigo-500 shadow-lg space-y-2"
                     >
                       <div className="text-[10px] font-mono font-bold text-indigo-400">
-                        Renaming Act {act.id}
+                        Renaming {actTerm} {act.id}
                       </div>
                       <input
                         type="text"
@@ -163,7 +167,7 @@ export const ActDrawer: React.FC = () => {
                           if (e.key === 'Escape') setEditingActId(null);
                         }}
                         autoFocus
-                        placeholder="Act Title"
+                        placeholder={`${actTerm} Title`}
                         className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-100 font-medium focus:outline-none focus:border-indigo-500"
                       />
                       <div className="flex justify-end gap-1.5">
@@ -215,7 +219,7 @@ export const ActDrawer: React.FC = () => {
                           {act.title}
                         </div>
                         <div className="text-[10px] text-slate-400 font-mono">
-                          {count} {count === 1 ? 'quest' : 'quests'}
+                          {count} {count === 1 ? questTerm.toLowerCase() : questTerm.toLowerCase() + 's'}
                         </div>
                       </div>
                     </div>
@@ -228,7 +232,7 @@ export const ActDrawer: React.FC = () => {
                           handleStartRename(act);
                         }}
                         className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-700/60 transition-colors"
-                        title="Rename Act"
+                        title={`Rename ${actTerm}`}
                       >
                         <Pencil className="w-3 h-3" />
                       </button>
@@ -238,12 +242,12 @@ export const ActDrawer: React.FC = () => {
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (window.confirm(`Delete "${act.title}"? Any quests in this act will move to Act 1.`)) {
+                            if (window.confirm(`Delete "${act.title}"? Any quests in this ${actTerm.toLowerCase()} will move to ${actTerm} 1.`)) {
                               deleteAct(act.id);
                             }
                           }}
                           className="p-1 rounded text-slate-500 hover:text-rose-400 hover:bg-slate-700/60 transition-colors"
-                          title="Delete Act"
+                          title={`Delete ${actTerm}`}
                         >
                           <Trash2 className="w-3 h-3" />
                         </button>

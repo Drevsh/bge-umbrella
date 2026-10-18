@@ -32,6 +32,7 @@ export const QuestNodeCard = memo(({ id, data, selected }: { id: string; data: Q
   const updateQuestField = useCampaignStore((s) => s.updateQuestField);
   const toggleSimulatorRewardChoice = useCampaignStore((s) => s.toggleSimulatorRewardChoice);
   const toggleSimulatorQuestCompletion = useCampaignStore((s) => s.toggleSimulatorQuestCompletion);
+  const activeGameProfile = useCampaignStore((s) => s.activeGameProfile);
 
   const { quest, status, activeVariants, activeRewardChoices, activeStateTags } = data;
   const [isEditingTitle, setIsEditingTitle] = React.useState(false);
@@ -46,7 +47,7 @@ export const QuestNodeCard = memo(({ id, data, selected }: { id: string; data: Q
     updateNodeInternals(id);
   }, [id, quest.rewardOutcomes, updateNodeInternals]);
 
-  const categoryColors = {
+  const categoryColors: Record<string, string> = {
     MAIN: 'border-blue-500/60 bg-blue-950/40 text-blue-300',
     MAIN_BRANCH: 'border-cyan-500/60 bg-cyan-950/40 text-cyan-300',
     SIDE: 'border-emerald-500/60 bg-emerald-950/40 text-emerald-300',
@@ -54,6 +55,13 @@ export const QuestNodeCard = memo(({ id, data, selected }: { id: string; data: Q
     BOSS: 'border-rose-500/70 bg-rose-950/40 text-rose-300',
     ACT_TRANSITION: 'border-amber-400/80 bg-amber-950/50 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.25)]'
   };
+
+  const categoryDef = activeGameProfile?.categories?.find((c) => c.id === quest.category);
+  const categoryLabel = categoryDef?.label || quest.category.replace('_', ' ');
+  const categoryBadgeStyle =
+    categoryDef?.badgeStyle ||
+    categoryColors[quest.category] ||
+    'border-slate-500/60 bg-slate-800/40 text-slate-300';
 
   const statusStyles: Record<QuestSimStatus, { border: string; glow: string; badge: string; icon: React.ReactNode }> = {
     START: {
@@ -117,8 +125,8 @@ export const QuestNodeCard = memo(({ id, data, selected }: { id: string; data: Q
             <span className="font-mono text-xs font-black tracking-wider text-slate-200 bg-slate-800/90 px-1.5 py-0.5 rounded border border-slate-700">
               {quest.code}
             </span>
-            <span className={`text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded border ${categoryColors[quest.category]}`}>
-              {quest.category.replace('_', ' ')}
+            <span className={`text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded border ${categoryBadgeStyle}`}>
+              {categoryLabel}
             </span>
           </div>
 

@@ -17,10 +17,12 @@ import {
   Shrink,
   Layers,
   ChevronDown,
-  RefreshCw
+  RefreshCw,
+  Gamepad2
 } from 'lucide-react';
 import { useCampaignStore } from '../../store/useCampaignStore';
 export const TopHeaderBar: React.FC = () => {
+  const activeGameProfile = useCampaignStore((s) => s.activeGameProfile);
   const activeMetadata = useCampaignStore((s) => s.activeMetadata);
   const viewMode = useCampaignStore((s) => s.viewMode);
   const setViewMode = useCampaignStore((s) => s.setViewMode);
@@ -33,10 +35,11 @@ export const TopHeaderBar: React.FC = () => {
   const toggleActDrawer = useCampaignStore((s) => s.toggleActDrawer);
 
   const currentActLabel = React.useMemo(() => {
-    if (activeActId === 'ALL') return 'All Acts';
+    const actTerm = activeGameProfile.terminology?.actTerm || 'Act';
+    if (activeActId === 'ALL') return `All ${actTerm}s`;
     const found = acts.find((a) => a.id === activeActId);
-    return found ? `Act ${found.id}: ${found.title}` : `Act ${activeActId}`;
-  }, [activeActId, acts]);
+    return found ? `${actTerm} ${found.id}: ${found.title}` : `${actTerm} ${activeActId}`;
+  }, [activeActId, acts, activeGameProfile]);
 
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -110,6 +113,20 @@ export const TopHeaderBar: React.FC = () => {
             </p>
           </div>
         </div>
+
+        {/* Game Workspace Switcher */}
+        <button
+          type="button"
+          onClick={() => setModalOpen('gameManager', true)}
+          className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900/70 text-emerald-300 border border-emerald-700/60 transition-colors shadow-sm text-xs font-semibold shrink-0 cursor-pointer"
+          title="Switch Game Workspace & Ruleset"
+        >
+          <Gamepad2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+          <span className="max-w-[70px] xs:max-w-[100px] sm:max-w-[130px] truncate">
+            {activeGameProfile.name}
+          </span>
+          <ChevronDown className="w-3 h-3 text-emerald-400 shrink-0" />
+        </button>
 
         {/* Act Overview Drawer Toggle Button */}
         <button

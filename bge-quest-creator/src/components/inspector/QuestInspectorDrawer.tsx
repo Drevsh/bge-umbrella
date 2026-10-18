@@ -54,6 +54,7 @@ export const QuestInspectorDrawer: React.FC = () => {
   const acts = useCampaignStore((s) => s.acts);
   const simulator = useCampaignStore((s) => s.simulator);
   const activeVariantTab = useCampaignStore((s) => s.activeVariantTab);
+  const activeGameProfile = useCampaignStore((s) => s.activeGameProfile);
 
   const selectQuest = useCampaignStore((s) => s.selectQuest);
   const selectEdge = useCampaignStore((s) => s.selectEdge);
@@ -591,7 +592,7 @@ export const QuestInspectorDrawer: React.FC = () => {
         <div className="space-y-3">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
-              Quest Title
+              {activeGameProfile.terminology?.questTerm || 'Quest'} Title
             </label>
             <input
               type="text"
@@ -604,7 +605,7 @@ export const QuestInspectorDrawer: React.FC = () => {
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
-                Designer Code
+                {activeGameProfile.terminology?.questTerm || 'Quest'} Code
               </label>
               <input
                 type="text"
@@ -616,7 +617,7 @@ export const QuestInspectorDrawer: React.FC = () => {
 
             <div>
               <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
-                Parallel Tier
+                Parallel {activeGameProfile.terminology?.tierTerm || 'Tier'}
               </label>
               <input
                 type="number"
@@ -632,7 +633,7 @@ export const QuestInspectorDrawer: React.FC = () => {
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
-                Campaign Act
+                {activeGameProfile.terminology?.campaignTerm || 'Campaign'} {activeGameProfile.terminology?.actTerm || 'Act'}
               </label>
               <select
                 value={currentQuest.act || 1}
@@ -641,7 +642,7 @@ export const QuestInspectorDrawer: React.FC = () => {
               >
                 {acts.map((act) => (
                   <option key={act.id} value={act.id}>
-                    Act {act.id}: {act.title}
+                    {activeGameProfile.terminology?.actTerm || 'Act'} {act.id}: {act.title}
                   </option>
                 ))}
               </select>
@@ -653,15 +654,14 @@ export const QuestInspectorDrawer: React.FC = () => {
               </label>
               <select
                 value={currentQuest.category}
-                onChange={(e) => updateQuestField(currentQuest.uid, 'category', e.target.value as QuestCategory)}
+                onChange={(e) => updateQuestField(currentQuest.uid, 'category', e.target.value)}
                 className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
               >
-                <option value="MAIN">Main Quest</option>
-                <option value="MAIN_BRANCH">Main Branch</option>
-                <option value="SIDE">Side Quest</option>
-                <option value="FACTION">Faction</option>
-                <option value="BOSS">Act Boss</option>
-                <option value="ACT_TRANSITION">Act Transition (Bridge/Climax)</option>
+                {(activeGameProfile.categories || []).map((catDef) => (
+                  <option key={catDef.id} value={catDef.id}>
+                    {catDef.label}
+                  </option>
+                ))}
               </select>
             </div>
           </div>

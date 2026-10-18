@@ -8,6 +8,7 @@ dev-dist/
 *.local
 .npm
 .eslintcache
+*.tsbuildinfo
 
 # Flutter / Dart / Pub related
 .dart_tool/

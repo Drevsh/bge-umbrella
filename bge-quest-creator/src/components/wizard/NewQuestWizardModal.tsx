@@ -44,11 +44,12 @@ export const NewQuestWizardModal: React.FC = () => {
   const addQuest = useCampaignStore((s) => s.addQuest);
   const addEdge = useCampaignStore((s) => s.addEdge);
   const selectQuest = useCampaignStore((s) => s.selectQuest);
+  const activeGameProfile = useCampaignStore((s) => s.activeGameProfile);
 
   const [step, setStep] = useState(1);
 
   // Form State
-  const [category, setCategory] = useState<QuestCategory>('MAIN');
+  const [category, setCategory] = useState<string>('MAIN');
   const [title, setTitle] = useState('');
   const [code, setCode] = useState('M01');
   const [tier, setTier] = useState(1);
@@ -78,14 +79,17 @@ export const NewQuestWizardModal: React.FC = () => {
   }, [selectedParentQuestId, quests, edges, simulator.customTags]);
 
   // Compute next available code for a given category
-  const computeNextCode = (cat: QuestCategory): string => {
+  const computeNextCode = (cat: string): string => {
     const existing = new Set(Object.values(quests).map((q) => q.code.toUpperCase()));
     let prefix = 'M';
     if (cat === 'MAIN_BRANCH') prefix = 'MB';
-    if (cat === 'SIDE') prefix = 'S';
-    if (cat === 'FACTION') prefix = 'F';
-    if (cat === 'BOSS') prefix = 'B';
-    if (cat === 'ACT_TRANSITION') prefix = 'ACT_TRANS';
+    else if (cat === 'SIDE') prefix = 'S';
+    else if (cat === 'FACTION') prefix = 'F';
+    else if (cat === 'BOSS') prefix = 'B';
+    else if (cat === 'ACT_TRANSITION') prefix = 'ACT_TRANS';
+    else {
+      prefix = cat.slice(0, 2).toUpperCase();
+    }
 
     if (prefix === 'ACT_TRANS') {
       const act = typeof activeActId === 'number' ? activeActId : 1;
@@ -147,7 +151,7 @@ export const NewQuestWizardModal: React.FC = () => {
   }, [isOpen, wizardInitOptions, quests, activeActId]);
 
   // When category changes, update code if title/code hasn't been heavily customized
-  const handleCategorySelect = (newCat: QuestCategory) => {
+  const handleCategorySelect = (newCat: string) => {
     setCategory(newCat);
     setCode(computeNextCode(newCat));
   };
@@ -321,8 +325,9 @@ export const NewQuestWizardModal: React.FC = () => {
 
     const newQuest: QuestModel = {
       uid,
+      gameId: activeGameProfile.id,
       code: finalCode,
-      title: title.trim() || `Quest ${finalCode}`,
+      title: title.trim() || `${activeGameProfile.terminology?.questTerm || 'Quest'} ${finalCode}`,
       act: typeof activeActId === 'number' ? activeActId : 1,
       tier,
       category,
@@ -583,23 +588,21 @@ export const NewQuestWizardModal: React.FC = () => {
                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
                   Category
                 </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['MAIN', 'MAIN_BRANCH', 'SIDE', 'FACTION', 'BOSS', 'ACT_TRANSITION'] as QuestCategory[]).map(
-                    (cat) => (
-                      <button
-                        key={cat}
-                        type="button"
-                        onClick={() => handleCategorySelect(cat)}
-                        className={`p-2 rounded-lg border text-left transition-all cursor-pointer ${
-                          category === cat
-                            ? 'bg-indigo-950/60 border-indigo-500 text-indigo-200 font-semibold shadow-md'
-                            : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
-                        }`}
-                      >
-                        <div className="text-xs truncate">{cat.replace('_', ' ')}</div>
-                      </button>
-                    )
-                  )}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {(activeGameProfile.categories || []).map((catDef) => (
+                    <button
+                      key={catDef.id}
+                      type="button"
+                      onClick={() => handleCategorySelect(catDef.id)}
+                      className={`p-2 rounded-lg border text-left transition-all cursor-pointer ${
+                        category === catDef.id
+                          ? 'bg-indigo-950/60 border-indigo-500 text-indigo-200 font-semibold shadow-md'
+                          : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                      }`}
+                    >
+                      <div className="text-xs truncate">{catDef.label}</div>
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
