@@ -12,7 +12,8 @@ import {
   Layers,
   Tag,
   Globe,
-  Volume2
+  Volume2,
+  Dices
 } from 'lucide-react';
 import { QuestModel, QuestVariantOverride } from '../../types/campaign';
 import { QuestSimStatus } from '../../utils/simulatorEngine';
@@ -53,7 +54,8 @@ export const QuestNodeCard = memo(({ id, data, selected }: { id: string; data: Q
     SIDE: 'border-emerald-500/60 bg-emerald-950/40 text-emerald-300',
     FACTION: 'border-purple-500/60 bg-purple-950/40 text-purple-300',
     BOSS: 'border-rose-500/70 bg-rose-950/40 text-rose-300',
-    ACT_TRANSITION: 'border-amber-400/80 bg-amber-950/50 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.25)]'
+    ACT_TRANSITION: 'border-amber-400/80 bg-amber-950/50 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.25)]',
+    TEST: 'border-amber-500/70 bg-amber-950/50 text-amber-300 shadow-[0_0_8px_rgba(245,158,11,0.2)]'
   };
 
   const categoryDef = activeGameProfile?.categories?.find((c) => c.id === quest.category);
@@ -237,14 +239,47 @@ export const QuestNodeCard = memo(({ id, data, selected }: { id: string; data: Q
         </div>
       )}
 
-      {/* Dynamic Multi-Port Reward Rows */}
+      {/* Dynamic Multi-Port Reward Rows / Test Table */}
       <div className="p-2 space-y-1.5">
-        <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-1">
-          Outcomes & Rewards
-        </div>
+        {quest.testConfig ? (
+          <div className="flex items-center justify-between text-[10px] font-bold text-amber-300 uppercase tracking-wider px-1 pb-1 mb-1 border-b border-amber-900/40">
+            <span className="flex items-center gap-1">
+              <Dices className="w-3 h-3 text-amber-400" />
+              <span className="truncate max-w-[150px]">{quest.testConfig.testName || 'Skill Test'}</span>
+            </span>
+            <span className="text-[9px] font-mono text-amber-400/90 bg-amber-950/80 px-1 py-0.2 rounded border border-amber-800/60">
+              p.11
+            </span>
+          </div>
+        ) : (
+          <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider px-1">
+            Outcomes & Rewards
+          </div>
+        )}
 
         {quest.rewardOutcomes.map((reward, idx) => {
           const isSelected = activeRewardChoices.includes(reward.id);
+          const testOutcome = quest.testConfig?.outcomes?.find((o) => o.id === reward.id);
+          const isNegative = testOutcome?.type === 'NEGATIVE';
+          const isNeutral = testOutcome?.type === 'NEUTRAL';
+          const isPositive = testOutcome?.type === 'POSITIVE';
+
+          const outcomeStyle = isPositive
+            ? isSelected
+              ? 'bg-emerald-950/70 border-emerald-400 text-emerald-100 shadow-[0_0_8px_rgba(16,185,129,0.3)]'
+              : 'bg-emerald-950/30 hover:bg-emerald-950/60 border-emerald-700/50 text-emerald-200'
+            : isNeutral
+            ? isSelected
+              ? 'bg-slate-800 border-slate-400 text-slate-100 shadow-[0_0_8px_rgba(148,163,184,0.3)]'
+              : 'bg-slate-900/50 hover:bg-slate-800/60 border-slate-700/60 text-slate-300'
+            : isNegative
+            ? isSelected
+              ? 'bg-rose-950/70 border-rose-400 text-rose-100 shadow-[0_0_8px_rgba(244,63,94,0.3)]'
+              : 'bg-rose-950/30 hover:bg-rose-950/60 border-rose-800/50 text-rose-200'
+            : isSelected
+            ? 'bg-indigo-950/60 border-indigo-500/60 text-indigo-200 shadow-[0_0_8px_rgba(99,102,241,0.2)]'
+            : 'bg-slate-800/40 hover:bg-slate-800/80 border-slate-800 text-slate-300';
+
           return (
             <div
               key={reward.id}
@@ -252,11 +287,7 @@ export const QuestNodeCard = memo(({ id, data, selected }: { id: string; data: Q
                 e.stopPropagation();
                 toggleSimulatorRewardChoice(reward.id, quest.uid);
               }}
-              className={`relative flex items-center justify-between text-[11px] p-1.5 rounded-md border transition-all ${
-                isSelected
-                  ? 'bg-indigo-950/60 border-indigo-500/60 text-indigo-200 shadow-[0_0_8px_rgba(99,102,241,0.2)]'
-                  : 'bg-slate-800/40 hover:bg-slate-800/80 border-slate-800 text-slate-300'
-              }`}
+              className={`relative flex items-center justify-between text-[11px] p-1.5 rounded-md border transition-all ${outcomeStyle}`}
             >
               <div className="flex items-center gap-1.5 overflow-hidden pr-2">
                 <input
@@ -265,7 +296,22 @@ export const QuestNodeCard = memo(({ id, data, selected }: { id: string; data: Q
                   onChange={() => {}} // Controlled by outer div click
                   className="rounded border-slate-700 bg-slate-900 text-indigo-500 focus:ring-0 w-3 h-3 cursor-pointer pointer-events-none"
                 />
-                <span className="truncate font-medium">{reward.label}</span>
+                {testOutcome && (
+                  <span
+                    className={`text-[9px] font-mono font-bold px-1.5 py-0.2 rounded border shrink-0 ${
+                      isPositive
+                        ? 'bg-emerald-950 text-emerald-300 border-emerald-500/60'
+                        : isNeutral
+                        ? 'bg-slate-800 text-slate-300 border-slate-600'
+                        : 'bg-rose-950 text-rose-300 border-rose-500/60'
+                    }`}
+                  >
+                    {testOutcome.rangeLabel}
+                  </span>
+                )}
+                <span className="truncate font-medium">
+                  {testOutcome ? testOutcome.title : reward.label}
+                </span>
               </div>
 
               <div className="flex items-center gap-1.5 text-[10px] shrink-0 text-slate-400 mr-2">

@@ -17,7 +17,8 @@ import {
   GitBranch,
   ShieldAlert,
   Loader2,
-  FileCode2
+  FileCode2,
+  Dices
 } from 'lucide-react';
 import { useCampaignStore } from '../../store/useCampaignStore';
 import {
@@ -26,7 +27,10 @@ import {
   PrereqLogic,
   RewardOutcome,
   CampaignEdge,
-  QuestVariantOverride
+  QuestVariantOverride,
+  DragonEclipseTestConfig,
+  createDefaultDragonEclipseTestConfig,
+  syncTestOutcomesToRewardOutcomes
 } from '../../types/campaign';
 import { getAvailableStateTagsForQuest } from '../../utils/tagAnalysis';
 import { StateTagAutocompleteInput } from '../inspector/StateTagAutocompleteInput';
@@ -62,6 +66,7 @@ export const NewQuestWizardModal: React.FC = () => {
   const [flavorText, setFlavorText] = useState('');
   const [objectives, setObjectives] = useState('');
   const [setupInstructions, setSetupInstructions] = useState('');
+  const [testConfig, setTestConfig] = useState<DragonEclipseTestConfig | undefined>(undefined);
 
   // AI drafting state
   const [aiPrompt, setAiPrompt] = useState('');
@@ -86,6 +91,7 @@ export const NewQuestWizardModal: React.FC = () => {
     else if (cat === 'SIDE') prefix = 'S';
     else if (cat === 'FACTION') prefix = 'F';
     else if (cat === 'BOSS') prefix = 'B';
+    else if (cat === 'TEST') prefix = 'T';
     else if (cat === 'ACT_TRANSITION') prefix = 'ACT_TRANS';
     else {
       prefix = cat.slice(0, 2).toUpperCase();
@@ -138,6 +144,7 @@ export const NewQuestWizardModal: React.FC = () => {
     setObjectives('');
     setSetupInstructions('');
     setVariants([]);
+    setTestConfig(undefined);
     setRewards([
       {
         id: `r-${Date.now().toString(36)}-1`,
@@ -154,14 +161,20 @@ export const NewQuestWizardModal: React.FC = () => {
   const handleCategorySelect = (newCat: string) => {
     setCategory(newCat);
     setCode(computeNextCode(newCat));
+    if (newCat === 'TEST') {
+      const defaultCfg = createDefaultDragonEclipseTestConfig(title || 'Skill Test (Page 11)');
+      setTestConfig(defaultCfg);
+      setRewards(syncTestOutcomesToRewardOutcomes(defaultCfg));
+    }
   };
 
   // Archetype Presets
-  const applyPreset = (presetType: 'STANDARD' | 'CHOICE_BRANCH' | 'BOSS_CLIMAX' | 'SIDE_QUEST') => {
+  const applyPreset = (presetType: 'STANDARD' | 'CHOICE_BRANCH' | 'BOSS_CLIMAX' | 'SIDE_QUEST' | 'SKILL_TEST') => {
     const timestamp = Date.now().toString(36);
     if (presetType === 'STANDARD') {
       setCategory('MAIN');
       setCode(computeNextCode('MAIN'));
+      setTestConfig(undefined);
       setRewards([
         {
           id: `r-${timestamp}-1`,
@@ -175,6 +188,7 @@ export const NewQuestWizardModal: React.FC = () => {
     } else if (presetType === 'CHOICE_BRANCH') {
       setCategory('MAIN_BRANCH');
       setCode(computeNextCode('MAIN_BRANCH'));
+      setTestConfig(undefined);
       setRewards([
         {
           id: `r-${timestamp}-a`,
@@ -197,6 +211,7 @@ export const NewQuestWizardModal: React.FC = () => {
       setCategory('BOSS');
       setCode(computeNextCode('BOSS'));
       setPrereqLogic('ALL');
+      setTestConfig(undefined);
       setRewards([
         {
           id: `r-${timestamp}-boss`,
@@ -220,6 +235,7 @@ export const NewQuestWizardModal: React.FC = () => {
     } else if (presetType === 'SIDE_QUEST') {
       setCategory('SIDE');
       setCode(computeNextCode('SIDE'));
+      setTestConfig(undefined);
       setRewards([
         {
           id: `r-${timestamp}-side`,
@@ -230,6 +246,12 @@ export const NewQuestWizardModal: React.FC = () => {
           grantsStateTags: []
         }
       ]);
+    } else if (presetType === 'SKILL_TEST') {
+      setCategory('TEST');
+      setCode(computeNextCode('TEST'));
+      const defaultCfg = createDefaultDragonEclipseTestConfig('Skill Test (Page 11)');
+      setTestConfig(defaultCfg);
+      setRewards(syncTestOutcomesToRewardOutcomes(defaultCfg));
     }
   };
 
@@ -323,6 +345,8 @@ export const NewQuestWizardModal: React.FC = () => {
       posY = 80 + sameTierQuests.length * 240;
     }
 
+    const finalTestConfig = testConfig || (category === 'TEST' ? createDefaultDragonEclipseTestConfig(title.trim() || `Skill Test ${finalCode}`) : undefined);
+
     const newQuest: QuestModel = {
       uid,
       gameId: activeGameProfile.id,
@@ -337,6 +361,7 @@ export const NewQuestWizardModal: React.FC = () => {
       flavorText,
       setupInstructions,
       objectives,
+      testConfig: finalTestConfig,
       rewardOutcomes: rewards.length > 0 ? rewards : [
         {
           id: `r-${uid}-1`,
@@ -503,14 +528,14 @@ export const NewQuestWizardModal: React.FC = () => {
                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
                   Start From Archetype Template (Optional)
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                   <button
                     type="button"
                     onClick={() => applyPreset('STANDARD')}
                     className="p-2.5 rounded-lg border border-slate-800 bg-slate-950 hover:border-indigo-500/60 hover:bg-slate-800/40 text-left transition-all cursor-pointer"
                   >
                     <div className="font-semibold text-xs text-indigo-300">Standard Main</div>
-                    <div className="text-[10px] text-slate-500">Linear main progression quest</div>
+                    <div className="text-[10px] text-slate-500">Linear progression</div>
                   </button>
                   <button
                     type="button"
@@ -518,7 +543,18 @@ export const NewQuestWizardModal: React.FC = () => {
                     className="p-2.5 rounded-lg border border-slate-800 bg-slate-950 hover:border-cyan-500/60 hover:bg-slate-800/40 text-left transition-all cursor-pointer"
                   >
                     <div className="font-semibold text-xs text-cyan-300">Branching Choice</div>
-                    <div className="text-[10px] text-slate-500">2 exclusive outcome paths</div>
+                    <div className="text-[10px] text-slate-500">2 exclusive paths</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyPreset('SKILL_TEST')}
+                    className="p-2.5 rounded-lg border border-slate-800 bg-slate-950 hover:border-amber-500/60 hover:bg-slate-800/40 text-left transition-all cursor-pointer group"
+                  >
+                    <div className="font-semibold text-xs text-amber-300 flex items-center gap-1">
+                      <Dices className="w-3.5 h-3.5 text-amber-400 group-hover:rotate-12 transition-transform" />
+                      <span>Skill Test (p.11)</span>
+                    </div>
+                    <div className="text-[10px] text-slate-500">Item push-luck table</div>
                   </button>
                   <button
                     type="button"
@@ -534,7 +570,7 @@ export const NewQuestWizardModal: React.FC = () => {
                     className="p-2.5 rounded-lg border border-slate-800 bg-slate-950 hover:border-emerald-500/60 hover:bg-slate-800/40 text-left transition-all cursor-pointer"
                   >
                     <div className="font-semibold text-xs text-emerald-300">Side Venture</div>
-                    <div className="text-[10px] text-slate-500">Optional contract / loot</div>
+                    <div className="text-[10px] text-slate-500">Optional contract</div>
                   </button>
                 </div>
               </div>

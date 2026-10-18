@@ -61,6 +61,84 @@ export interface QuestAudioTrack {
   createdAt: string;
 }
 
+export type DragonEclipseTestOutcomeType = 'POSITIVE' | 'NEUTRAL' | 'NEGATIVE';
+
+export interface DragonEclipseTestOutcome {
+  id: string;                 // Corresponds to RewardOutcome.id
+  rangeLabel: string;         // e.g. "0 - 4", "5 - 8", "9+"
+  minScore?: number;
+  maxScore?: number;
+  type: DragonEclipseTestOutcomeType; // POSITIVE (Green), NEUTRAL (Gray), NEGATIVE (Red)
+  title: string;              // e.g. "Failure: Trigger Alarm", "Success: Slipped Past"
+  narrative?: string;         // Story text describing what happens
+  gold?: number;
+  items?: string[];
+  grantsStateTags?: string[];
+}
+
+export interface DragonEclipseTestConfig {
+  testName: string;           // e.g. "Stealth Infiltration Check"
+  modifiersPrompt?: string;   // Rulebook p.11: Modifiers directly above the Test Table
+  outcomes: DragonEclipseTestOutcome[];
+}
+
+export function createDefaultDragonEclipseTestConfig(testName: string = 'Skill Test'): DragonEclipseTestConfig {
+  const ts = Date.now().toString(36);
+  return {
+    testName,
+    modifiersPrompt: '+1 to final test value if you possess an appropriate Item card or Mystling element',
+    outcomes: [
+      {
+        id: `test-${ts}-neg`,
+        rangeLabel: '0 - 4',
+        minScore: 0,
+        maxScore: 4,
+        type: 'NEGATIVE',
+        title: 'Failure: Complication Arises',
+        narrative: 'Your efforts falter. A trap clicks or guards turn in your direction.',
+        gold: 0,
+        items: [],
+        grantsStateTags: ['+Test_Failed']
+      },
+      {
+        id: `test-${ts}-neu`,
+        rangeLabel: '5 - 8',
+        minScore: 5,
+        maxScore: 8,
+        type: 'NEUTRAL',
+        title: 'Complication: Narrow Escape',
+        narrative: 'You barely make it through, but resource or stamina was lost in the struggle.',
+        gold: 10,
+        items: [],
+        grantsStateTags: ['+Test_Narrow']
+      },
+      {
+        id: `test-${ts}-pos`,
+        rangeLabel: '9+',
+        minScore: 9,
+        maxScore: 99,
+        type: 'POSITIVE',
+        title: 'Success: Flawless Execution',
+        narrative: 'You execute the task with mastery, discovering extra spoils along the way.',
+        gold: 25,
+        items: ['Valuable Clue'],
+        grantsStateTags: ['++Test_Triumph']
+      }
+    ]
+  };
+}
+
+export function syncTestOutcomesToRewardOutcomes(testConfig: DragonEclipseTestConfig): RewardOutcome[] {
+  return testConfig.outcomes.map((o) => ({
+    id: o.id,
+    label: `[${o.rangeLabel}] ${o.title}`,
+    isExclusiveChoice: true,
+    gold: o.gold || 0,
+    items: o.items || [],
+    grantsStateTags: o.grantsStateTags || []
+  }));
+}
+
 export interface QuestModel {
   uid: string;                // Immutable internal ID (used for graph node.id)
   code: string;               // Designer-facing ID ("M01", "S01", "M02_A", "B01")
@@ -87,6 +165,7 @@ export interface QuestModel {
   variants: QuestVariantOverride[];
   devStatus: DevStatus;
   audioTracks?: QuestAudioTrack[];
+  testConfig?: DragonEclipseTestConfig;
 }
 
 export interface CampaignEdge {
@@ -173,7 +252,23 @@ export const QuestModelSchema = z.object({
   rewardOutcomes: z.array(RewardOutcomeSchema).default([]),
   variants: z.array(QuestVariantOverrideSchema).default([]),
   devStatus: z.enum(['IDEA', 'DRAFT', 'PLAYTESTED', 'FINAL']).default('DRAFT'),
-  audioTracks: z.array(QuestAudioTrackSchema).optional()
+  audioTracks: z.array(QuestAudioTrackSchema).optional(),
+  testConfig: z.object({
+    testName: z.string(),
+    modifiersPrompt: z.string().optional(),
+    outcomes: z.array(z.object({
+      id: z.string(),
+      rangeLabel: z.string(),
+      minScore: z.number().optional(),
+      maxScore: z.number().optional(),
+      type: z.enum(['POSITIVE', 'NEUTRAL', 'NEGATIVE']),
+      title: z.string(),
+      narrative: z.string().optional(),
+      gold: z.number().optional(),
+      items: z.array(z.string()).optional(),
+      grantsStateTags: z.array(z.string()).optional()
+    }))
+  }).optional()
 });
 
 export const CampaignActSchema = z.object({

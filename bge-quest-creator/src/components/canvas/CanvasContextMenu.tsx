@@ -14,10 +14,18 @@ import {
   Layers,
   ArrowRightCircle,
   Milestone,
-  ChevronRight
+  ChevronRight,
+  Dices
 } from 'lucide-react';
 import { useCampaignStore } from '../../store/useCampaignStore';
-import { QuestCategory, QuestModel, RewardOutcome } from '../../types/campaign';
+import {
+  QuestCategory,
+  QuestModel,
+  RewardOutcome,
+  DragonEclipseTestConfig,
+  createDefaultDragonEclipseTestConfig,
+  syncTestOutcomesToRewardOutcomes
+} from '../../types/campaign';
 
 export interface ContextMenuState {
   isOpen: boolean;
@@ -122,6 +130,7 @@ export const CanvasContextMenu: React.FC<CanvasContextMenuProps> = ({
     else if (cat === 'SIDE') prefix = 'S';
     else if (cat === 'FACTION') prefix = 'F';
     else if (cat === 'BOSS') prefix = 'B';
+    else if (cat === 'TEST') prefix = 'T';
     else if (cat === 'ACT_TRANSITION') prefix = 'ACT_TRANS';
     else {
       prefix = cat.slice(0, 2).toUpperCase();
@@ -149,10 +158,28 @@ export const CanvasContextMenu: React.FC<CanvasContextMenuProps> = ({
     const inferredTier = Math.max(1, Math.min(10, Math.floor((menuState.flowPos.x - 20) / 380) + 1));
 
     const newUid = `q-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 5)}`;
+    
+    let testConfig: DragonEclipseTestConfig | undefined = undefined;
+    let defaultRewards: RewardOutcome[] = [
+      {
+        id: `r-${newUid}-1`,
+        label: 'Scenario Victory',
+        isExclusiveChoice: false,
+        gold: 25,
+        items: [],
+        grantsStateTags: []
+      }
+    ];
+
+    if (category === 'TEST') {
+      testConfig = createDefaultDragonEclipseTestConfig(`Skill Test ${code}`);
+      defaultRewards = syncTestOutcomesToRewardOutcomes(testConfig);
+    }
+
     const newQuest: QuestModel = {
       uid: newUid,
       code,
-      title: category === 'ACT_TRANSITION' ? `Act ${actId} Transition Bridge` : `New Quest ${code}`,
+      title: category === 'TEST' ? `Skill Test: ${code}` : category === 'ACT_TRANSITION' ? `Act ${actId} Transition Bridge` : `New Quest ${code}`,
       act: actId,
       tier: inferredTier,
       category,
@@ -161,20 +188,12 @@ export const CanvasContextMenu: React.FC<CanvasContextMenuProps> = ({
         x: Math.round(menuState.flowPos.x),
         y: Math.round(menuState.flowPos.y)
       },
-      flavorText: 'A new adventure awaits the heroes...',
-      setupInstructions: 'Place hero standees on the entrance hex.',
-      objectives: 'Complete the scenario objectives to proceed.',
+      flavorText: category === 'TEST' ? 'Draw cards from the Item deck and add up their Test Values to determine your outcome.' : 'A new adventure awaits the heroes...',
+      setupInstructions: category === 'TEST' ? 'Consult the Dragon Eclipse Test Table (Page 11). Verify element & item modifiers.' : 'Place hero standees on the entrance hex.',
+      objectives: category === 'TEST' ? 'Perform the Test and resolve the corresponding outcome tier.' : 'Complete the scenario objectives to proceed.',
       devStatus: 'DRAFT',
-      rewardOutcomes: [
-        {
-          id: `r-${newUid}-1`,
-          label: 'Scenario Victory',
-          isExclusiveChoice: false,
-          gold: 25,
-          items: [],
-          grantsStateTags: []
-        }
-      ],
+      testConfig,
+      rewardOutcomes: defaultRewards,
       variants: []
     };
 
@@ -302,6 +321,15 @@ export const CanvasContextMenu: React.FC<CanvasContextMenuProps> = ({
           >
             <Plus className="w-3.5 h-3.5 text-indigo-400" />
             <span>Add Main Quest Here</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleCreateQuest('TEST')}
+            className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-slate-800/80 text-left transition-colors text-amber-300 hover:text-amber-200 cursor-pointer"
+          >
+            <Dices className="w-3.5 h-3.5 text-amber-400" />
+            <span>Add Skill Test (p.11) Here</span>
           </button>
 
           {/* Add Categorized Quest Submenu */}

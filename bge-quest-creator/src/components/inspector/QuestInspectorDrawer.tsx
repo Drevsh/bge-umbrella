@@ -23,10 +23,12 @@ import {
   Sparkles,
   Key,
   Loader2,
-  Mic
+  Mic,
+  Dices
 } from 'lucide-react';
 import { useCampaignStore } from '../../store/useCampaignStore';
 import { VariantTabsEditor } from './VariantTabsEditor';
+import { DragonEclipseTestTableEditor } from './DragonEclipseTestTableEditor';
 import { TabletopCardPreview } from './TabletopCardPreview';
 import { evaluateCampaignSimulation } from '../../utils/simulatorEngine';
 import {
@@ -36,7 +38,9 @@ import {
   DevStatus,
   EdgeRelationType,
   QuestAudioTrack,
-  QuestVariantOverride
+  QuestVariantOverride,
+  createDefaultDragonEclipseTestConfig,
+  syncTestOutcomesToRewardOutcomes
 } from '../../types/campaign';
 import { QuestAudioPlayer } from '../audio/QuestAudioPlayer';
 import {
@@ -654,7 +658,15 @@ export const QuestInspectorDrawer: React.FC = () => {
               </label>
               <select
                 value={currentQuest.category}
-                onChange={(e) => updateQuestField(currentQuest.uid, 'category', e.target.value)}
+                onChange={(e) => {
+                  const newCategory = e.target.value;
+                  updateQuestField(currentQuest.uid, 'category', newCategory);
+                  if (newCategory === 'TEST' && !currentQuest.testConfig) {
+                    const defaultCfg = createDefaultDragonEclipseTestConfig(currentQuest.title || 'Skill Test');
+                    updateQuestField(currentQuest.uid, 'testConfig', defaultCfg);
+                    updateQuestField(currentQuest.uid, 'rewardOutcomes', syncTestOutcomesToRewardOutcomes(defaultCfg));
+                  }
+                }}
                 className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
               >
                 {(activeGameProfile.categories || []).map((catDef) => (
@@ -709,6 +721,34 @@ export const QuestInspectorDrawer: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Dragon Eclipse Skill Test Section (Page 11) */}
+        {(currentQuest.category === 'TEST' || Boolean(currentQuest.testConfig)) ? (
+          <div className="pt-3 border-t border-slate-800">
+            <DragonEclipseTestTableEditor quest={currentQuest} />
+          </div>
+        ) : (
+          <div className="pt-3 border-t border-slate-800">
+            <button
+              type="button"
+              onClick={() => {
+                const defaultCfg = createDefaultDragonEclipseTestConfig(currentQuest.title || 'Skill Test');
+                updateQuestField(currentQuest.uid, 'testConfig', defaultCfg);
+                updateQuestField(currentQuest.uid, 'category', 'TEST');
+                updateQuestField(currentQuest.uid, 'rewardOutcomes', syncTestOutcomesToRewardOutcomes(defaultCfg));
+              }}
+              className="w-full flex items-center justify-between p-2.5 rounded-xl border border-amber-900/50 bg-amber-950/20 hover:bg-amber-950/40 text-amber-300 text-xs transition-colors cursor-pointer group"
+            >
+              <span className="flex items-center gap-2">
+                <Dices className="w-4 h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
+                <span className="font-semibold">Add Skill Test Table (Page 11)</span>
+              </span>
+              <span className="text-[10px] text-amber-400/80 font-mono bg-amber-900/40 px-1.5 py-0.5 rounded border border-amber-800/60">
+                Item Flips
+              </span>
+            </button>
+          </div>
+        )}
 
         {/* Narrative & Variant Editor */}
         <div className="pt-3 border-t border-slate-800">
