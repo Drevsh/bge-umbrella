@@ -34,6 +34,7 @@ import { DragonEclipseTestTableEditor } from './DragonEclipseTestTableEditor';
 import { TabletopCardPreview } from './TabletopCardPreview';
 import { evaluateCampaignSimulation } from '../../utils/simulatorEngine';
 import {
+  QuestModel,
   RewardOutcome,
   QuestCategory,
   PrereqLogic,
@@ -73,6 +74,8 @@ export const QuestInspectorDrawer: React.FC = () => {
   const updateRewardOutcome = useCampaignStore((s) => s.updateRewardOutcome);
   const reorderRewardOutcome = useCampaignStore((s) => s.reorderRewardOutcome);
   const deleteRewardOutcome = useCampaignStore((s) => s.deleteRewardOutcome);
+  const addEdge = useCampaignStore((s) => s.addEdge);
+  const addQuest = useCampaignStore((s) => s.addQuest);
   const deleteEdge = useCampaignStore((s) => s.deleteEdge);
   const updateEdge = useCampaignStore((s) => s.updateEdge);
   const clearEdgeWaypoints = useCampaignStore((s) => s.clearEdgeWaypoints);
@@ -100,6 +103,9 @@ export const QuestInspectorDrawer: React.FC = () => {
   const [editRewardTime, setEditRewardTime] = useState(0);
   const [editRewardItems, setEditRewardItems] = useState('');
   const [editRewardTags, setEditRewardTags] = useState('');
+  const [newRewardTargetTestId, setNewRewardTargetTestId] = useState('');
+  const [editRewardTargetTestId, setEditRewardTargetTestId] = useState('');
+  const [selectedTestToTrigger, setSelectedTestToTrigger] = useState('');
 
   // TTS Voice Narration state
   const [selectedVoice, setSelectedVoice] = useState<string>(GEMINI_TTS_VOICES[0].id);
@@ -138,6 +144,18 @@ export const QuestInspectorDrawer: React.FC = () => {
     if (!currentQuest) return [];
     return edges.filter((e) => e.target === currentQuest.uid);
   }, [edges, currentQuest]);
+
+  const testQuests = useMemo(() => {
+    return Object.values(quests).filter((q) => q.category === 'TEST' || Boolean(q.testConfig));
+  }, [quests]);
+
+  const outgoingTestEdges = useMemo(() => {
+    if (!currentQuest) return [];
+    return outgoingEdges.filter((e) => {
+      const tgt = quests[e.target];
+      return tgt && (tgt.category === 'TEST' || Boolean(tgt.testConfig));
+    });
+  }, [outgoingEdges, quests, currentQuest]);
 
   const currentEdge = selectedEdgeId ? edges.find((e) => e.id === selectedEdgeId) : null;
 
@@ -313,6 +331,74 @@ export const QuestInspectorDrawer: React.FC = () => {
     );
   }
 
+  const handleLinkExistingTest = (targetTestUid: string, sourcePortId?: string | null) => {
+    if (!currentQuest || !targetTestUid) return;
+    const exists = edges.some(
+      (e) => e.source === currentQuest.uid && e.target === targetTestUid && (sourcePortId ? e.sourcePortId === sourcePortId : true)
+    );
+    if (exists) return;
+
+    addEdge({
+      id: `e-${currentQuest.uid}-${targetTestUid}-${Date.now().toString(36)}`,
+      source: currentQuest.uid,
+      sourcePortId: sourcePortId || null,
+      target: targetTestUid,
+      targetHandle: 'in',
+      label: 'Triggers Test',
+      type: sourcePortId ? 'CHOICE_BRANCH' : 'UNLOCKS'
+    });
+  };
+
+  const handleCreateAndTriggerNewTest = (sourcePortId?: string | null) => {
+    if (!currentQuest) return;
+    const actId = currentQuest.act || 1;
+    const existingCodes = new Set(Object.values(quests).map((q) => q.code.toUpperCase()));
+    let num = 1;
+    while (existingCodes.has(`T${String(num).padStart(2, '0')}`)) {
+      num++;
+    }
+    const code = `T${String(num).padStart(2, '0')}`;
+    const newUid = `q-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 5)}`;
+    const testConfig = createDefaultDragonEclipseTestConfig(`Skill Test ${code}`);
+    const defaultRewards = syncTestOutcomesToRewardOutcomes(testConfig);
+
+    const sameTierQuests = Object.values(quests).filter((q) => (q.tier || 1) === (currentQuest.tier || 1) + 1);
+    const posX = Math.round((currentQuest.position?.x ?? 60) + 360);
+    const posY = Math.round((currentQuest.position?.y ?? 80) + (sameTierQuests.length % 2 === 0 ? 0 : 70));
+
+    const newQuest: QuestModel = {
+      uid: newUid,
+      code,
+      title: `Skill Test: ${code}`,
+      act: actId,
+      tier: (currentQuest.tier || 1) + 1,
+      category: 'TEST',
+      prereqLogic: 'ANY',
+      position: { x: posX, y: posY },
+      flavorText: 'Draw cards from the Item deck and add up their Test Values to determine your outcome.',
+      setupInstructions: 'Consult the Dragon Eclipse Test Table (Page 11). Verify element & item modifiers.',
+      objectives: 'Perform the Test and resolve the corresponding outcome tier.',
+      devStatus: 'DRAFT',
+      testConfig,
+      rewardOutcomes: defaultRewards,
+      variants: []
+    };
+
+    addQuest(newQuest);
+
+    addEdge({
+      id: `e-${currentQuest.uid}-${newUid}-${Date.now().toString(36)}`,
+      source: currentQuest.uid,
+      sourcePortId: sourcePortId || currentQuest.rewardOutcomes[0]?.id || null,
+      target: newUid,
+      targetHandle: 'in',
+      type: sourcePortId ? 'CHOICE_BRANCH' : 'UNLOCKS',
+      label: 'Triggers Test'
+    });
+
+    selectQuest(newUid);
+  };
+
   const handleCreateReward = () => {
     if (!newRewardLabel.trim()) return;
     const cleanTags = newRewardTags
@@ -330,8 +416,9 @@ export const QuestInspectorDrawer: React.FC = () => {
       .map((i) => i.trim())
       .filter(Boolean);
 
+    const newRewardId = `out-${Date.now().toString(36)}`;
     const newReward: RewardOutcome = {
-      id: `out-${Date.now().toString(36)}`,
+      id: newRewardId,
       label: newRewardLabel.trim(),
       isExclusiveChoice: newRewardIsChoice,
       gold: Number(newRewardGold) || 0,
@@ -341,12 +428,18 @@ export const QuestInspectorDrawer: React.FC = () => {
     };
 
     addRewardOutcome(currentQuest.uid, newReward);
+
+    if (newRewardTargetTestId) {
+      handleLinkExistingTest(newRewardTargetTestId, newRewardId);
+    }
+
     setNewRewardLabel('');
     setNewRewardIsChoice(false);
     setNewRewardGold(0);
     setNewRewardTime(0);
     setNewRewardItems('');
     setNewRewardTags('');
+    setNewRewardTargetTestId('');
     setIsAddingReward(false);
   };
 
@@ -358,11 +451,17 @@ export const QuestInspectorDrawer: React.FC = () => {
     setEditRewardTime(reward.timeAdvance || 0);
     setEditRewardItems(reward.items.join(', '));
     setEditRewardTags(reward.grantsStateTags.join(', '));
+
+    const existingEdge = outgoingEdges.find(
+      (e) => e.sourcePortId === reward.id && quests[e.target] && (quests[e.target].category === 'TEST' || Boolean(quests[e.target].testConfig))
+    );
+    setEditRewardTargetTestId(existingEdge?.target || '');
     setIsAddingReward(false);
   };
 
   const handleCancelEditReward = () => {
     setEditingRewardId(null);
+    setEditRewardTargetTestId('');
   };
 
   const handleSaveEditReward = (rewardId: string) => {
@@ -391,7 +490,20 @@ export const QuestInspectorDrawer: React.FC = () => {
       grantsStateTags: cleanTags
     });
 
+    // Check if test edge changed
+    const existingTestEdge = outgoingEdges.find(
+      (e) => e.sourcePortId === rewardId && quests[e.target] && (quests[e.target].category === 'TEST' || Boolean(quests[e.target].testConfig))
+    );
+
+    if (existingTestEdge && existingTestEdge.target !== editRewardTargetTestId) {
+      deleteEdge(existingTestEdge.id);
+    }
+    if (editRewardTargetTestId && (!existingTestEdge || existingTestEdge.target !== editRewardTargetTestId)) {
+      handleLinkExistingTest(editRewardTargetTestId, rewardId);
+    }
+
     setEditingRewardId(null);
+    setEditRewardTargetTestId('');
   };
 
   // Compute synthesized text and word/char counts based on target scope and field
@@ -986,25 +1098,132 @@ export const QuestInspectorDrawer: React.FC = () => {
             <DragonEclipseTestTableEditor quest={currentQuest} />
           </div>
         ) : (
-          <div className="pt-3 border-t border-slate-800">
-            <button
-              type="button"
-              onClick={() => {
-                const defaultCfg = createDefaultDragonEclipseTestConfig(currentQuest.title || 'Skill Test');
-                updateQuestField(currentQuest.uid, 'testConfig', defaultCfg);
-                updateQuestField(currentQuest.uid, 'category', 'TEST');
-                updateQuestField(currentQuest.uid, 'rewardOutcomes', syncTestOutcomesToRewardOutcomes(defaultCfg));
-              }}
-              className="w-full flex items-center justify-between p-2.5 rounded-xl border border-amber-900/50 bg-amber-950/20 hover:bg-amber-950/40 text-amber-300 text-xs transition-colors cursor-pointer group"
-            >
-              <span className="flex items-center gap-2">
-                <Dices className="w-4 h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
-                <span className="font-semibold">Add Skill Test Table (Page 11)</span>
-              </span>
-              <span className="text-[10px] text-amber-400/80 font-mono bg-amber-900/40 px-1.5 py-0.5 rounded border border-amber-800/60">
-                Item Flips
-              </span>
-            </button>
+          <div className="pt-3 border-t border-slate-800 space-y-2.5">
+            <div className="p-3 rounded-xl bg-amber-950/20 border border-amber-900/50 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-amber-300 flex items-center gap-1.5">
+                  <Dices className="w-3.5 h-3.5 text-amber-400" />
+                  Skill Test Triggers (Page 11)
+                </span>
+                <span className="text-[10px] text-amber-400/80 font-mono bg-amber-900/40 px-1.5 py-0.5 rounded border border-amber-800/60">
+                  Item Flips
+                </span>
+              </div>
+
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Connect this quest to a Dragon Eclipse Skill Test table node to resolve card flip stat checks.
+              </p>
+
+              {/* Existing Linked Tests */}
+              {outgoingTestEdges.length > 0 && (
+                <div className="space-y-1.5">
+                  <span className="text-[10px] uppercase font-semibold tracking-wider text-slate-400 block">
+                    Triggered Skill Tests ({outgoingTestEdges.length}):
+                  </span>
+                  {outgoingTestEdges.map((e) => {
+                    const targetTest = quests[e.target];
+                    const sourcePort = currentQuest.rewardOutcomes.find((r) => r.id === e.sourcePortId);
+                    return (
+                      <div
+                        key={e.id}
+                        className="flex items-center justify-between p-2 rounded-lg bg-slate-900/90 border border-amber-900/40 text-xs"
+                      >
+                        <div className="min-w-0 flex items-center gap-1.5">
+                          <Dices className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                          <button
+                            type="button"
+                            onClick={() => selectQuest(e.target)}
+                            className="font-medium text-amber-300 hover:text-amber-200 truncate text-left hover:underline cursor-pointer"
+                            title="Jump to Skill Test"
+                          >
+                            [{targetTest?.code || 'Test'}] {targetTest?.title || e.target}
+                          </button>
+                          {sourcePort && (
+                            <span className="text-[10px] text-slate-500 font-mono truncate">
+                              via &quot;{sourcePort.label}&quot;
+                            </span>
+                          )}
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => deleteEdge(e.id)}
+                          className="text-slate-500 hover:text-rose-400 p-1 transition-colors ml-2 shrink-0 cursor-pointer"
+                          title="Disconnect Test"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Wire Existing Test */}
+              <div className="space-y-1.5 pt-1 border-t border-amber-900/30">
+                <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block">
+                  Trigger Existing Test
+                </label>
+                <div className="flex items-center gap-1.5">
+                  <select
+                    value={selectedTestToTrigger}
+                    onChange={(e) => setSelectedTestToTrigger(e.target.value)}
+                    className="flex-1 bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 truncate"
+                  >
+                    <option value="">Select a Skill Test...</option>
+                    {testQuests
+                      .filter((t) => t.uid !== currentQuest.uid)
+                      .map((t) => (
+                        <option key={t.uid} value={t.uid}>
+                          [{t.code}] {t.title}
+                        </option>
+                      ))}
+                  </select>
+                  <button
+                    type="button"
+                    disabled={!selectedTestToTrigger}
+                    onClick={() => {
+                      if (selectedTestToTrigger) {
+                        handleLinkExistingTest(selectedTestToTrigger);
+                        setSelectedTestToTrigger('');
+                      }
+                    }}
+                    className="px-2.5 py-1.5 rounded bg-amber-600 hover:bg-amber-500 disabled:opacity-40 text-slate-950 font-bold text-xs shrink-0 transition-colors shadow-sm cursor-pointer"
+                  >
+                    Link Test
+                  </button>
+                </div>
+              </div>
+
+              {/* Quick Create & Trigger New Test */}
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => handleCreateAndTriggerNewTest()}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-amber-950/60 hover:bg-amber-900/80 border border-amber-800/80 text-amber-300 text-xs font-medium transition-colors cursor-pointer"
+                >
+                  <Plus className="w-3 h-3 text-amber-400" />
+                  <span>+ Create & Trigger New Test</span>
+                </button>
+              </div>
+
+              {/* Secondary Option: Turn this node into a test */}
+              <div className="pt-2 border-t border-amber-900/20 text-right">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const defaultCfg = createDefaultDragonEclipseTestConfig(currentQuest.title || 'Skill Test');
+                    updateQuestField(currentQuest.uid, 'testConfig', defaultCfg);
+                    updateQuestField(currentQuest.uid, 'category', 'TEST');
+                    updateQuestField(currentQuest.uid, 'prereqLogic', 'ANY');
+                    updateQuestField(currentQuest.uid, 'rewardOutcomes', syncTestOutcomesToRewardOutcomes(defaultCfg));
+                  }}
+                  className="text-[10px] text-slate-500 hover:text-amber-400/90 underline transition-colors cursor-pointer"
+                >
+                  Convert this node itself into a Skill Test
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
@@ -1387,6 +1606,25 @@ export const QuestInspectorDrawer: React.FC = () => {
                       />
                     </div>
 
+                    <div>
+                      <label className="block text-[10px] font-semibold uppercase tracking-wider text-amber-400 mb-1 flex items-center gap-1">
+                        <Dices className="w-3 h-3 text-amber-400" />
+                        Trigger Skill Test (Page 11)
+                      </label>
+                      <select
+                        value={editRewardTargetTestId}
+                        onChange={(e) => setEditRewardTargetTestId(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-md px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-amber-500 font-medium"
+                      >
+                        <option value="">None (Standard Outcome)</option>
+                        {testQuests.map((t) => (
+                          <option key={t.uid} value={t.uid}>
+                            [{t.code}] {t.title}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
                     <div className="flex items-center justify-between pt-1 border-t border-slate-800/80">
                       <button
                         type="button"
@@ -1520,6 +1758,24 @@ export const QuestInspectorDrawer: React.FC = () => {
                         </span>
                       );
                     })}
+                    {(() => {
+                      const linkedEdge = outgoingEdges.find(
+                        (e) => e.sourcePortId === reward.id && quests[e.target] && (quests[e.target].category === 'TEST' || Boolean(quests[e.target].testConfig))
+                      );
+                      const linkedTest = linkedEdge ? quests[linkedEdge.target] : null;
+                      if (!linkedTest) return null;
+                      return (
+                        <button
+                          type="button"
+                          onClick={() => selectQuest(linkedTest.uid)}
+                          className="flex items-center gap-1 font-mono text-[10px] px-2 py-0.5 rounded bg-amber-950/80 border border-amber-800/80 text-amber-300 hover:text-amber-200 hover:border-amber-700 transition-colors cursor-pointer"
+                          title={`Jump to triggered Skill Test: ${linkedTest.title}`}
+                        >
+                          <Dices className="w-2.5 h-2.5 text-amber-400" />
+                          <span>Triggers [{linkedTest.code}]</span>
+                        </button>
+                      );
+                    })()}
                   </div>
                 </div>
               );
@@ -1637,6 +1893,25 @@ export const QuestInspectorDrawer: React.FC = () => {
                   placeholder="e.g. ++Idol_Kept, +Beacon_Lit"
                   className="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs font-mono text-emerald-300"
                 />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-amber-400 mb-1 flex items-center gap-1">
+                  <Dices className="w-3 h-3 text-amber-400" />
+                  Trigger Skill Test (Optional)
+                </label>
+                <select
+                  value={newRewardTargetTestId}
+                  onChange={(e) => setNewRewardTargetTestId(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-amber-500 font-medium"
+                >
+                  <option value="">None (Standard Outcome)</option>
+                  {testQuests.map((t) => (
+                    <option key={t.uid} value={t.uid}>
+                      [{t.code}] {t.title}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="flex justify-end gap-2 pt-1">

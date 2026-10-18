@@ -112,13 +112,22 @@ export const QuestNodeCard = memo(({ id, data, selected }: { id: string; data: Q
       } ${currentStatus.glow}`}
     >
       {/* Left Input Port Handle */}
-      {quest.prereqLogic !== 'START' && (
+      {(quest.prereqLogic !== 'START' || quest.category === 'TEST' || Boolean(quest.testConfig)) && (
         <Handle
           type="target"
           position={Position.Left}
           id="in"
-          className="!w-3.5 !h-3.5 !bg-slate-400 hover:!bg-indigo-400 !border-2 !border-slate-900 after:content-[''] after:absolute after:-inset-3 after:bg-transparent"
+          className={`!w-3.5 !h-3.5 ${
+            quest.category === 'TEST' || Boolean(quest.testConfig)
+              ? '!bg-amber-400 hover:!bg-amber-300 ring-2 ring-amber-500/50'
+              : '!bg-slate-400 hover:!bg-indigo-400'
+          } !border-2 !border-slate-900 after:content-[''] after:absolute after:-inset-3 after:bg-transparent`}
           style={{ top: '38px' }}
+          title={
+            quest.category === 'TEST' || Boolean(quest.testConfig)
+              ? 'Skill Test Input: Connect incoming quest to trigger this test'
+              : 'Prerequisite Input'
+          }
         />
       )}
 

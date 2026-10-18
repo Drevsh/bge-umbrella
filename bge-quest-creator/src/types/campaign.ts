@@ -221,6 +221,7 @@ export interface CampaignEdge {
   source: string;             // Source Quest uid
   sourcePortId: string | null;// RewardOutcome.id (null for node-level LOCKOUT edges)
   target: string;             // Target Quest uid
+  targetHandle?: string | null;
   type: EdgeRelationType;     // Drives color, dash, and simulator evaluation
   stateTag?: string | null;   // Tag carried across this connection
   label?: string;
@@ -348,6 +349,7 @@ export const CampaignEdgeSchema = z.object({
   source: z.string(),
   sourcePortId: z.string().nullable(),
   target: z.string(),
+  targetHandle: z.string().nullable().optional(),
   type: z.enum(['UNLOCKS', 'CHOICE_BRANCH', 'MUTATION', 'LOCKOUT', 'TIME_TRIGGER', 'TIME_EXPIRED']),
   stateTag: z.string().nullable().optional(),
   label: z.string().optional(),

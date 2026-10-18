@@ -222,7 +222,7 @@ export const CanvasContextMenu: React.FC<CanvasContextMenuProps> = ({
       act: actId,
       tier: inferredTier,
       category,
-      prereqLogic: 'START',
+      prereqLogic: category === 'TEST' ? 'ANY' : 'START',
       position: {
         x: Math.round(menuState.flowPos.x),
         y: Math.round(menuState.flowPos.y)
@@ -311,6 +311,53 @@ export const CanvasContextMenu: React.FC<CanvasContextMenuProps> = ({
       type: isChoice ? 'CHOICE_BRANCH' : 'UNLOCKS',
       stateTag: carriedTag,
       label: isChoice ? `+${carriedTag || 'Choice'}` : 'Unlocks'
+    });
+
+    selectQuest(newUid);
+    onClose();
+  };
+
+  // Helper to trigger a skill test from the selected quest
+  const handleTriggerSkillTest = (sourceQuest: QuestModel) => {
+    const actId = sourceQuest.act || (typeof activeActId === 'number' ? activeActId : 1);
+    const code = computeNextCode('TEST');
+    const newUid = `q-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 5)}`;
+    const testConfig = createDefaultDragonEclipseTestConfig(`Skill Test ${code}`);
+    const defaultRewards = syncTestOutcomesToRewardOutcomes(testConfig);
+
+    const sameTierQuests = Object.values(quests).filter((q) => (q.tier || 1) === (sourceQuest.tier || 1) + 1);
+    const posX = Math.round((sourceQuest.position?.x ?? 60) + 360);
+    const posY = Math.round((sourceQuest.position?.y ?? 80) + (sameTierQuests.length % 2 === 0 ? 0 : 70));
+
+    const newQuest: QuestModel = {
+      uid: newUid,
+      code,
+      title: `Skill Test: ${code}`,
+      act: actId,
+      tier: (sourceQuest.tier || 1) + 1,
+      category: 'TEST',
+      prereqLogic: 'ANY',
+      position: { x: posX, y: posY },
+      flavorText: 'Draw cards from the Item deck and add up their Test Values to determine your outcome.',
+      setupInstructions: 'Consult the Dragon Eclipse Test Table (Page 11). Verify element & item modifiers.',
+      objectives: 'Perform the Test and resolve the corresponding outcome tier.',
+      devStatus: 'DRAFT',
+      testConfig,
+      rewardOutcomes: defaultRewards,
+      variants: []
+    };
+
+    addQuest(newQuest);
+
+    const defaultPort = sourceQuest.rewardOutcomes[0]?.id || null;
+    addEdge({
+      id: `e-${sourceQuest.uid}-${newUid}-${Date.now().toString(36)}`,
+      source: sourceQuest.uid,
+      sourcePortId: defaultPort,
+      target: newUid,
+      targetHandle: 'in',
+      type: 'UNLOCKS',
+      label: 'Triggers Test'
     });
 
     selectQuest(newUid);
@@ -516,6 +563,15 @@ export const CanvasContextMenu: React.FC<CanvasContextMenuProps> = ({
           >
             <ArrowRightCircle className="w-3.5 h-3.5 text-indigo-400" />
             <span>Create Follow-up Quest</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleTriggerSkillTest(targetQuest)}
+            className="w-full flex items-center gap-2.5 px-3 py-1.5 hover:bg-amber-950/60 text-left transition-colors text-amber-300 hover:text-amber-200 font-semibold cursor-pointer"
+          >
+            <Dices className="w-3.5 h-3.5 text-amber-400" />
+            <span>Trigger Skill Test (p.11)</span>
           </button>
 
           <button
