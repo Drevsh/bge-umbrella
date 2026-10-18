@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export type PrereqLogic = 'START' | 'ALL' | 'ANY'; // Starter vs AND gate vs OR gate
 export type QuestCategory = 'MAIN' | 'MAIN_BRANCH' | 'SIDE' | 'FACTION' | 'BOSS' | 'ACT_TRANSITION';
-export type EdgeRelationType = 'UNLOCKS' | 'CHOICE_BRANCH' | 'MUTATION' | 'LOCKOUT';
+export type EdgeRelationType = 'UNLOCKS' | 'CHOICE_BRANCH' | 'MUTATION' | 'LOCKOUT' | 'TIME_TRIGGER' | 'TIME_EXPIRED';
 export type EdgeRoutingStyle = 'BEZIER' | 'STEP' | 'STRAIGHT';
 export type DevStatus = 'IDEA' | 'DRAFT' | 'PLAYTESTED' | 'FINAL';
 
@@ -146,31 +146,38 @@ export function syncTestOutcomesToRewardOutcomes(testConfig: DragonEclipseTestCo
 }
 
 export interface DragonEclipseEventSlot {
-  slotNumber: number;          // Position on Time Track (e.g. 3, 6, 9)
+  slotNumber: number;          // Position or order milestone (1, 2, 3...)
+  triggerAtRemaining: number;  // Countdown threshold: triggers when Time Remaining <= triggerAtRemaining (e.g. 5, 2, 0)
   title: string;               // e.g. "Dusk Encroaches", "Wandering Pack"
   description?: string;        // e.g. "Draw an Event card from the Exploration deck"
   grantsStateTag?: string;     // e.g. "+Event_Dusk"
+  targetQuestId?: string;      // Target on-canvas Quest node to unlock/trigger
 }
 
 export interface DragonEclipseExplorationConfig {
-  trackLength: number;         // Total numbered slots on Time Track (e.g. 8, 10, 12)
+  trackLength: number;         // Total starting Time Limit (e.g. 8 Time Units)
   eventSlots: DragonEclipseEventSlot[];
+  scenarioEndQuestId?: string; // Target Quest triggered as Scenario End when Time hits 0
+  autoLockoutStageOnEnd?: boolean; // Automatically lock out unfinished exploration quests when scenario ends (default true)
 }
 
 export function createDefaultExplorationConfig(): DragonEclipseExplorationConfig {
   return {
     trackLength: 8,
+    autoLockoutStageOnEnd: true,
     eventSlots: [
       {
-        slotNumber: 3,
+        slotNumber: 1,
+        triggerAtRemaining: 5,
         title: 'Event Slot 1: Dusk Descends',
         description: 'Draw an Event card from the Exploration Event deck.',
         grantsStateTag: '+Event_Dusk'
       },
       {
-        slotNumber: 6,
+        slotNumber: 2,
+        triggerAtRemaining: 2,
         title: 'Event Slot 2: Nightfall Peril',
-        description: 'Draw an Event card; enemies emerge and danger increases.',
+        description: 'Danger escalates across the realm as night falls.',
         grantsStateTag: '+Event_Nightfall'
       }
     ]
@@ -316,11 +323,15 @@ export const QuestModelSchema = z.object({
   timeAdvance: z.number().optional(),
   explorationConfig: z.object({
     trackLength: z.number(),
+    scenarioEndQuestId: z.string().optional(),
+    autoLockoutStageOnEnd: z.boolean().optional(),
     eventSlots: z.array(z.object({
       slotNumber: z.number(),
+      triggerAtRemaining: z.number().default(0),
       title: z.string(),
       description: z.string().optional(),
-      grantsStateTag: z.string().optional()
+      grantsStateTag: z.string().optional(),
+      targetQuestId: z.string().optional()
     }))
   }).optional()
 });
@@ -337,7 +348,7 @@ export const CampaignEdgeSchema = z.object({
   source: z.string(),
   sourcePortId: z.string().nullable(),
   target: z.string(),
-  type: z.enum(['UNLOCKS', 'CHOICE_BRANCH', 'MUTATION', 'LOCKOUT']),
+  type: z.enum(['UNLOCKS', 'CHOICE_BRANCH', 'MUTATION', 'LOCKOUT', 'TIME_TRIGGER', 'TIME_EXPIRED']),
   stateTag: z.string().nullable().optional(),
   label: z.string().optional(),
   waypoints: z.array(z.object({ x: z.number(), y: z.number() })).optional()

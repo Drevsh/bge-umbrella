@@ -46,6 +46,7 @@ import {
   DragonEclipseEventSlot,
   createDefaultExplorationConfig
 } from '../../types/campaign';
+import { NumberStepperInput } from '../common/NumberStepperInput';
 import { QuestAudioPlayer } from '../audio/QuestAudioPlayer';
 import {
   generateQuestAudioWithGemini,
@@ -760,61 +761,113 @@ export const QuestInspectorDrawer: React.FC = () => {
                 <Clock className="w-3 h-3" />
                 Base Cost:
               </span>
-              <input
-                type="number"
+              <NumberStepperInput
+                value={currentQuest.timeAdvance || 0}
+                onChange={(val) => updateQuestField(currentQuest.uid, 'timeAdvance', val)}
                 min={0}
                 max={10}
-                value={currentQuest.timeAdvance || 0}
-                onChange={(e) => updateQuestField(currentQuest.uid, 'timeAdvance', Number(e.target.value) || 0)}
-                className="w-12 bg-slate-950 border border-teal-800/80 rounded px-1.5 py-0.5 text-xs text-teal-300 font-mono text-center"
+                colorScheme="teal"
                 title="Base exploration time cost to enter/complete this quest"
               />
             </div>
           </div>
 
           {Boolean(currentQuest.isExplorationStage || currentQuest.category === 'EXPLORATION' || currentQuest.explorationConfig) && (
-            <div className="space-y-2 pt-2 border-t border-teal-900/40 text-xs animate-in fade-in duration-150">
+            <div className="space-y-3 pt-2.5 border-t border-teal-900/40 text-xs animate-in fade-in duration-150">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                  Track Length
-                </span>
-                <input
-                  type="number"
-                  min={4}
-                  max={24}
+                <div>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-300 block">
+                    Starting Time Limit
+                  </span>
+                  <span className="text-[10px] text-slate-500">Counts down to 0</span>
+                </div>
+                <NumberStepperInput
                   value={currentQuest.explorationConfig?.trackLength || 8}
-                  onChange={(e) => {
-                    const newLength = Number(e.target.value) || 8;
+                  onChange={(val) => {
                     const existingConfig = currentQuest.explorationConfig || createDefaultExplorationConfig();
                     updateQuestField(currentQuest.uid, 'explorationConfig', {
                       ...existingConfig,
-                      trackLength: newLength
+                      trackLength: val
                     });
                   }}
-                  className="w-14 bg-slate-950 border border-slate-700 rounded px-1.5 py-0.5 text-xs text-teal-300 font-mono text-center"
+                  min={2}
+                  max={24}
+                  colorScheme="teal"
+                  suffix="units"
                 />
               </div>
 
-              {/* Event Slots Config */}
-              <div className="space-y-1.5">
+              {/* Scenario End Quest Selection */}
+              <div className="p-2 rounded-lg bg-slate-950/70 border border-slate-800 space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                    <Zap className="w-3 h-3 text-amber-400" />
-                    Event Slots
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-rose-300 flex items-center gap-1">
+                    <Clock className="w-3 h-3 text-rose-400" />
+                    Scenario End Quest (at 0 Time)
                   </span>
+                  <select
+                    value={currentQuest.explorationConfig?.scenarioEndQuestId || ''}
+                    onChange={(e) => {
+                      const existing = currentQuest.explorationConfig || createDefaultExplorationConfig();
+                      updateQuestField(currentQuest.uid, 'explorationConfig', {
+                        ...existing,
+                        scenarioEndQuestId: e.target.value || undefined
+                      });
+                    }}
+                    className="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-[11px] text-slate-200 max-w-[150px] truncate focus:outline-none focus:border-rose-500"
+                  >
+                    <option value="">None (Custom Edge)</option>
+                    {Object.values(quests)
+                      .filter((q) => q.uid !== currentQuest.uid)
+                      .map((q) => (
+                        <option key={q.uid} value={q.uid}>
+                          {q.code}: {q.title}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                <label className="flex items-center gap-1.5 text-[10px] text-slate-400 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={currentQuest.explorationConfig?.autoLockoutStageOnEnd !== false}
+                    onChange={(e) => {
+                      const existing = currentQuest.explorationConfig || createDefaultExplorationConfig();
+                      updateQuestField(currentQuest.uid, 'explorationConfig', {
+                        ...existing,
+                        autoLockoutStageOnEnd: e.target.checked
+                      });
+                    }}
+                    className="rounded border-slate-700 bg-slate-900 text-teal-500"
+                  />
+                  <span>Auto-lock uncompleted exploration quests on Scenario End</span>
+                </label>
+              </div>
+
+              {/* Event Slots Config */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-1">
+                      <Zap className="w-3 h-3 text-amber-400" />
+                      Milestone Triggers
+                    </span>
+                    <span className="text-[10px] text-slate-500">Unlocks quest steps when time runs low</span>
+                  </div>
                   <button
                     type="button"
                     onClick={() => {
                       const existingConfig = currentQuest.explorationConfig || createDefaultExplorationConfig();
-                      const nextSlotNum = Math.min(
-                        existingConfig.trackLength,
-                        (existingConfig.eventSlots[existingConfig.eventSlots.length - 1]?.slotNumber || 2) + 2
+                      const trackLen = existingConfig.trackLength || 8;
+                      const nextThresh = Math.max(
+                        1,
+                        (existingConfig.eventSlots[existingConfig.eventSlots.length - 1]?.triggerAtRemaining || 4) - 2
                       );
                       const newSlot: DragonEclipseEventSlot = {
-                        slotNumber: nextSlotNum,
-                        title: `Event Slot ${existingConfig.eventSlots.length + 1}`,
-                        description: 'Draw an Event card from the Exploration Event deck.',
-                        grantsStateTag: `+Event_Slot_${nextSlotNum}`
+                        slotNumber: existingConfig.eventSlots.length + 1,
+                        triggerAtRemaining: nextThresh,
+                        title: `Event Step ${existingConfig.eventSlots.length + 1}`,
+                        description: 'Draw an Event card or resolve scenario milestone.',
+                        grantsStateTag: `+Event_Step_${existingConfig.eventSlots.length + 1}`
                       };
                       updateQuestField(currentQuest.uid, 'explorationConfig', {
                         ...existingConfig,
@@ -824,20 +877,58 @@ export const QuestInspectorDrawer: React.FC = () => {
                     className="text-[10px] text-teal-400 hover:text-teal-300 font-semibold flex items-center gap-0.5 cursor-pointer"
                   >
                     <Plus className="w-3 h-3" />
-                    Add Event Slot
+                    Add Milestone
                   </button>
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   {(currentQuest.explorationConfig?.eventSlots || []).map((slot, sIdx) => (
                     <div
                       key={sIdx}
-                      className="p-1.5 rounded bg-slate-950/80 border border-slate-800 flex items-center justify-between gap-1.5 text-[11px]"
+                      className="p-2 rounded bg-slate-950/80 border border-slate-800 space-y-1.5 text-[11px]"
                     >
-                      <div className="flex items-center gap-1.5 truncate">
-                        <span className="font-mono text-amber-400 font-bold px-1 py-0.2 rounded bg-amber-950/60 border border-amber-800/60 text-[10px]">
-                          Slot {slot.slotNumber}
-                        </span>
+                      <div className="flex items-center justify-between gap-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono text-amber-400 font-bold px-1.5 py-0.5 rounded bg-amber-950/60 border border-amber-800/60 text-[10px]">
+                            ≤ {slot.triggerAtRemaining ?? Math.max(0, (currentQuest.explorationConfig?.trackLength || 8) - slot.slotNumber)} Left
+                          </span>
+                          <NumberStepperInput
+                            value={slot.triggerAtRemaining ?? Math.max(0, (currentQuest.explorationConfig?.trackLength || 8) - slot.slotNumber)}
+                            onChange={(val) => {
+                              const existingConfig = currentQuest.explorationConfig || createDefaultExplorationConfig();
+                              const updatedSlots = existingConfig.eventSlots.map((s, idx) =>
+                                idx === sIdx ? { ...s, triggerAtRemaining: val } : s
+                              );
+                              updateQuestField(currentQuest.uid, 'explorationConfig', {
+                                ...existingConfig,
+                                eventSlots: updatedSlots
+                              });
+                            }}
+                            min={0}
+                            max={currentQuest.explorationConfig?.trackLength || 8}
+                            colorScheme="amber"
+                            title="Trigger threshold (when Time Remaining reaches this value)"
+                          />
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const existingConfig = currentQuest.explorationConfig || createDefaultExplorationConfig();
+                            const updatedSlots = existingConfig.eventSlots.filter((_, idx) => idx !== sIdx);
+                            updateQuestField(currentQuest.uid, 'explorationConfig', {
+                              ...existingConfig,
+                              eventSlots: updatedSlots
+                            });
+                          }}
+                          className="text-slate-500 hover:text-rose-400 p-1 transition-colors cursor-pointer"
+                          title="Delete milestone"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
                         <input
                           type="text"
                           value={slot.title}
@@ -851,25 +942,36 @@ export const QuestInspectorDrawer: React.FC = () => {
                               eventSlots: updatedSlots
                             });
                           }}
-                          className="bg-transparent border-none text-slate-200 text-xs focus:outline-none w-36 truncate"
+                          className="bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
                           placeholder="Event Title"
                         />
-                      </div>
 
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const existingConfig = currentQuest.explorationConfig || createDefaultExplorationConfig();
-                          const updatedSlots = existingConfig.eventSlots.filter((_, idx) => idx !== sIdx);
-                          updateQuestField(currentQuest.uid, 'explorationConfig', {
-                            ...existingConfig,
-                            eventSlots: updatedSlots
-                          });
-                        }}
-                        className="text-slate-500 hover:text-rose-400 p-0.5 transition-colors"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
+                        {/* Trigger Target Quest Selection */}
+                        <select
+                          value={slot.targetQuestId || ''}
+                          onChange={(e) => {
+                            const existingConfig = currentQuest.explorationConfig || createDefaultExplorationConfig();
+                            const updatedSlots = existingConfig.eventSlots.map((s, idx) =>
+                              idx === sIdx ? { ...s, targetQuestId: e.target.value || undefined } : s
+                            );
+                            updateQuestField(currentQuest.uid, 'explorationConfig', {
+                              ...existingConfig,
+                              eventSlots: updatedSlots
+                            });
+                          }}
+                          className="bg-slate-900 border border-slate-800 rounded px-1.5 py-1 text-[11px] text-slate-200 focus:outline-none focus:border-amber-500 truncate"
+                          title="Quest step to unlock when this milestone triggers"
+                        >
+                          <option value="">(No Quest - State Tag Only)</option>
+                          {Object.values(quests)
+                            .filter((q) => q.uid !== currentQuest.uid)
+                            .map((q) => (
+                              <option key={q.uid} value={q.uid}>
+                                Unlocks [{q.code}] {q.title}
+                              </option>
+                            ))}
+                        </select>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1194,11 +1296,13 @@ export const QuestInspectorDrawer: React.FC = () => {
                             <Coins className="w-3 h-3" />
                             Gold:
                           </span>
-                          <input
-                            type="number"
+                          <NumberStepperInput
                             value={editRewardGold}
-                            onChange={(e) => setEditRewardGold(Number(e.target.value))}
-                            className="w-14 bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-xs text-amber-400 font-mono text-center"
+                            onChange={(val) => setEditRewardGold(val)}
+                            min={0}
+                            max={999}
+                            step={5}
+                            colorScheme="amber"
                           />
                         </div>
                         <div className="flex items-center gap-1">
@@ -1206,13 +1310,13 @@ export const QuestInspectorDrawer: React.FC = () => {
                             <Clock className="w-3 h-3" />
                             +Time:
                           </span>
-                          <input
-                            type="number"
+                          <NumberStepperInput
+                            value={editRewardTime}
+                            onChange={(val) => setEditRewardTime(val)}
                             min={0}
                             max={10}
-                            value={editRewardTime}
-                            onChange={(e) => setEditRewardTime(Number(e.target.value))}
-                            className="w-12 bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-xs text-teal-300 font-mono text-center"
+                            step={1}
+                            colorScheme="teal"
                             title="Exploration Time Track advance"
                           />
                         </div>
@@ -1449,12 +1553,13 @@ export const QuestInspectorDrawer: React.FC = () => {
                       <Coins className="w-3 h-3" />
                       Gold:
                     </span>
-                    <input
-                      type="number"
+                    <NumberStepperInput
                       value={newRewardGold}
-                      onChange={(e) => setNewRewardGold(Number(e.target.value))}
-                      placeholder="Gold"
-                      className="w-14 bg-slate-900 border border-slate-800 rounded px-1.5 py-0.5 text-xs text-amber-400 font-mono text-center"
+                      onChange={(val) => setNewRewardGold(val)}
+                      min={0}
+                      max={999}
+                      step={5}
+                      colorScheme="amber"
                     />
                   </div>
                   <div className="flex items-center gap-1">
@@ -1462,14 +1567,13 @@ export const QuestInspectorDrawer: React.FC = () => {
                       <Clock className="w-3 h-3" />
                       +Time:
                     </span>
-                    <input
-                      type="number"
+                    <NumberStepperInput
+                      value={newRewardTime}
+                      onChange={(val) => setNewRewardTime(val)}
                       min={0}
                       max={10}
-                      value={newRewardTime}
-                      onChange={(e) => setNewRewardTime(Number(e.target.value))}
-                      placeholder="0"
-                      className="w-12 bg-slate-900 border border-slate-800 rounded px-1.5 py-0.5 text-xs text-teal-300 font-mono text-center"
+                      step={1}
+                      colorScheme="teal"
                       title="Exploration Time Track advance"
                     />
                   </div>

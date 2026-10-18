@@ -27,6 +27,7 @@ import {
   syncTestOutcomesToRewardOutcomes
 } from '../../types/campaign';
 import { useCampaignStore } from '../../store/useCampaignStore';
+import { NumberStepperInput } from '../common/NumberStepperInput';
 
 interface DragonEclipseTestTableEditorProps {
   quest: QuestModel;
@@ -396,11 +397,14 @@ export const DragonEclipseTestTableEditor: React.FC<DragonEclipseTestTableEditor
                       <Coins className="w-3 h-3" />
                       Gold
                     </label>
-                    <input
-                      type="number"
+                    <NumberStepperInput
                       value={outcome.gold || 0}
-                      onChange={(e) => handleUpdateOutcome(idx, { gold: Number(e.target.value) || 0 })}
-                      className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-amber-300"
+                      onChange={(val) => handleUpdateOutcome(idx, { gold: val })}
+                      min={0}
+                      max={999}
+                      step={5}
+                      colorScheme="amber"
+                      className="w-full"
                     />
                   </div>
 
@@ -409,13 +413,14 @@ export const DragonEclipseTestTableEditor: React.FC<DragonEclipseTestTableEditor
                       <Clock className="w-3 h-3" />
                       +Time
                     </label>
-                    <input
-                      type="number"
+                    <NumberStepperInput
+                      value={outcome.timeAdvance || 0}
+                      onChange={(val) => handleUpdateOutcome(idx, { timeAdvance: val })}
                       min={0}
                       max={10}
-                      value={outcome.timeAdvance || 0}
-                      onChange={(e) => handleUpdateOutcome(idx, { timeAdvance: Number(e.target.value) || 0 })}
-                      className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-teal-300"
+                      step={1}
+                      colorScheme="teal"
+                      className="w-full"
                       title="Exploration Time Track advance for this outcome"
                     />
                   </div>

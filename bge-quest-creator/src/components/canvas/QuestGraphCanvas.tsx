@@ -143,6 +143,8 @@ export const QuestGraphCanvas: React.FC = () => {
         if (edge.type === 'CHOICE_BRANCH') strokeColor = '#38bdf8';
         if (isMutation) strokeColor = '#f59e0b';
         if (isLockout) strokeColor = '#ef4444';
+        if (edge.type === 'TIME_TRIGGER') strokeColor = '#14b8a6';
+        if (edge.type === 'TIME_EXPIRED') strokeColor = '#f43f5e';
 
         return {
           id: edge.id,

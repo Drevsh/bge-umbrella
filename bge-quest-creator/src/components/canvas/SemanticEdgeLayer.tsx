@@ -26,7 +26,9 @@ const EDGE_COLORS: Record<EdgeRelationType, string> = {
   UNLOCKS: '#10b981',      // Emerald
   CHOICE_BRANCH: '#38bdf8',// Sky Cyan
   MUTATION: '#f59e0b',     // Amber
-  LOCKOUT: '#ef4444'       // Rose Red
+  LOCKOUT: '#ef4444',      // Rose Red
+  TIME_TRIGGER: '#14b8a6', // Teal
+  TIME_EXPIRED: '#f43f5e'  // Rose
 };
 
 // Catmull-Rom to Cubic Bezier conversion for smooth multi-waypoint curves
@@ -122,7 +124,7 @@ export const SemanticEdge = memo((props: EdgeProps<SemanticEdgeType>) => {
     });
   }
 
-  const isDashed = edgeType === 'MUTATION' || edgeType === 'LOCKOUT';
+  const isDashed = edgeType === 'MUTATION' || edgeType === 'LOCKOUT' || edgeType === 'TIME_TRIGGER' || edgeType === 'TIME_EXPIRED';
   const strokeDasharray = isDashed ? '6,6' : undefined;
 
   // Drag waypoint handler
