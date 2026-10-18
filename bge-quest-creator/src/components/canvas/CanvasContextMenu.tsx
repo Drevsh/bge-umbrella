@@ -72,6 +72,10 @@ export const CanvasContextMenu: React.FC<CanvasContextMenuProps> = ({
   const updateEdgeWaypoints = useCampaignStore((s) => s.updateEdgeWaypoints);
   const clearEdgeWaypoints = useCampaignStore((s) => s.clearEdgeWaypoints);
   const smartRouteAllEdges = useCampaignStore((s) => s.smartRouteAllEdges);
+  const openWizardWithConfig = useCampaignStore((s) => s.openWizardWithConfig);
+  const selectQuest = useCampaignStore((s) => s.selectQuest);
+  const addEdge = useCampaignStore((s) => s.addEdge);
+  const activeGameProfile = useCampaignStore((s) => s.activeGameProfile);
 
   // Close when clicking outside or pressing Escape
   useEffect(() => {
@@ -120,11 +124,6 @@ export const CanvasContextMenu: React.FC<CanvasContextMenuProps> = ({
 
   if (flipX) posX = Math.max(10, posX - menuWidth);
   if (flipY) posY = Math.max(10, posY - menuHeight);
-
-  const openWizardWithConfig = useCampaignStore((s) => s.openWizardWithConfig);
-  const selectQuest = useCampaignStore((s) => s.selectQuest);
-  const addEdge = useCampaignStore((s) => s.addEdge);
-  const activeGameProfile = useCampaignStore((s) => s.activeGameProfile);
 
   // Helper to compute next code for category
   const computeNextCode = (cat: string): string => {
