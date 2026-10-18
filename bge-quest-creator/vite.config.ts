@@ -3,8 +3,12 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// Determine base path: '/bge-umbrella/' for GitHub Pages, otherwise relative './'
+const basePath = process.env.GITHUB_PAGES ? '/bge-umbrella/' : './';
+
 // https://vite.dev/config/
 export default defineConfig({
+  base: basePath,
   plugins: [
     react(),
     tailwindcss(),
@@ -19,10 +23,10 @@ export default defineConfig({
         background_color: '#020617',
         display: 'fullscreen',
         display_override: ['fullscreen', 'standalone', 'minimal-ui'],
-        scope: '/',
-        id: '/',
+        scope: basePath,
+        id: basePath,
         orientation: 'any',
-        start_url: '/',
+        start_url: basePath,
         icons: [
           {
             src: 'pwa-192x192.png',
@@ -55,7 +59,7 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
-        navigateFallback: '/index.html'
+        navigateFallback: `${basePath}index.html`
       },
       devOptions: {
         enabled: true,
