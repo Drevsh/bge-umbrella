@@ -25,22 +25,30 @@ export const DEFAULT_INPUT_HANDLE_Y = 38;
  * Estimates node height based on header, active variants, and outcomes list.
  */
 export function estimateNodeHeight(quest: QuestModel): number {
-  const headerHeight = 106;
-  const variantHeight = quest.variants && quest.variants.length > 0 ? 28 : 0;
+  const headerHeight = 112;
+  const explorationHeight =
+    quest.isExplorationStage || quest.category === 'EXPLORATION' || Boolean(quest.explorationConfig)
+      ? 28
+      : 0;
+  const variantHeight = quest.variants && quest.variants.length > 0 ? 32 : 0;
   const outcomesCount = quest.rewardOutcomes ? quest.rewardOutcomes.length : 0;
   const outcomesHeaderHeight = 32;
-  const outcomesListHeight = outcomesCount > 0 ? outcomesCount * 36 : 16;
-  return headerHeight + variantHeight + outcomesHeaderHeight + outcomesListHeight + 14;
+  const outcomesListHeight = outcomesCount > 0 ? outcomesCount * 38 : 16;
+  return headerHeight + explorationHeight + variantHeight + outcomesHeaderHeight + outcomesListHeight + 16;
 }
 
 /**
  * Calculates vertical offset of a specific outcome's right handle within the node card.
  */
 export function getOutcomeHandleYOffset(quest: QuestModel, outcomeIndex: number): number {
-  const headerHeight = 106;
-  const variantHeight = quest.variants && quest.variants.length > 0 ? 28 : 0;
-  const outcomesTop = headerHeight + variantHeight + 32;
-  return outcomesTop + outcomeIndex * 36 + 18;
+  const headerHeight = 112;
+  const explorationHeight =
+    quest.isExplorationStage || quest.category === 'EXPLORATION' || Boolean(quest.explorationConfig)
+      ? 28
+      : 0;
+  const variantHeight = quest.variants && quest.variants.length > 0 ? 32 : 0;
+  const outcomesTop = headerHeight + explorationHeight + variantHeight + 32;
+  return outcomesTop + outcomeIndex * 38 + 18;
 }
 
 /**
@@ -130,32 +138,45 @@ export function calculateAutoArrangement(
     const quest = quests[questUid];
     if (!quest || !workingChoices[questUid] || workingChoices[questUid].length <= 1) return;
 
+    const srcTier = quest.tier || 1;
     const outcomes = workingChoices[questUid];
     const outcomesWithRank = outcomes.map((outcome, origIdx) => {
       const outEdges = outgoingMap[questUid].filter((e) => e.sourcePortId === outcome.id);
       if (outEdges.length === 0) {
-        // Untargeted outcome: retain original position bias
-        return { outcome, origIdx, rank: origIdx + 0.5 };
+        // Untargeted outcome: retain middle position bias
+        return { outcome, origIdx, rank: 100 + origIdx };
       }
 
-      // Compute average target rank in their respective tiers
-      let rankSum = 0;
-      let count = 0;
+      let forwardRankSum = 0;
+      let forwardCount = 0;
+      let loopbackRankSum = 0;
+      let loopbackCount = 0;
+
       outEdges.forEach((edge) => {
         const targetQuest = quests[edge.target];
         if (targetQuest) {
           const tTier = targetQuest.tier || 1;
           const orderInTier = tierOrder[tTier] || [];
           const idx = orderInTier.indexOf(edge.target);
-          if (idx !== -1) {
-            rankSum += idx;
-            count++;
+          const effectiveIdx = idx !== -1 ? idx : 0;
+
+          if (tTier > srcTier) {
+            forwardRankSum += effectiveIdx;
+            forwardCount++;
+          } else {
+            loopbackRankSum += effectiveIdx;
+            loopbackCount++;
           }
         }
       });
 
-      const avgRank = count > 0 ? rankSum / count : origIdx;
-      return { outcome, origIdx, rank: avgRank };
+      if (forwardCount > 0) {
+        return { outcome, origIdx, rank: forwardRankSum / forwardCount };
+      }
+
+      // Loopback-only outcomes sit toward the bottom of the card to drop cleanly into the Underpass channel
+      const avgLoopRank = loopbackCount > 0 ? loopbackRankSum / loopbackCount : 0;
+      return { outcome, origIdx, rank: 500 + avgLoopRank + origIdx * 0.01 };
     });
 
     outcomesWithRank.sort((a, b) => {

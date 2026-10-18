@@ -28,7 +28,6 @@ import {
   getGameProfileById,
   CORE_GENERAL_GAME
 } from '../config/builtInGames';
-import { computeObstacleAvoidanceRoutes } from '../utils/obstacleRouter';
 import { calculateAutoArrangement } from '../utils/layoutEngine';
 import { deleteQuestAudioBlob } from '../utils/audioStorage';
 
@@ -1003,12 +1002,10 @@ export const useCampaignStore = create<CampaignStoreState>()(
       },
 
       smartRouteAllEdges: () => {
-        const state = get();
-        const routes = computeObstacleAvoidanceRoutes(state.quests, state.edges);
         set((s) => ({
           edges: s.edges.map((e) => ({
             ...e,
-            waypoints: routes[e.id] !== undefined ? routes[e.id] : e.waypoints || []
+            waypoints: []
           }))
         }));
         get().saveToStorage();

@@ -1,7 +1,12 @@
 import { QuestModel, CampaignEdge } from '../types/campaign';
 
-interface BoundingBox {
+export interface BoundingBox {
   uid: string;
+  act: number;
+  rawLeft: number;
+  rawRight: number;
+  rawTop: number;
+  rawBottom: number;
   left: number;
   right: number;
   top: number;
@@ -10,24 +15,49 @@ interface BoundingBox {
   centerY: number;
 }
 
-const NODE_WIDTH = 280;
-const NODE_MARGIN = 24; // Clearance around cards
-
-function getNodeHeight(quest: QuestModel): number {
-  return 130 + quest.rewardOutcomes.length * 28 + (quest.variants.length > 0 ? 30 : 0);
+export interface LoopbackChannelInfo {
+  direction: 'UNDER' | 'OVER';
+  exitX: number;
+  entryX: number;
+  channelY: number;
+  nestIdx: number;
+  bundleSize: number;
 }
 
-function getSourcePortCoords(quest: QuestModel, portId: string | null): { x: number; y: number } {
+export interface SmartEdgeRoute {
+  waypoints: { x: number; y: number }[];
+  isLoopback: boolean;
+  loopbackChannel?: LoopbackChannelInfo;
+}
+
+const NODE_WIDTH = 280;
+const NODE_MARGIN = 22; // Clearance around cards
+
+export function getNodeHeight(quest: QuestModel): number {
+  const hasExploration = Boolean(
+    quest.isExplorationStage || quest.category === 'EXPLORATION' || quest.explorationConfig
+  );
+  const hasVariants = Boolean(quest.variants && quest.variants.length > 0);
+  const outcomesCount = quest.rewardOutcomes ? quest.rewardOutcomes.length : 0;
+  return 112 + (hasExploration ? 28 : 0) + (hasVariants ? 32 : 0) + 32 + outcomesCount * 38 + 16;
+}
+
+export function getSourcePortCoords(quest: QuestModel, portId: string | null): { x: number; y: number } {
   const x = quest.position.x + NODE_WIDTH;
+  const hasExploration = Boolean(
+    quest.isExplorationStage || quest.category === 'EXPLORATION' || quest.explorationConfig
+  );
+  const hasVariants = Boolean(quest.variants && quest.variants.length > 0);
+  const outcomesTop = 112 + (hasExploration ? 28 : 0) + (hasVariants ? 32 : 0) + 32;
   const rewardIdx = quest.rewardOutcomes.findIndex((r) => r.id === portId);
   const y =
     rewardIdx >= 0
-      ? quest.position.y + 130 + rewardIdx * 28
+      ? quest.position.y + outcomesTop + rewardIdx * 38 + 18
       : quest.position.y + 60;
   return { x, y };
 }
 
-function getTargetPortCoords(quest: QuestModel): { x: number; y: number } {
+export function getTargetPortCoords(quest: QuestModel): { x: number; y: number } {
   return {
     x: quest.position.x,
     y: quest.position.y + 38
@@ -42,7 +72,6 @@ function lineSegmentIntersectsBox(
   y2: number,
   box: BoundingBox
 ): boolean {
-  // Broad-phase AABB test
   const minX = Math.min(x1, x2);
   const maxX = Math.max(x1, x2);
   const minY = Math.min(y1, y2);
@@ -52,13 +81,11 @@ function lineSegmentIntersectsBox(
     return false;
   }
 
-  // Ray-box intersection (Liang-Barsky or slab method)
   let tmin = 0;
   let tmax = 1;
   const dx = x2 - x1;
   const dy = y2 - y1;
 
-  // X slab
   if (Math.abs(dx) < 1e-6) {
     if (x1 < box.left || x1 > box.right) return false;
   } else {
@@ -71,7 +98,6 @@ function lineSegmentIntersectsBox(
     if (tmin > tmax) return false;
   }
 
-  // Y slab
   if (Math.abs(dy) < 1e-6) {
     if (y1 < box.top || y1 > box.bottom) return false;
   } else {
@@ -87,15 +113,23 @@ function lineSegmentIntersectsBox(
   return true;
 }
 
-export function computeObstacleAvoidanceRoutes(
+/**
+ * Computes rich obstacle-avoidance & loopback routing metadata for all campaign edges.
+ */
+export function computeSmartEdgeRoutes(
   quests: Record<string, QuestModel>,
   edges: CampaignEdge[]
-): Record<string, { x: number; y: number }[]> {
-  // 1. Build bounding boxes for all quest nodes
+): Record<string, SmartEdgeRoute> {
+  const boxesByUid: Record<string, BoundingBox> = {};
   const boxes: BoundingBox[] = Object.values(quests).map((q) => {
     const h = getNodeHeight(q);
-    return {
+    const box: BoundingBox = {
       uid: q.uid,
+      act: q.act || 1,
+      rawLeft: q.position.x,
+      rawRight: q.position.x + NODE_WIDTH,
+      rawTop: q.position.y,
+      rawBottom: q.position.y + h,
       left: q.position.x - NODE_MARGIN,
       right: q.position.x + NODE_WIDTH + NODE_MARGIN,
       top: q.position.y - NODE_MARGIN,
@@ -103,64 +137,256 @@ export function computeObstacleAvoidanceRoutes(
       centerX: q.position.x + NODE_WIDTH / 2,
       centerY: q.position.y + h / 2
     };
+    boxesByUid[q.uid] = box;
+    return box;
   });
 
-  const edgeWaypoints: Record<string, { x: number; y: number }[]> = {};
+  const routes: Record<string, SmartEdgeRoute> = {};
 
-  // 2. For each edge, detect intervening obstacles
+  interface EdgeGeom {
+    edge: CampaignEdge;
+    srcQuest: QuestModel;
+    tgtQuest: QuestModel;
+    srcBox: BoundingBox;
+    tgtBox: BoundingBox;
+    start: { x: number; y: number };
+    end: { x: number; y: number };
+    isLoopback: boolean;
+  }
+
+  const loopbackGeoms: EdgeGeom[] = [];
+  const forwardGeoms: EdgeGeom[] = [];
+
   edges.forEach((edge) => {
     const srcQuest = quests[edge.source];
     const tgtQuest = quests[edge.target];
-    if (!srcQuest || !tgtQuest) return;
+    const srcBox = boxesByUid[edge.source];
+    const tgtBox = boxesByUid[edge.target];
+    if (!srcQuest || !tgtQuest || !srcBox || !tgtBox) return;
 
     const start = getSourcePortCoords(srcQuest, edge.sourcePortId);
     const end = getTargetPortCoords(tgtQuest);
+    const isLoopback = edge.source === edge.target || end.x <= start.x + 24;
 
-    // Filter boxes that are not the source or target quest
-    const candidateObstacles = boxes.filter(
-      (b) => b.uid !== edge.source && b.uid !== edge.target
+    const geom: EdgeGeom = {
+      edge,
+      srcQuest,
+      tgtQuest,
+      srcBox,
+      tgtBox,
+      start,
+      end,
+      isLoopback
+    };
+
+    if (isLoopback) {
+      loopbackGeoms.push(geom);
+    } else {
+      forwardGeoms.push(geom);
+    }
+  });
+
+  // 1. Process Loopback Edges in Overlapping Corridor Bundles
+  // Group loopback edges that share the same Act and have overlapping X/Y spans
+  const visitedLoopbacks = new Set<string>();
+  const loopbackBundles: EdgeGeom[][] = [];
+
+  loopbackGeoms.forEach((g) => {
+    if (visitedLoopbacks.has(g.edge.id)) return;
+    const bundle: EdgeGeom[] = [g];
+    visitedLoopbacks.add(g.edge.id);
+
+    const gAct = g.srcBox.act;
+    let minX = Math.min(g.srcBox.rawLeft, g.tgtBox.rawLeft);
+    let maxX = Math.max(g.srcBox.rawRight, g.tgtBox.rawRight);
+    let minY = Math.min(g.srcBox.rawTop, g.tgtBox.rawTop);
+    let maxY = Math.max(g.srcBox.rawBottom, g.tgtBox.rawBottom);
+
+    loopbackGeoms.forEach((other) => {
+      if (visitedLoopbacks.has(other.edge.id)) return;
+      if (other.srcBox.act !== gAct) return;
+
+      const oMinX = Math.min(other.srcBox.rawLeft, other.tgtBox.rawLeft);
+      const oMaxX = Math.max(other.srcBox.rawRight, other.tgtBox.rawRight);
+      const oMinY = Math.min(other.srcBox.rawTop, other.tgtBox.rawTop);
+      const oMaxY = Math.max(other.srcBox.rawBottom, other.tgtBox.rawBottom);
+
+      const xOverlaps = oMaxX >= minX - 60 && oMinX <= maxX + 60;
+      const yOverlaps = oMaxY >= minY - 120 && oMinY <= maxY + 120;
+
+      if (xOverlaps && yOverlaps) {
+        bundle.push(other);
+        visitedLoopbacks.add(other.edge.id);
+        minX = Math.min(minX, oMinX);
+        maxX = Math.max(maxX, oMaxX);
+        minY = Math.min(minY, oMinY);
+        maxY = Math.max(maxY, oMaxY);
+      }
+    });
+
+    loopbackBundles.push(bundle);
+  });
+
+  loopbackBundles.forEach((bundle) => {
+    const act = bundle[0].srcBox.act;
+    const sameActBoxes = boxes.filter((b) => b.act === act);
+
+    // Compute initial envelope of all source & target boxes in the bundle
+    let corridorLeft = Math.min(...bundle.map((b) => Math.min(b.srcBox.rawLeft, b.tgtBox.rawLeft)));
+    let corridorRight = Math.max(...bundle.map((b) => Math.max(b.srcBox.rawRight, b.tgtBox.rawRight)));
+    let corridorTop = Math.min(...bundle.map((b) => Math.min(b.srcBox.rawTop, b.tgtBox.rawTop)));
+    let corridorBottom = Math.max(...bundle.map((b) => Math.max(b.srcBox.rawBottom, b.tgtBox.rawBottom)));
+
+    // Expand envelope to include any intervening nodes sitting directly inside this span
+    sameActBoxes.forEach((b) => {
+      const horizInside = b.rawRight >= corridorLeft - 16 && b.rawLeft <= corridorRight + 16;
+      const vertInside = b.rawBottom >= corridorTop - 16 && b.rawTop <= corridorBottom + 16;
+      if (horizInside && vertInside) {
+        corridorLeft = Math.min(corridorLeft, b.rawLeft);
+        corridorRight = Math.max(corridorRight, b.rawRight);
+        corridorTop = Math.min(corridorTop, b.rawTop);
+        corridorBottom = Math.max(corridorBottom, b.rawBottom);
+      }
+    });
+
+    const bundleDepth = 34 + bundle.length * 30;
+
+    // Check if any node sits immediately below corridorBottom in the underpass zone
+    const underpassBlocked = sameActBoxes.some(
+      (b) =>
+        b.rawRight >= corridorLeft - 24 &&
+        b.rawLeft <= corridorRight + 24 &&
+        b.rawTop > corridorBottom - 10 &&
+        b.rawTop < corridorBottom + bundleDepth + 20
     );
 
-    // Find all obstacles that intersect the direct path
+    const overpassBlocked = sameActBoxes.some(
+      (b) =>
+        b.rawRight >= corridorLeft - 24 &&
+        b.rawLeft <= corridorRight + 24 &&
+        b.rawBottom < corridorTop + 10 &&
+        b.rawBottom > corridorTop - bundleDepth - 20
+    );
+
+    // Prefer UNDER by default so bottom-half outcome handles never cross top-half forward edges
+    const direction: 'UNDER' | 'OVER' = underpassBlocked && !overpassBlocked ? 'OVER' : 'UNDER';
+
+    // Sort bundle for concentric PCB-style nesting (zero self-crossings):
+    // For UNDER: lowest source port (largest start.y) is innermost (nestIdx = 0)
+    // For OVER: highest source port (smallest start.y) is innermost (nestIdx = 0)
+    const sortedBundle = [...bundle].sort((a, b) => {
+      if (Math.abs(a.start.y - b.start.y) > 1) {
+        return direction === 'UNDER' ? b.start.y - a.start.y : a.start.y - b.start.y;
+      }
+      return a.edge.id.localeCompare(b.edge.id);
+    });
+
+    sortedBundle.forEach((item, nestIdx) => {
+      const exitX = Math.round(Math.max(item.start.x, corridorRight) + 34 + nestIdx * 22);
+      const entryX = Math.round(Math.min(item.end.x, corridorLeft) - 34 - nestIdx * 22);
+      const channelY =
+        direction === 'UNDER'
+          ? Math.round(corridorBottom + 32 + nestIdx * 30)
+          : Math.round(corridorTop - 32 - nestIdx * 30);
+
+      const waypoints = [
+        { x: exitX, y: Math.round(item.start.y) },
+        { x: exitX, y: channelY },
+        { x: entryX, y: channelY },
+        { x: entryX, y: Math.round(item.end.y) }
+      ];
+
+      routes[item.edge.id] = {
+        waypoints,
+        isLoopback: true,
+        loopbackChannel: {
+          direction,
+          exitX,
+          entryX,
+          channelY,
+          nestIdx,
+          bundleSize: sortedBundle.length
+        }
+      };
+    });
+  });
+
+  // 2. Process Forward Edges (start.x < end.x)
+  // Track how many forward edges detour around the same obstacle key to stagger them
+  const obstacleDetourCounts: Record<string, number> = {};
+
+  forwardGeoms.forEach((item) => {
+    const { edge, srcBox, start, end } = item;
+    const candidateObstacles = boxes.filter(
+      (b) => b.act === srcBox.act && b.uid !== edge.source && b.uid !== edge.target
+    );
+
     const intersectingObstacles = candidateObstacles.filter((b) =>
       lineSegmentIntersectsBox(start.x, start.y, end.x, end.y, b)
     );
 
     if (intersectingObstacles.length === 0) {
-      // Clear waypoints if direct path is completely unobstructed
-      edgeWaypoints[edge.id] = [];
+      routes[edge.id] = {
+        waypoints: [],
+        isLoopback: false
+      };
       return;
     }
 
-    // Sort intersecting obstacles by X coordinate along flow
     intersectingObstacles.sort((a, b) => a.centerX - b.centerX);
 
+    const obsKey = intersectingObstacles.map((o) => o.uid).join(',');
+    const laneIdx = obstacleDetourCounts[obsKey] || 0;
+    obstacleDetourCounts[obsKey] = laneIdx + 1;
+
+    const minObsLeft = Math.min(...intersectingObstacles.map((o) => o.left));
+    const maxObsRight = Math.max(...intersectingObstacles.map((o) => o.right));
+    const minObsTop = Math.min(...intersectingObstacles.map((o) => o.top));
+    const maxObsBottom = Math.max(...intersectingObstacles.map((o) => o.bottom));
+
+    const midY = (start.y + end.y) / 2;
+    const distAbove = Math.abs(midY - minObsTop);
+    const distBelow = Math.abs(midY - maxObsBottom);
+
+    const routeAbove = distAbove <= distBelow;
+    const detourY = routeAbove
+      ? minObsTop - 18 - laneIdx * 22
+      : maxObsBottom + 18 + laneIdx * 22;
+
+    const entryX = Math.max(start.x + 24, minObsLeft - 20);
+    const exitX = Math.min(end.x - 24, maxObsRight + 20);
+
     const waypoints: { x: number; y: number }[] = [];
+    if (entryX < exitX) {
+      waypoints.push({ x: Math.round(entryX), y: Math.round(detourY) });
+      waypoints.push({ x: Math.round(exitX), y: Math.round(detourY) });
+    } else {
+      waypoints.push({
+        x: Math.round((minObsLeft + maxObsRight) / 2),
+        y: Math.round(detourY)
+      });
+    }
 
-    intersectingObstacles.forEach((obs) => {
-      // Decide whether to route above or below the obstacle
-      const midY = (start.y + end.y) / 2;
-      const distAbove = Math.abs(midY - obs.top);
-      const distBelow = Math.abs(midY - obs.bottom);
-
-      const routeAbove = distAbove <= distBelow;
-      const detourY = routeAbove ? obs.top - 16 : obs.bottom + 16;
-
-      // Add entry and exit waypoints around obstacle
-      const entryX = Math.max(start.x + 20, obs.left - 18);
-      const exitX = Math.min(end.x - 20, obs.right + 18);
-
-      // Only add waypoints if they maintain forward progress or reasonable curvature
-      if (entryX < exitX) {
-        waypoints.push({ x: Math.round(entryX), y: Math.round(detourY) });
-        waypoints.push({ x: Math.round(exitX), y: Math.round(detourY) });
-      } else {
-        waypoints.push({ x: Math.round(obs.centerX), y: Math.round(detourY) });
-      }
-    });
-
-    edgeWaypoints[edge.id] = waypoints;
+    routes[edge.id] = {
+      waypoints,
+      isLoopback: false
+    };
   });
 
-  return edgeWaypoints;
+  return routes;
+}
+
+/**
+ * Legacy helper returning raw waypoint arrays per edge ID.
+ */
+export function computeObstacleAvoidanceRoutes(
+  quests: Record<string, QuestModel>,
+  edges: CampaignEdge[]
+): Record<string, { x: number; y: number }[]> {
+  const smartRoutes = computeSmartEdgeRoutes(quests, edges);
+  const result: Record<string, { x: number; y: number }[]> = {};
+  Object.entries(smartRoutes).forEach(([id, route]) => {
+    result[id] = route.waypoints;
+  });
+  return result;
 }

@@ -24,6 +24,7 @@ import { CanvasContextMenu, ContextMenuState } from './CanvasContextMenu';
 import { Sparkles, Maximize2, Expand, Shrink } from 'lucide-react';
 import { useCampaignStore } from '../../store/useCampaignStore';
 import { evaluateCampaignSimulation } from '../../utils/simulatorEngine';
+import { computeSmartEdgeRoutes } from '../../utils/obstacleRouter';
 import { CampaignEdge, EdgeRelationType, QuestModel } from '../../types/campaign';
 
 import { EdgeTypes, NodeTypes } from '@xyflow/react';
@@ -113,6 +114,11 @@ export const QuestGraphCanvas: React.FC = () => {
       }));
   }, [quests, selectedQuestId, simState, simulator.activeRewardChoices, activeActId]);
 
+  // Compute automatic loopback & obstacle-avoidance routes in real time
+  const smartRoutes = useMemo(() => {
+    return computeSmartEdgeRoutes(quests, edges);
+  }, [quests, edges]);
+
   // Transform CampaignEdges into React Flow Edges
   const rfEdges: Edge[] = useMemo(() => {
     return edges
@@ -166,11 +172,12 @@ export const QuestGraphCanvas: React.FC = () => {
             stateTag: edge.stateTag,
             label: edge.label,
             isActive,
-            waypoints: edge.waypoints || []
+            waypoints: edge.waypoints || [],
+            smartRoute: smartRoutes[edge.id]
           }
         };
       });
-  }, [edges, edgeVisibility, edgeRoutingStyle, simState.activeEdgeIds, selectedEdgeId]);
+  }, [edges, quests, activeActId, edgeVisibility, edgeRoutingStyle, simState.activeEdgeIds, selectedEdgeId, smartRoutes]);
 
   const reconnectCampaignEdge = useCampaignStore((s) => s.reconnectEdge);
   const updateEdgeWaypoints = useCampaignStore((s) => s.updateEdgeWaypoints);

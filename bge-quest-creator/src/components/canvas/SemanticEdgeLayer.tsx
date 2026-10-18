@@ -9,8 +9,9 @@ import {
   BaseEdge,
   useReactFlow
 } from '@xyflow/react';
-import { RotateCcw, X, Plus, Trash2 } from 'lucide-react';
+import { RotateCcw, X, Plus, Trash2, CornerDownLeft } from 'lucide-react';
 import { EdgeRelationType, EdgeRoutingStyle } from '../../types/campaign';
+import { SmartEdgeRoute } from '../../utils/obstacleRouter';
 import { useCampaignStore } from '../../store/useCampaignStore';
 
 export type SemanticEdgeType = Edge<{
@@ -20,6 +21,7 @@ export type SemanticEdgeType = Edge<{
   label?: string;
   isActive?: boolean;
   waypoints?: { x: number; y: number }[];
+  smartRoute?: SmartEdgeRoute;
 }>;
 
 const EDGE_COLORS: Record<EdgeRelationType, string> = {
@@ -31,28 +33,51 @@ const EDGE_COLORS: Record<EdgeRelationType, string> = {
   TIME_EXPIRED: '#f43f5e'  // Rose
 };
 
-// Catmull-Rom to Cubic Bezier conversion for smooth multi-waypoint curves
-function buildMultiPointCurve(pts: { x: number; y: number }[]): string {
+/**
+ * Builds an SVG path through a sequence of points using smooth quadratic rounded corners.
+ * Unlike unconstrained Catmull-Rom splines, rounded orthogonal/polyline paths are convex-bounded
+ * and guaranteed never to bow inward into quest card bounding boxes.
+ */
+function buildRoundedWaypointPath(
+  pts: { x: number; y: number }[],
+  maxRadius: number = 24
+): string {
   if (pts.length < 2) return '';
-  if (pts.length === 2) {
-    const dx = (pts[1].x - pts[0].x) * 0.4;
-    return `M ${pts[0].x} ${pts[0].y} C ${pts[0].x + dx} ${pts[0].y}, ${pts[1].x - dx} ${pts[1].y}, ${pts[1].x} ${pts[1].y}`;
+  if (pts.length === 2 || maxRadius <= 0) {
+    return pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
   }
 
-  let path = `M ${pts[0].x} ${pts[0].y}`;
-  for (let i = 0; i < pts.length - 1; i++) {
-    const p0 = pts[i === 0 ? i : i - 1];
-    const p1 = pts[i];
-    const p2 = pts[i + 1];
-    const p3 = pts[i + 2 < pts.length ? i + 2 : i + 1];
+  let path = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
 
-    const cp1x = p1.x + (p2.x - p0.x) / 5;
-    const cp1y = p1.y + (p2.y - p0.y) / 5;
-    const cp2x = p2.x - (p3.x - p1.x) / 5;
-    const cp2y = p2.y - (p3.y - p1.y) / 5;
+  for (let i = 1; i < pts.length - 1; i++) {
+    const prev = pts[i - 1];
+    const curr = pts[i];
+    const next = pts[i + 1];
 
-    path += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x} ${p2.y}`;
+    const dx1 = curr.x - prev.x;
+    const dy1 = curr.y - prev.y;
+    const len1 = Math.hypot(dx1, dy1);
+
+    const dx2 = next.x - curr.x;
+    const dy2 = next.y - curr.y;
+    const len2 = Math.hypot(dx2, dy2);
+
+    if (len1 < 2 || len2 < 2) {
+      path += ` L ${curr.x.toFixed(1)} ${curr.y.toFixed(1)}`;
+      continue;
+    }
+
+    const r = Math.min(maxRadius, len1 * 0.45, len2 * 0.45);
+    const startX = curr.x - (dx1 / len1) * r;
+    const startY = curr.y - (dy1 / len1) * r;
+    const endX = curr.x + (dx2 / len2) * r;
+    const endY = curr.y + (dy2 / len2) * r;
+
+    path += ` L ${startX.toFixed(1)} ${startY.toFixed(1)} Q ${curr.x.toFixed(1)} ${curr.y.toFixed(1)} ${endX.toFixed(1)} ${endY.toFixed(1)}`;
   }
+
+  const last = pts[pts.length - 1];
+  path += ` L ${last.x.toFixed(1)} ${last.y.toFixed(1)}`;
   return path;
 }
 
@@ -80,20 +105,85 @@ export const SemanticEdge = memo((props: EdgeProps<SemanticEdgeType>) => {
   const color = EDGE_COLORS[edgeType] || '#94a3b8';
   const isActive = Boolean(data?.isActive);
   const waypoints = data?.waypoints || [];
+  const smartRoute = data?.smartRoute;
+
+  const isLoopback = Boolean(smartRoute?.isLoopback || targetX <= sourceX + 20);
+  const cornerRadius = routingStyle === 'STRAIGHT' ? 0 : routingStyle === 'STEP' ? 14 : 24;
 
   let edgePath = '';
   let labelX = (sourceX + targetX) / 2;
   let labelY = (sourceY + targetY) / 2;
+  let effectiveAutoWaypoints: { x: number; y: number }[] = [];
 
   if (waypoints.length > 0) {
-    // Custom multi-waypoint path
+    // 1. User-defined manual waypoints
     const allPts = [{ x: sourceX, y: sourceY }, ...waypoints, { x: targetX, y: targetY }];
-    edgePath = buildMultiPointCurve(allPts);
+    edgePath = buildRoundedWaypointPath(allPts, cornerRadius);
 
-    // Position label near middle waypoint
-    const midIdx = Math.floor(waypoints.length / 2);
-    labelX = waypoints[midIdx].x;
-    labelY = waypoints[midIdx].y - 18;
+    if (waypoints.length >= 2) {
+      const midIdx = Math.floor(waypoints.length / 2);
+      const pA = waypoints[midIdx - 1];
+      const pB = waypoints[midIdx];
+      labelX = (pA.x + pB.x) / 2;
+      labelY = (pA.y + pB.y) / 2;
+    } else {
+      labelX = waypoints[0].x;
+      labelY = waypoints[0].y - 16;
+    }
+  } else if (isLoopback) {
+    // 2. Automatic U-Channel Loopback Routing (Underpass / Overpass)
+    const ch = smartRoute?.loopbackChannel;
+    const nestIdx = ch?.nestIdx ?? 0;
+    const bundleSize = ch?.bundleSize ?? 1;
+
+    const exitX = Math.max(
+      Math.round(sourceX + 34 + nestIdx * 22),
+      ch?.exitX ?? Math.round(Math.max(sourceX, targetX) + 40)
+    );
+    const entryX = Math.min(
+      Math.round(targetX - 34 - nestIdx * 22),
+      ch?.entryX ?? Math.round(Math.min(sourceX, targetX) - 40)
+    );
+    const channelY =
+      ch?.channelY ?? Math.round(Math.max(sourceY, targetY) + 95 + nestIdx * 30);
+
+    effectiveAutoWaypoints = [
+      { x: exitX, y: Math.round(sourceY) },
+      { x: exitX, y: channelY },
+      { x: entryX, y: channelY },
+      { x: entryX, y: Math.round(targetY) }
+    ];
+
+    const allPts = [
+      { x: sourceX, y: sourceY },
+      ...effectiveAutoWaypoints,
+      { x: targetX, y: targetY }
+    ];
+
+    edgePath = buildRoundedWaypointPath(allPts, cornerRadius);
+
+    // Place label along the dedicated horizontal bypass track, staggered per lane
+    const midChannelX = (exitX + entryX) / 2;
+    const staggerX = bundleSize > 1 ? (nestIdx - (bundleSize - 1) / 2) * 58 : 0;
+    labelX = midChannelX + staggerX;
+    labelY = channelY;
+  } else if (smartRoute?.waypoints && smartRoute.waypoints.length > 0) {
+    // 3. Automatic Forward Obstacle-Avoidance Detour
+    effectiveAutoWaypoints = smartRoute.waypoints;
+    const allPts = [
+      { x: sourceX, y: sourceY },
+      ...effectiveAutoWaypoints,
+      { x: targetX, y: targetY }
+    ];
+    edgePath = buildRoundedWaypointPath(allPts, cornerRadius);
+
+    if (effectiveAutoWaypoints.length >= 2) {
+      labelX = (effectiveAutoWaypoints[0].x + effectiveAutoWaypoints[1].x) / 2;
+      labelY = (effectiveAutoWaypoints[0].y + effectiveAutoWaypoints[1].y) / 2;
+    } else {
+      labelX = effectiveAutoWaypoints[0].x;
+      labelY = effectiveAutoWaypoints[0].y;
+    }
   } else if (routingStyle === 'STEP') {
     [edgePath, labelX, labelY] = getSmoothStepPath({
       sourceX,
@@ -112,7 +202,7 @@ export const SemanticEdge = memo((props: EdgeProps<SemanticEdgeType>) => {
       targetY
     });
   } else {
-    // Default BEZIER
+    // Default unobstructed forward BEZIER
     [edgePath, labelX, labelY] = getBezierPath({
       sourceX,
       sourceY,
@@ -124,7 +214,11 @@ export const SemanticEdge = memo((props: EdgeProps<SemanticEdgeType>) => {
     });
   }
 
-  const isDashed = edgeType === 'MUTATION' || edgeType === 'LOCKOUT' || edgeType === 'TIME_TRIGGER' || edgeType === 'TIME_EXPIRED';
+  const isDashed =
+    edgeType === 'MUTATION' ||
+    edgeType === 'LOCKOUT' ||
+    edgeType === 'TIME_TRIGGER' ||
+    edgeType === 'TIME_EXPIRED';
   const strokeDasharray = isDashed ? '6,6' : undefined;
 
   // Drag waypoint handler
@@ -140,7 +234,7 @@ export const SemanticEdge = memo((props: EdgeProps<SemanticEdgeType>) => {
         updateEdgeWaypoints(id, updated);
       };
 
-      const onPointerUp = (upEvt: PointerEvent) => {
+      const onPointerUp = () => {
         window.removeEventListener('pointermove', onPointerMove);
         window.removeEventListener('pointerup', onPointerUp);
       };
@@ -177,7 +271,7 @@ export const SemanticEdge = memo((props: EdgeProps<SemanticEdgeType>) => {
             : isActive
             ? `drop-shadow(0 0 6px ${color})`
             : undefined,
-          opacity: isActive || selected ? 1 : 0.8
+          opacity: isActive || selected ? 1 : 0.85
         }}
         className={isActive && isDashed ? 'animate-edge-flow' : ''}
       />
@@ -190,17 +284,19 @@ export const SemanticEdge = memo((props: EdgeProps<SemanticEdgeType>) => {
             transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
             pointerEvents: 'all'
           }}
-          className="nodrag nopan flex items-center gap-1.5"
+          className="nodrag nopan flex items-center gap-1.5 z-20"
         >
           {data?.label && (
             <span
               style={{
-                borderColor: `${color}88`,
+                borderColor: `${color}99`,
                 color: color
               }}
-              className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded-full bg-slate-950/90 border shadow-sm backdrop-blur-sm whitespace-nowrap"
+              className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-slate-950/95 border shadow-md backdrop-blur-sm whitespace-nowrap flex items-center gap-1"
+              title={isLoopback ? `Loopback connection: ${data.label}` : data.label}
             >
-              {data.label}
+              {isLoopback && <CornerDownLeft className="w-2.5 h-2.5 opacity-90 shrink-0" />}
+              <span>{data.label}</span>
             </span>
           )}
 
@@ -210,14 +306,18 @@ export const SemanticEdge = memo((props: EdgeProps<SemanticEdgeType>) => {
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                const newWp = {
-                  x: Math.round((sourceX + targetX) / 2),
-                  y: Math.round((sourceY + targetY) / 2 - 30)
-                };
-                updateEdgeWaypoints(id, [...waypoints, newWp]);
+                if (waypoints.length === 0 && effectiveAutoWaypoints.length > 0) {
+                  updateEdgeWaypoints(id, [...effectiveAutoWaypoints]);
+                } else {
+                  const newWp = {
+                    x: Math.round(labelX),
+                    y: Math.round(labelY - 24)
+                  };
+                  updateEdgeWaypoints(id, [...waypoints, newWp]);
+                }
               }}
-              className="px-1.5 py-0.5 rounded-full bg-indigo-950/90 border border-indigo-700/80 hover:bg-indigo-900 text-[10px] text-indigo-300 hover:text-white flex items-center gap-1 shadow-md transition-colors"
-              title="Add a bend waypoint to this edge"
+              className="px-1.5 py-0.5 rounded-full bg-indigo-950/90 border border-indigo-700/80 hover:bg-indigo-900 text-[10px] text-indigo-300 hover:text-white flex items-center gap-1 shadow-md transition-colors cursor-pointer"
+              title="Customize bend waypoints on this edge"
             >
               <Plus className="w-2.5 h-2.5 text-indigo-400" />
               <span>+ Bend</span>
@@ -232,11 +332,11 @@ export const SemanticEdge = memo((props: EdgeProps<SemanticEdgeType>) => {
                 e.stopPropagation();
                 clearEdgeWaypoints(id);
               }}
-              className="px-1.5 py-0.5 rounded-full bg-slate-900 border border-slate-700 hover:border-amber-500 text-[10px] text-slate-300 hover:text-amber-300 flex items-center gap-1 shadow-md transition-colors"
-              title="Reset to default route"
+              className="px-1.5 py-0.5 rounded-full bg-slate-900 border border-slate-700 hover:border-amber-500 text-[10px] text-slate-300 hover:text-amber-300 flex items-center gap-1 shadow-md transition-colors cursor-pointer"
+              title="Reset to automatic obstacle-free route"
             >
               <RotateCcw className="w-2.5 h-2.5" />
-              Reset
+              Auto Route
             </button>
           )}
 
@@ -248,7 +348,7 @@ export const SemanticEdge = memo((props: EdgeProps<SemanticEdgeType>) => {
                 e.stopPropagation();
                 deleteEdge(id);
               }}
-              className="px-1.5 py-0.5 rounded-full bg-rose-950/90 border border-rose-700/80 hover:bg-rose-900 text-[10px] text-rose-300 hover:text-white flex items-center gap-1 shadow-md transition-colors"
+              className="px-1.5 py-0.5 rounded-full bg-rose-950/90 border border-rose-700/80 hover:bg-rose-900 text-[10px] text-rose-300 hover:text-white flex items-center gap-1 shadow-md transition-colors cursor-pointer"
               title="Delete this connection"
             >
               <Trash2 className="w-2.5 h-2.5" />
