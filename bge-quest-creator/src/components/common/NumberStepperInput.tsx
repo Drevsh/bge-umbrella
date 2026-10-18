@@ -58,53 +58,54 @@ export const NumberStepperInput: React.FC<NumberStepperInputProps> = ({
   const colorStyles = {
     slate: {
       border: 'border-slate-800 focus-within:border-slate-600',
-      bg: 'bg-slate-950/90',
+      bg: 'bg-slate-950',
       text: 'text-slate-200',
-      btnHover: 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'
+      btnHover: 'hover:bg-slate-800 text-slate-400 hover:text-slate-200 active:bg-slate-700'
     },
     indigo: {
       border: 'border-indigo-900/60 focus-within:border-indigo-500',
-      bg: 'bg-slate-950/90',
+      bg: 'bg-slate-950',
       text: 'text-indigo-300',
-      btnHover: 'hover:bg-indigo-950/60 text-indigo-400 hover:text-indigo-200'
+      btnHover: 'hover:bg-indigo-950/80 text-indigo-400 hover:text-indigo-200 active:bg-indigo-900'
     },
     amber: {
       border: 'border-amber-900/60 focus-within:border-amber-500',
-      bg: 'bg-slate-950/90',
+      bg: 'bg-slate-950',
       text: 'text-amber-300',
-      btnHover: 'hover:bg-amber-950/60 text-amber-400 hover:text-amber-200'
+      btnHover: 'hover:bg-amber-950/80 text-amber-400 hover:text-amber-200 active:bg-amber-900'
     },
     teal: {
       border: 'border-teal-900/60 focus-within:border-teal-500',
-      bg: 'bg-slate-950/90',
+      bg: 'bg-slate-950',
       text: 'text-teal-300',
-      btnHover: 'hover:bg-teal-950/60 text-teal-400 hover:text-teal-200'
+      btnHover: 'hover:bg-teal-950/80 text-teal-400 hover:text-teal-200 active:bg-teal-900'
     }
   }[colorScheme];
 
-  const sizeStyles = size === 'sm' ? 'h-7 text-xs' : 'h-8 text-sm';
-  const btnSize = size === 'sm' ? 'w-5 h-full' : 'w-6 h-full';
+  const sizeStyles = size === 'sm' ? 'h-7 text-xs min-w-[76px]' : 'h-8 text-sm min-w-[88px]';
+  const btnWidth = size === 'sm' ? 'w-6' : 'w-7';
 
   return (
     <div
       title={title}
-      className={`inline-flex items-center rounded-lg border transition-colors overflow-hidden select-none ${colorStyles.border} ${colorStyles.bg} ${sizeStyles} ${className} ${
+      className={`inline-flex items-center justify-between rounded-lg border transition-colors select-none shrink-0 ${colorStyles.border} ${colorStyles.bg} ${sizeStyles} ${className} ${
         disabled ? 'opacity-50 pointer-events-none' : ''
       }`}
     >
-      {prefix && <span className="pl-2 pr-0.5 flex items-center shrink-0">{prefix}</span>}
+      {prefix && <span className="pl-1.5 pr-0.5 flex items-center shrink-0">{prefix}</span>}
 
       <button
         type="button"
         onClick={handleDecrement}
         disabled={disabled || value <= min}
-        className={`flex items-center justify-center transition-colors cursor-pointer shrink-0 disabled:opacity-30 disabled:cursor-not-allowed ${btnSize} ${colorStyles.btnHover}`}
+        className={`h-full ${btnWidth} flex items-center justify-center transition-colors cursor-pointer shrink-0 disabled:opacity-25 disabled:cursor-not-allowed ${colorStyles.btnHover}`}
         tabIndex={-1}
+        aria-label="Decrease value"
       >
-        <Minus className="w-3 h-3" />
+        <Minus className="w-3 h-3 shrink-0" />
       </button>
 
-      <div className="relative flex items-center justify-center min-w-[28px] px-1">
+      <div className="flex-1 flex items-center justify-center min-w-0 px-1">
         <input
           type="number"
           min={min}
@@ -113,7 +114,7 @@ export const NumberStepperInput: React.FC<NumberStepperInputProps> = ({
           value={value}
           onChange={handleInputChange}
           disabled={disabled}
-          className={`w-full bg-transparent text-center font-mono font-medium focus:outline-none p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${colorStyles.text}`}
+          className={`w-full min-w-0 bg-transparent text-center font-mono font-medium focus:outline-none p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${colorStyles.text}`}
         />
         {suffix && (
           <span className="text-[10px] text-slate-500 font-mono shrink-0 ml-0.5">
@@ -126,10 +127,11 @@ export const NumberStepperInput: React.FC<NumberStepperInputProps> = ({
         type="button"
         onClick={handleIncrement}
         disabled={disabled || value >= max}
-        className={`flex items-center justify-center transition-colors cursor-pointer shrink-0 disabled:opacity-30 disabled:cursor-not-allowed ${btnSize} ${colorStyles.btnHover}`}
+        className={`h-full ${btnWidth} flex items-center justify-center transition-colors cursor-pointer shrink-0 disabled:opacity-25 disabled:cursor-not-allowed ${colorStyles.btnHover}`}
         tabIndex={-1}
+        aria-label="Increase value"
       >
-        <Plus className="w-3 h-3" />
+        <Plus className="w-3 h-3 shrink-0" />
       </button>
     </div>
   );

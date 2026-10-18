@@ -635,13 +635,13 @@ export const QuestInspectorDrawer: React.FC = () => {
               <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">
                 Parallel {activeGameProfile.terminology?.tierTerm || 'Tier'}
               </label>
-              <input
-                type="number"
+              <NumberStepperInput
+                value={currentQuest.tier}
+                onChange={(val) => updateQuestField(currentQuest.uid, 'tier', val)}
                 min={1}
                 max={10}
-                value={currentQuest.tier}
-                onChange={(e) => updateQuestField(currentQuest.uid, 'tier', Number(e.target.value) || 1)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-100 focus:outline-none focus:border-indigo-500"
+                colorScheme="indigo"
+                className="w-full"
               />
             </div>
           </div>

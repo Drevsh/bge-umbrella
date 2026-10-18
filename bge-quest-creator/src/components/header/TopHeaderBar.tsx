@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   FolderOpen,
   Plus,
@@ -18,7 +18,8 @@ import {
   Layers,
   ChevronDown,
   RefreshCw,
-  Gamepad2
+  Gamepad2,
+  MoreHorizontal
 } from 'lucide-react';
 import { useCampaignStore } from '../../store/useCampaignStore';
 export const TopHeaderBar: React.FC = () => {
@@ -42,6 +43,19 @@ export const TopHeaderBar: React.FC = () => {
   }, [activeActId, acts, activeGameProfile]);
 
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isToolsMenuOpen, setIsToolsMenuOpen] = useState(false);
+  const toolsMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isToolsMenuOpen) return;
+    const handleClose = (e: MouseEvent) => {
+      if (toolsMenuRef.current && !toolsMenuRef.current.contains(e.target as Node)) {
+        setIsToolsMenuOpen(false);
+      }
+    };
+    window.addEventListener('mousedown', handleClose);
+    return () => window.removeEventListener('mousedown', handleClose);
+  }, [isToolsMenuOpen]);
 
   useEffect(() => {
     const handleFsChange = () => {
@@ -153,8 +167,8 @@ export const TopHeaderBar: React.FC = () => {
         </button>
       </div>
 
-      {/* Center: Playtest Simulator Quick Bar */}
-      <div className="hidden xl:flex items-center gap-2 bg-slate-950 px-3 py-1 rounded-xl border border-slate-800/80 shadow-inner shrink-0">
+      {/* Center: Playtest Simulator Quick Bar (Visible only on ultra-wide screens to prevent header overflow) */}
+      <div className="hidden 2xl:flex items-center gap-2 bg-slate-950 px-3 py-1 rounded-xl border border-slate-800/80 shadow-inner shrink-0">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1">
           <Play className="w-3 h-3 text-cyan-400" />
           Playtest:
@@ -224,7 +238,7 @@ export const TopHeaderBar: React.FC = () => {
             title="Full Graph (100% Canvas)"
           >
             <Maximize2 className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Canvas</span>
+            <span className="hidden 2xl:inline">Canvas</span>
           </button>
           <button
             type="button"
@@ -237,7 +251,7 @@ export const TopHeaderBar: React.FC = () => {
             title="Split Graph + Inspector"
           >
             <Columns className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Split</span>
+            <span className="hidden 2xl:inline">Split</span>
           </button>
           <button
             type="button"
@@ -250,11 +264,11 @@ export const TopHeaderBar: React.FC = () => {
             title="Campaign Matrix & Tag Audit"
           >
             <Table className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Matrix</span>
+            <span className="hidden 2xl:inline">Matrix</span>
           </button>
         </div>
 
-        {/* Primary CTAs */}
+        {/* Auto-Align Button */}
         <button
           type="button"
           onClick={handleAutoAlign}
@@ -262,72 +276,165 @@ export const TopHeaderBar: React.FC = () => {
           title="Auto-Align Quests and Optimize Choice Order"
         >
           <AlignHorizontalSpaceAround className="w-3.5 h-3.5 text-indigo-400" />
-          <span className="hidden lg:inline">Auto-Align</span>
+          <span className="hidden xl:inline">Auto-Align</span>
         </button>
 
+        {/* Primary Add Quest CTA */}
         <button
           type="button"
           onClick={() => setModalOpen('wizard', true)}
-          className="flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 transition-colors shrink-0"
+          className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 transition-colors shrink-0"
           title="Add New Quest"
         >
           <Plus className="w-3.5 h-3.5" />
-          <span className="hidden md:inline">+ Add Quest</span>
-          <span className="md:hidden font-bold">Add</span>
+          <span className="font-semibold">+ Quest</span>
         </button>
 
-        <button
-          type="button"
-          onClick={() => setModalOpen('exportModal', true)}
-          className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors flex items-center shrink-0"
-          title="Export Campaign Data (JSON, CSV, Image)"
-        >
-          <Download className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
-        </button>
+        {/* Quick icon buttons visible on ultra-wide 2xl screens */}
+        <div className="hidden 2xl:flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setModalOpen('exportModal', true)}
+            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors flex items-center shrink-0 cursor-pointer"
+            title="Export Campaign Data (JSON, CSV, Image)"
+          >
+            <Download className="w-3.5 h-3.5" />
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setModalOpen('printModal', true)}
-          className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors flex items-center shrink-0"
-          title="Print Scenario Card Sheets"
-        >
-          <Printer className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
-        </button>
+          <button
+            type="button"
+            onClick={() => setModalOpen('printModal', true)}
+            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors flex items-center shrink-0 cursor-pointer"
+            title="Print Scenario Card Sheets"
+          >
+            <Printer className="w-3.5 h-3.5" />
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setModalOpen('apiKeyModal', true)}
-          className={`p-1.5 rounded-lg border transition-colors flex items-center gap-1 shrink-0 ${
-            geminiApiKey
-              ? 'bg-slate-800 hover:bg-slate-700 text-indigo-400 border-slate-700'
-              : 'bg-amber-950/40 hover:bg-amber-900/50 text-amber-300 border-amber-700/60'
-          }`}
-          title={geminiApiKey ? 'Gemini API Key Configured' : 'Configure Gemini API Key (Gemini TTS Voice Narration)'}
-        >
-          <Key className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
-        </button>
+          <button
+            type="button"
+            onClick={() => setModalOpen('apiKeyModal', true)}
+            className={`p-1.5 rounded-lg border transition-colors flex items-center gap-1 shrink-0 cursor-pointer ${
+              geminiApiKey
+                ? 'bg-slate-800 hover:bg-slate-700 text-indigo-400 border-slate-700'
+                : 'bg-amber-950/40 hover:bg-amber-900/50 text-amber-300 border-amber-700/60'
+            }`}
+            title={geminiApiKey ? 'Gemini API Key Configured' : 'Configure Gemini API Key'}
+          >
+            <Key className="w-3.5 h-3.5" />
+          </button>
 
-        <button
-          type="button"
-          onClick={handleForceReload}
-          className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white border border-slate-700 transition-colors flex items-center shrink-0"
-          title="Force Update App (Purge PWA cache & reload latest build)"
-        >
-          <RefreshCw className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
-        </button>
+          <button
+            type="button"
+            onClick={handleForceReload}
+            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white border border-slate-700 transition-colors flex items-center shrink-0 cursor-pointer"
+            title="Force Update App (Purge PWA cache & reload latest build)"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+          </button>
 
-        <button
-          type="button"
-          onClick={toggleFullscreen}
-          className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors flex items-center gap-1 shrink-0"
-          title={isFullscreen ? 'Exit Immersive Fullscreen' : 'Enter Immersive Fullscreen (Hide Browser Bars)'}
-        >
-          {isFullscreen ? (
-            <Shrink className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-indigo-400" />
-          ) : (
-            <Expand className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
+            title={isFullscreen ? 'Exit Immersive Fullscreen' : 'Enter Immersive Fullscreen'}
+          >
+            {isFullscreen ? (
+              <Shrink className="w-3.5 h-3.5 text-indigo-400" />
+            ) : (
+              <Expand className="w-3.5 h-3.5" />
+            )}
+          </button>
+        </div>
+
+        {/* Responsive More Tools Dropdown (Visible on standard/laptop screens) */}
+        <div className="relative 2xl:hidden" ref={toolsMenuRef}>
+          <button
+            type="button"
+            onClick={() => setIsToolsMenuOpen(!isToolsMenuOpen)}
+            className={`p-1.5 rounded-lg border transition-colors flex items-center gap-1 shrink-0 cursor-pointer ${
+              isToolsMenuOpen
+                ? 'bg-slate-700 text-white border-slate-600'
+                : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+            }`}
+            title="More Options & Tools"
+          >
+            <MoreHorizontal className="w-4 h-4" />
+          </button>
+
+          {isToolsMenuOpen && (
+            <div className="absolute right-0 top-full mt-1.5 w-52 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-1 z-50 text-xs animate-in fade-in zoom-in-95 duration-100 divide-y divide-slate-800">
+              <div className="p-1 space-y-0.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setModalOpen('exportModal', true);
+                    setIsToolsMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-800 text-slate-200 hover:text-white text-left transition-colors cursor-pointer"
+                >
+                  <Download className="w-4 h-4 text-cyan-400" />
+                  <span>Export Campaign...</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setModalOpen('printModal', true);
+                    setIsToolsMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-800 text-slate-200 hover:text-white text-left transition-colors cursor-pointer"
+                >
+                  <Printer className="w-4 h-4 text-emerald-400" />
+                  <span>Print Card Sheets...</span>
+                </button>
+              </div>
+
+              <div className="p-1 space-y-0.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setModalOpen('apiKeyModal', true);
+                    setIsToolsMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-800 text-slate-200 hover:text-white text-left transition-colors cursor-pointer"
+                >
+                  <Key className="w-4 h-4 text-amber-400" />
+                  <div className="flex flex-col">
+                    <span>Gemini API Key</span>
+                    <span className="text-[10px] text-slate-400">
+                      {geminiApiKey ? 'Configured' : 'Not set'}
+                    </span>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    toggleFullscreen();
+                    setIsToolsMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-800 text-slate-200 hover:text-white text-left transition-colors cursor-pointer"
+                >
+                  {isFullscreen ? (
+                    <Shrink className="w-4 h-4 text-indigo-400" />
+                  ) : (
+                    <Expand className="w-4 h-4 text-indigo-400" />
+                  )}
+                  <span>{isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleForceReload();
+                    setIsToolsMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white text-left transition-colors cursor-pointer"
+                >
+                  <RefreshCw className="w-4 h-4 text-slate-400" />
+                  <span>Force Reload App</span>
+                </button>
+              </div>
+            </div>
           )}
-        </button>
+        </div>
       </div>
     </header>
   );
