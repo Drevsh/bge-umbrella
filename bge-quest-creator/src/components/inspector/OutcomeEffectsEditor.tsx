@@ -148,26 +148,26 @@ export const OutcomeEffectsEditor: React.FC<OutcomeEffectsEditorProps> = ({
         </div>
       </div>
 
-      {/* Active Effect Steppers */}
+      {/* Active Effect Steppers (Full-width rows so steppers & remove buttons never overflow narrow drawers) */}
       {anyActive && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2 rounded-lg bg-slate-950/80 border border-slate-800/90">
+        <div className="flex flex-col gap-1.5 p-2 rounded-lg bg-slate-950/80 border border-slate-800/90">
           {/* 1. DAMAGE (Deal vs Heal/Remove) */}
           {isKeyVisible('damage') && (
-            <div className="flex items-center justify-between gap-1.5 p-1.5 rounded-md bg-slate-900/90 border border-slate-800">
-              <div className="flex flex-col gap-1 min-w-0">
-                <span className="text-[10px] font-semibold flex items-center gap-1 text-slate-200">
+            <div className="flex flex-wrap items-center justify-between gap-2 px-2.5 py-1.5 rounded-md bg-slate-900/90 border border-slate-800">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-[11px] font-semibold flex items-center gap-1.5 text-slate-200 whitespace-nowrap">
                   {damageVal >= 0 ? (
-                    <HeartCrack className="w-3 h-3 text-rose-400 shrink-0" />
+                    <HeartCrack className="w-3.5 h-3.5 text-rose-400 shrink-0" />
                   ) : (
-                    <Heart className="w-3 h-3 text-emerald-400 shrink-0" />
+                    <Heart className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                   )}
                   <span>Damage</span>
                 </span>
-                <div className="inline-flex rounded bg-slate-950 p-0.5 border border-slate-800 w-fit">
+                <div className="inline-flex rounded bg-slate-950 p-0.5 border border-slate-800 shrink-0">
                   <button
                     type="button"
                     onClick={() => onChange({ damage: Math.abs(damageVal) || 1 })}
-                    className={`px-1.5 py-0.2 rounded text-[9px] font-semibold cursor-pointer ${
+                    className={`px-1.5 py-0.5 rounded text-[9px] font-semibold whitespace-nowrap cursor-pointer transition-colors ${
                       damageVal >= 0
                         ? 'bg-rose-950 text-rose-300 border border-rose-700/60'
                         : 'text-slate-500 hover:text-slate-300'
@@ -179,7 +179,7 @@ export const OutcomeEffectsEditor: React.FC<OutcomeEffectsEditorProps> = ({
                   <button
                     type="button"
                     onClick={() => onChange({ damage: -Math.abs(damageVal || 1) })}
-                    className={`px-1.5 py-0.2 rounded text-[9px] font-semibold cursor-pointer ${
+                    className={`px-1.5 py-0.5 rounded text-[9px] font-semibold whitespace-nowrap cursor-pointer transition-colors ${
                       damageVal < 0
                         ? 'bg-emerald-950 text-emerald-300 border border-emerald-700/60'
                         : 'text-slate-500 hover:text-slate-300'
@@ -191,7 +191,7 @@ export const OutcomeEffectsEditor: React.FC<OutcomeEffectsEditorProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0 ml-auto">
                 <NumberStepperInput
                   value={damageVal}
                   onChange={(val) => onChange({ damage: val })}
@@ -205,10 +205,10 @@ export const OutcomeEffectsEditor: React.FC<OutcomeEffectsEditorProps> = ({
                 <button
                   type="button"
                   onClick={() => handleToggleEffect('damage', 1)}
-                  className="p-1 text-slate-500 hover:text-rose-400 cursor-pointer"
+                  className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer shrink-0"
                   title="Remove Damage"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
@@ -216,21 +216,21 @@ export const OutcomeEffectsEditor: React.FC<OutcomeEffectsEditorProps> = ({
 
           {/* 2. FATIGUE CARDS (Give vs Remove) */}
           {isKeyVisible('fatigue') && (
-            <div className="flex items-center justify-between gap-1.5 p-1.5 rounded-md bg-slate-900/90 border border-slate-800">
-              <div className="flex flex-col gap-1 min-w-0">
-                <span className="text-[10px] font-semibold flex items-center gap-1 text-slate-200">
+            <div className="flex flex-wrap items-center justify-between gap-2 px-2.5 py-1.5 rounded-md bg-slate-900/90 border border-slate-800">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-[11px] font-semibold flex items-center gap-1.5 text-slate-200 whitespace-nowrap">
                   <Layers
-                    className={`w-3 h-3 shrink-0 ${
+                    className={`w-3.5 h-3.5 shrink-0 ${
                       fatigueVal >= 0 ? 'text-orange-400' : 'text-sky-400'
                     }`}
                   />
-                  <span>Fatigue Card</span>
+                  <span>Fatigue</span>
                 </span>
-                <div className="inline-flex rounded bg-slate-950 p-0.5 border border-slate-800 w-fit">
+                <div className="inline-flex rounded bg-slate-950 p-0.5 border border-slate-800 shrink-0">
                   <button
                     type="button"
                     onClick={() => onChange({ fatigue: Math.abs(fatigueVal) || 1 })}
-                    className={`px-1.5 py-0.2 rounded text-[9px] font-semibold cursor-pointer ${
+                    className={`px-1.5 py-0.5 rounded text-[9px] font-semibold whitespace-nowrap cursor-pointer transition-colors ${
                       fatigueVal >= 0
                         ? 'bg-orange-950 text-orange-300 border border-orange-700/60'
                         : 'text-slate-500 hover:text-slate-300'
@@ -242,7 +242,7 @@ export const OutcomeEffectsEditor: React.FC<OutcomeEffectsEditorProps> = ({
                   <button
                     type="button"
                     onClick={() => onChange({ fatigue: -Math.abs(fatigueVal || 1) })}
-                    className={`px-1.5 py-0.2 rounded text-[9px] font-semibold cursor-pointer ${
+                    className={`px-1.5 py-0.5 rounded text-[9px] font-semibold whitespace-nowrap cursor-pointer transition-colors ${
                       fatigueVal < 0
                         ? 'bg-sky-950 text-sky-300 border border-sky-700/60'
                         : 'text-slate-500 hover:text-slate-300'
@@ -254,7 +254,7 @@ export const OutcomeEffectsEditor: React.FC<OutcomeEffectsEditorProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0 ml-auto">
                 <NumberStepperInput
                   value={fatigueVal}
                   onChange={(val) => onChange({ fatigue: val })}
@@ -268,10 +268,10 @@ export const OutcomeEffectsEditor: React.FC<OutcomeEffectsEditorProps> = ({
                 <button
                   type="button"
                   onClick={() => handleToggleEffect('fatigue', 1)}
-                  className="p-1 text-slate-500 hover:text-rose-400 cursor-pointer"
+                  className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer shrink-0"
                   title="Remove Fatigue effect"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
@@ -279,12 +279,12 @@ export const OutcomeEffectsEditor: React.FC<OutcomeEffectsEditorProps> = ({
 
           {/* 3. ENERGY */}
           {isKeyVisible('energy') && (
-            <div className="flex items-center justify-between gap-1.5 p-1.5 rounded-md bg-slate-900/90 border border-slate-800">
-              <span className="text-[10px] font-semibold flex items-center gap-1 text-cyan-300">
-                <Zap className="w-3 h-3 text-cyan-400 shrink-0" />
+            <div className="flex flex-wrap items-center justify-between gap-2 px-2.5 py-1.5 rounded-md bg-slate-900/90 border border-slate-800">
+              <span className="text-[11px] font-semibold flex items-center gap-1.5 text-cyan-300 whitespace-nowrap">
+                <Zap className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
                 <span>Energy</span>
               </span>
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0 ml-auto">
                 <NumberStepperInput
                   value={energyVal}
                   onChange={(val) => onChange({ energy: val })}
@@ -298,10 +298,10 @@ export const OutcomeEffectsEditor: React.FC<OutcomeEffectsEditorProps> = ({
                 <button
                   type="button"
                   onClick={() => handleToggleEffect('energy', 1)}
-                  className="p-1 text-slate-500 hover:text-rose-400 cursor-pointer"
+                  className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer shrink-0"
                   title="Remove Energy"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
@@ -309,12 +309,12 @@ export const OutcomeEffectsEditor: React.FC<OutcomeEffectsEditorProps> = ({
 
           {/* 4. ESSENCE */}
           {isKeyVisible('essence') && (
-            <div className="flex items-center justify-between gap-1.5 p-1.5 rounded-md bg-slate-900/90 border border-slate-800">
-              <span className="text-[10px] font-semibold flex items-center gap-1 text-purple-300">
-                <Sparkles className="w-3 h-3 text-purple-400 shrink-0" />
+            <div className="flex flex-wrap items-center justify-between gap-2 px-2.5 py-1.5 rounded-md bg-slate-900/90 border border-slate-800">
+              <span className="text-[11px] font-semibold flex items-center gap-1.5 text-purple-300 whitespace-nowrap">
+                <Sparkles className="w-3.5 h-3.5 text-purple-400 shrink-0" />
                 <span>Essence</span>
               </span>
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0 ml-auto">
                 <NumberStepperInput
                   value={essenceVal}
                   onChange={(val) => onChange({ essence: val })}
@@ -328,10 +328,10 @@ export const OutcomeEffectsEditor: React.FC<OutcomeEffectsEditorProps> = ({
                 <button
                   type="button"
                   onClick={() => handleToggleEffect('essence', 1)}
-                  className="p-1 text-slate-500 hover:text-rose-400 cursor-pointer"
+                  className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer shrink-0"
                   title="Remove Essence"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
@@ -339,12 +339,12 @@ export const OutcomeEffectsEditor: React.FC<OutcomeEffectsEditorProps> = ({
 
           {/* 5. GOLD */}
           {isKeyVisible('gold') && (
-            <div className="flex items-center justify-between gap-1.5 p-1.5 rounded-md bg-slate-900/90 border border-slate-800">
-              <span className="text-[10px] font-semibold flex items-center gap-1 text-amber-300">
-                <Coins className="w-3 h-3 text-amber-400 shrink-0" />
+            <div className="flex flex-wrap items-center justify-between gap-2 px-2.5 py-1.5 rounded-md bg-slate-900/90 border border-slate-800">
+              <span className="text-[11px] font-semibold flex items-center gap-1.5 text-amber-300 whitespace-nowrap">
+                <Coins className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                 <span>Gold</span>
               </span>
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0 ml-auto">
                 <NumberStepperInput
                   value={goldVal}
                   onChange={(val) => onChange({ gold: val })}
@@ -358,10 +358,10 @@ export const OutcomeEffectsEditor: React.FC<OutcomeEffectsEditorProps> = ({
                 <button
                   type="button"
                   onClick={() => handleToggleEffect('gold', 10)}
-                  className="p-1 text-slate-500 hover:text-rose-400 cursor-pointer"
+                  className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer shrink-0"
                   title="Remove Gold"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
@@ -369,12 +369,12 @@ export const OutcomeEffectsEditor: React.FC<OutcomeEffectsEditorProps> = ({
 
           {/* 6. EXPLORATION TIME */}
           {isKeyVisible('timeAdvance') && (
-            <div className="flex items-center justify-between gap-1.5 p-1.5 rounded-md bg-slate-900/90 border border-slate-800">
-              <span className="text-[10px] font-semibold flex items-center gap-1 text-teal-300">
-                <Clock className="w-3 h-3 text-teal-400 shrink-0" />
+            <div className="flex flex-wrap items-center justify-between gap-2 px-2.5 py-1.5 rounded-md bg-slate-900/90 border border-slate-800">
+              <span className="text-[11px] font-semibold flex items-center gap-1.5 text-teal-300 whitespace-nowrap">
+                <Clock className="w-3.5 h-3.5 text-teal-400 shrink-0" />
                 <span>+Time</span>
               </span>
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0 ml-auto">
                 <NumberStepperInput
                   value={timeVal}
                   onChange={(val) => onChange({ timeAdvance: val })}
@@ -388,10 +388,10 @@ export const OutcomeEffectsEditor: React.FC<OutcomeEffectsEditorProps> = ({
                 <button
                   type="button"
                   onClick={() => handleToggleEffect('timeAdvance', 1)}
-                  className="p-1 text-slate-500 hover:text-rose-400 cursor-pointer"
+                  className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer shrink-0"
                   title="Remove Time Advance"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>

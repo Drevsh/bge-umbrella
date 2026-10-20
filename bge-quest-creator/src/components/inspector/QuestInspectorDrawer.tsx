@@ -1643,11 +1643,11 @@ export const QuestInspectorDrawer: React.FC = () => {
                     </div>
 
                     <div>
-                      <div className="flex items-center justify-between mb-1">
+                      <div className="flex flex-wrap items-center justify-between gap-1.5 mb-1">
                         <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                           Grants State Tags (comma-separated)
                         </label>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 shrink-0">
                           <button
                             type="button"
                             onClick={() => {
@@ -1659,10 +1659,10 @@ export const QuestInspectorDrawer: React.FC = () => {
                                   .join(', ');
                               });
                             }}
-                            className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-800/80 text-cyan-300 flex items-center gap-0.5 transition-colors"
+                            className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-800/80 text-cyan-300 flex items-center gap-1 whitespace-nowrap shrink-0 transition-colors"
                             title="Format as Campaign Global State (persists across all Acts)"
                           >
-                            <Globe className="w-2.5 h-2.5" />
+                            <Globe className="w-2.5 h-2.5 shrink-0" />
                             <span>++Global</span>
                           </button>
                           <button
@@ -1676,10 +1676,10 @@ export const QuestInspectorDrawer: React.FC = () => {
                                   .join(', ');
                               });
                             }}
-                            className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800/80 text-emerald-300 flex items-center gap-0.5 transition-colors"
+                            className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800/80 text-emerald-300 flex items-center gap-1 whitespace-nowrap shrink-0 transition-colors"
                             title="Format as Act Local State (scoped to this Act only)"
                           >
-                            <Tag className="w-2.5 h-2.5" />
+                            <Tag className="w-2.5 h-2.5 shrink-0" />
                             <span>+Act Local</span>
                           </button>
                         </div>
@@ -1898,11 +1898,11 @@ export const QuestInspectorDrawer: React.FC = () => {
               />
 
               <div>
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex flex-wrap items-center justify-between gap-1.5 mb-1">
                   <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                     Grants State Tags (comma-separated)
                   </label>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 shrink-0">
                     <button
                       type="button"
                       onClick={() => {
@@ -1914,10 +1914,10 @@ export const QuestInspectorDrawer: React.FC = () => {
                             .join(', ');
                         });
                       }}
-                      className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-800/80 text-cyan-300 flex items-center gap-0.5 transition-colors"
+                      className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-800/80 text-cyan-300 flex items-center gap-1 whitespace-nowrap shrink-0 transition-colors"
                       title="Format as Campaign Global State (persists across all Acts)"
                     >
-                      <Globe className="w-2.5 h-2.5" />
+                      <Globe className="w-2.5 h-2.5 shrink-0" />
                       <span>++Global</span>
                     </button>
                     <button
@@ -1931,10 +1931,10 @@ export const QuestInspectorDrawer: React.FC = () => {
                             .join(', ');
                         });
                       }}
-                      className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800/80 text-emerald-300 flex items-center gap-0.5 transition-colors"
+                      className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-800/80 text-emerald-300 flex items-center gap-1 whitespace-nowrap shrink-0 transition-colors"
                       title="Format as Act Local State (scoped to this Act only)"
                     >
-                      <Tag className="w-2.5 h-2.5" />
+                      <Tag className="w-2.5 h-2.5 shrink-0" />
                       <span>+Act Local</span>
                     </button>
                   </div>
