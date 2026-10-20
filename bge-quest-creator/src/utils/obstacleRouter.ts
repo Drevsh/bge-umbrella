@@ -1,5 +1,17 @@
 import { QuestModel, CampaignEdge } from '../types/campaign';
 
+export interface ControlPoint {
+  x: number;
+  y: number;
+}
+
+export interface NodeRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface BoundingBox {
   uid: string;
   act: number;
@@ -25,15 +37,22 @@ export interface LoopbackChannelInfo {
 }
 
 export interface SmartEdgeRoute {
-  waypoints: { x: number; y: number }[];
+  waypoints: ControlPoint[];
   isLoopback: boolean;
+  hasObstacleDetour: boolean;
   loopbackChannel?: LoopbackChannelInfo;
 }
 
 const NODE_WIDTH = 280;
-const NODE_MARGIN = 22; // Clearance around cards
+const NODE_MARGIN = 20; // Minimum clearance around cards
 
-export function getNodeHeight(quest: QuestModel): number {
+export function getNodeHeight(
+  quest: QuestModel,
+  measuredHeight?: number
+): number {
+  if (measuredHeight && measuredHeight > 80) {
+    return measuredHeight;
+  }
   const hasExploration = Boolean(
     quest.isExplorationStage || quest.category === 'EXPLORATION' || quest.explorationConfig
   );
@@ -42,8 +61,12 @@ export function getNodeHeight(quest: QuestModel): number {
   return 112 + (hasExploration ? 28 : 0) + (hasVariants ? 32 : 0) + 32 + outcomesCount * 38 + 16;
 }
 
-export function getSourcePortCoords(quest: QuestModel, portId: string | null): { x: number; y: number } {
-  const x = quest.position.x + NODE_WIDTH;
+export function getSourcePortCoords(
+  quest: QuestModel,
+  portId: string | null,
+  nodeWidth: number = NODE_WIDTH
+): ControlPoint {
+  const x = quest.position.x + nodeWidth;
   const hasExploration = Boolean(
     quest.isExplorationStage || quest.category === 'EXPLORATION' || quest.explorationConfig
   );
@@ -57,27 +80,230 @@ export function getSourcePortCoords(quest: QuestModel, portId: string | null): {
   return { x, y };
 }
 
-export function getTargetPortCoords(quest: QuestModel): { x: number; y: number } {
+export function getTargetPortCoords(quest: QuestModel): ControlPoint {
   return {
     x: quest.position.x,
     y: quest.position.y + 38
   };
 }
 
+// ============================================================================
+// Geometry & Polyline Helpers (Adapted from idootop/reactflow-auto-layout)
+// ============================================================================
+
+export function distance(p1: ControlPoint, p2: ControlPoint): number {
+  return Math.hypot(p2.x - p1.x, p2.y - p1.y);
+}
+
+export function isEqualPoint(p1: ControlPoint, p2: ControlPoint): boolean {
+  return Math.abs(p1.x - p2.x) < 1 && Math.abs(p1.y - p2.y) < 1;
+}
+
+export function areLinesPerpendicular(
+  p1: ControlPoint,
+  p2: ControlPoint,
+  p3: ControlPoint,
+  p4: ControlPoint
+): boolean {
+  return (
+    (Math.abs(p1.x - p2.x) < 1 && Math.abs(p3.y - p4.y) < 1) ||
+    (Math.abs(p1.y - p2.y) < 1 && Math.abs(p3.x - p4.x) < 1)
+  );
+}
+
+export function areLinesSameDirection(
+  p1: ControlPoint,
+  p2: ControlPoint,
+  p3: ControlPoint,
+  p4: ControlPoint
+): boolean {
+  return (
+    (Math.abs(p1.x - p2.x) < 1 &&
+      Math.abs(p3.x - p4.x) < 1 &&
+      (p1.y - p2.y) * (p3.y - p4.y) > 0) ||
+    (Math.abs(p1.y - p2.y) < 1 &&
+      Math.abs(p3.y - p4.y) < 1 &&
+      (p1.x - p2.x) * (p3.x - p4.x) > 0)
+  );
+}
+
+export function areLinesReverseDirection(
+  p1: ControlPoint,
+  p2: ControlPoint,
+  p3: ControlPoint,
+  p4: ControlPoint
+): boolean {
+  return (
+    (Math.abs(p1.x - p2.x) < 1 &&
+      Math.abs(p3.x - p4.x) < 1 &&
+      (p1.y - p2.y) * (p3.y - p4.y) < 0) ||
+    (Math.abs(p1.y - p2.y) < 1 &&
+      Math.abs(p3.y - p4.y) < 1 &&
+      (p1.x - p2.x) * (p3.x - p4.x) < 0)
+  );
+}
+
+export function isInLine(
+  p: ControlPoint,
+  p1: ControlPoint,
+  p2: ControlPoint
+): boolean {
+  const minX = Math.min(p1.x, p2.x) - 1;
+  const maxX = Math.max(p1.x, p2.x) + 1;
+  const minY = Math.min(p1.y, p2.y) - 1;
+  const maxY = Math.max(p1.y, p2.y) + 1;
+  return (
+    (Math.abs(p1.x - p.x) < 1 && Math.abs(p.x - p2.x) < 1 && p.y >= minY && p.y <= maxY) ||
+    (Math.abs(p1.y - p.y) < 1 && Math.abs(p.y - p2.y) < 1 && p.x >= minX && p.x <= maxX)
+  );
+}
+
+/**
+ * Removes collinear interior points from a polyline sequence.
+ */
+export function reducePoints(points: ControlPoint[]): ControlPoint[] {
+  if (points.length <= 2) return points;
+  const deduped: ControlPoint[] = [points[0]];
+  for (let i = 1; i < points.length; i++) {
+    if (!isEqualPoint(points[i], deduped[deduped.length - 1])) {
+      deduped.push(points[i]);
+    }
+  }
+  if (deduped.length <= 2) return deduped;
+
+  const optimized: ControlPoint[] = [deduped[0]];
+  for (let i = 1; i < deduped.length - 1; i++) {
+    if (!isInLine(deduped[i], optimized[optimized.length - 1], deduped[i + 1])) {
+      optimized.push(deduped[i]);
+    }
+  }
+  optimized.push(deduped[deduped.length - 1]);
+  return optimized;
+}
+
+/**
+ * Merges nearby coordinate values on X and Y axes to snap candidate grid lines cleanly.
+ */
+export function mergeClosePoints(
+  points: ControlPoint[],
+  threshold = 4
+): ControlPoint[] {
+  const positions = { x: [] as number[], y: [] as number[] };
+  const findPosition = (axis: 'x' | 'y', v: number) => {
+    const rounded = Math.round(v);
+    const ps = positions[axis];
+    let p = ps.find((e) => Math.abs(rounded - e) < threshold);
+    if (p == null) {
+      p = rounded;
+      positions[axis].push(rounded);
+    }
+    return p;
+  };
+
+  return points.map((point) => ({
+    x: findPosition('x', point.x),
+    y: findPosition('y', point.y)
+  }));
+}
+
+/**
+ * Finds the best position for an edge label along a polyline (from idootop/reactflow-auto-layout).
+ * Prefers the middle segment if long enough, otherwise uses the midpoint of the longest segment.
+ */
+export function getLabelPosition(
+  points: ControlPoint[],
+  minGap = 36
+): ControlPoint {
+  if (points.length < 2) {
+    return points[0] || { x: 0, y: 0 };
+  }
+  if (points.length % 2 === 0) {
+    const mid1 = points[points.length / 2 - 1];
+    const mid2 = points[points.length / 2];
+    if (distance(mid1, mid2) > minGap) {
+      return {
+        x: (mid1.x + mid2.x) / 2,
+        y: (mid1.y + mid2.y) / 2
+      };
+    }
+  }
+  let longestStart = points[0];
+  let longestEnd = points[1];
+  let maxDist = distance(longestStart, longestEnd);
+  for (let i = 1; i < points.length - 1; i++) {
+    const d = distance(points[i], points[i + 1]);
+    if (d > maxDist) {
+      maxDist = d;
+      longestStart = points[i];
+      longestEnd = points[i + 1];
+    }
+  }
+  return {
+    x: (longestStart.x + longestEnd.x) / 2,
+    y: (longestStart.y + longestEnd.y) / 2
+  };
+}
+
+/**
+ * Builds an SVG path through a sequence of points using smooth quadratic rounded corners.
+ */
+export function getPathWithRoundCorners(
+  pts: ControlPoint[],
+  maxRadius: number = 16
+): string {
+  if (pts.length < 2) return '';
+  if (pts.length === 2 || maxRadius <= 0) {
+    return pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+  }
+
+  let path = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+
+  for (let i = 1; i < pts.length - 1; i++) {
+    const prev = pts[i - 1];
+    const curr = pts[i];
+    const next = pts[i + 1];
+
+    const dx1 = curr.x - prev.x;
+    const dy1 = curr.y - prev.y;
+    const len1 = Math.hypot(dx1, dy1);
+
+    const dx2 = next.x - curr.x;
+    const dy2 = next.y - curr.y;
+    const len2 = Math.hypot(dx2, dy2);
+
+    if (len1 < 2 || len2 < 2) {
+      path += ` L ${curr.x.toFixed(1)} ${curr.y.toFixed(1)}`;
+      continue;
+    }
+
+    const r = Math.min(maxRadius, len1 * 0.45, len2 * 0.45);
+    const startX = curr.x - (dx1 / len1) * r;
+    const startY = curr.y - (dy1 / len1) * r;
+    const endX = curr.x + (dx2 / len2) * r;
+    const endY = curr.y + (dy2 / len2) * r;
+
+    path += ` L ${startX.toFixed(1)} ${startY.toFixed(1)} Q ${curr.x.toFixed(1)} ${curr.y.toFixed(1)} ${endX.toFixed(1)} ${endY.toFixed(1)}`;
+  }
+
+  const last = pts[pts.length - 1];
+  path += ` L ${last.x.toFixed(1)} ${last.y.toFixed(1)}`;
+  return path;
+}
+
 // Check if a 2D line segment intersects a 2D axis-aligned bounding box
-function lineSegmentIntersectsBox(
+export function lineSegmentIntersectsBox(
   x1: number,
   y1: number,
   x2: number,
   y2: number,
-  box: BoundingBox
+  box: { left: number; right: number; top: number; bottom: number }
 ): boolean {
   const minX = Math.min(x1, x2);
   const maxX = Math.max(x1, x2);
   const minY = Math.min(y1, y2);
   const maxY = Math.max(y1, y2);
 
-  if (maxX < box.left || minX > box.right || maxY < box.top || minY > box.bottom) {
+  if (maxX <= box.left || minX >= box.right || maxY <= box.top || minY >= box.bottom) {
     return false;
   }
 
@@ -87,7 +313,7 @@ function lineSegmentIntersectsBox(
   const dy = y2 - y1;
 
   if (Math.abs(dx) < 1e-6) {
-    if (x1 < box.left || x1 > box.right) return false;
+    if (x1 <= box.left || x1 >= box.right) return false;
   } else {
     const tx1 = (box.left - x1) / dx;
     const tx2 = (box.right - x1) / dx;
@@ -95,11 +321,11 @@ function lineSegmentIntersectsBox(
     const tFarX = Math.max(tx1, tx2);
     tmin = Math.max(tmin, tNearX);
     tmax = Math.min(tmax, tFarX);
-    if (tmin > tmax) return false;
+    if (tmin >= tmax) return false;
   }
 
   if (Math.abs(dy) < 1e-6) {
-    if (y1 < box.top || y1 > box.bottom) return false;
+    if (y1 <= box.top || y1 >= box.bottom) return false;
   } else {
     const ty1 = (box.top - y1) / dy;
     const ty2 = (box.bottom - y1) / dy;
@@ -107,34 +333,194 @@ function lineSegmentIntersectsBox(
     const tFarY = Math.max(ty1, ty2);
     tmin = Math.max(tmin, tNearY);
     tmax = Math.min(tmax, tFarY);
-    if (tmin > tmax) return false;
+    if (tmin >= tmax) return false;
   }
 
   return true;
 }
 
+// ============================================================================
+// A* Manhattan Orthogonal Pathfinder (Adapted from idootop/reactflow-auto-layout)
+// ============================================================================
+
+const estimateManhattanDistance = (p1: ControlPoint, p2: ControlPoint): number =>
+  Math.abs(p1.x - p2.x) + Math.abs(p1.y - p2.y);
+
+function computeAStarOrthogonalPath(params: {
+  source: ControlPoint;
+  target: ControlPoint;
+  sourceOffset: ControlPoint;
+  targetOffset: ControlPoint;
+  obstacles: BoundingBox[];
+  laneShift?: number;
+}): ControlPoint[] {
+  const { source, target, sourceOffset, targetOffset, obstacles, laneShift = 0 } = params;
+
+  // Collect candidate X and Y grid lines from ports, offsets, midpoints, and obstacle boundaries
+  const xCoords = new Set<number>([
+    Math.round(sourceOffset.x),
+    Math.round(targetOffset.x),
+    Math.round((sourceOffset.x + targetOffset.x) / 2 + laneShift)
+  ]);
+  const yCoords = new Set<number>([
+    Math.round(sourceOffset.y),
+    Math.round(targetOffset.y),
+    Math.round((sourceOffset.y + targetOffset.y) / 2 + laneShift)
+  ]);
+
+  obstacles.forEach((obs) => {
+    xCoords.add(Math.round(obs.left - laneShift));
+    xCoords.add(Math.round(obs.right + laneShift));
+    yCoords.add(Math.round(obs.top - laneShift));
+    yCoords.add(Math.round(obs.bottom + laneShift));
+  });
+
+  // Shrink obstacle boxes slightly for strict interior crossing check so lines can run along padded boundaries
+  const strictObstacles = obstacles.map((o) => ({
+    left: o.rawLeft - 10,
+    right: o.rawRight + 10,
+    top: o.rawTop - 10,
+    bottom: o.rawBottom + 10
+  }));
+
+  const isPointInsideAnyObstacle = (p: ControlPoint): boolean => {
+    return strictObstacles.some(
+      (b) => p.x > b.left && p.x < b.right && p.y > b.top && p.y < b.bottom
+    );
+  };
+
+  const isSegmentBlocked = (p1: ControlPoint, p2: ControlPoint): boolean => {
+    return strictObstacles.some((b) => lineSegmentIntersectsBox(p1.x, p1.y, p2.x, p2.y, b));
+  };
+
+  const start: ControlPoint = { x: Math.round(sourceOffset.x), y: Math.round(sourceOffset.y) };
+  const end: ControlPoint = { x: Math.round(targetOffset.x), y: Math.round(targetOffset.y) };
+
+  const candidatePoints: ControlPoint[] = [start];
+  const seenKeys = new Set<string>([`${start.x},${start.y}`, `${end.x},${end.y}`]);
+
+  for (const x of xCoords) {
+    for (const y of yCoords) {
+      const key = `${x},${y}`;
+      if (seenKeys.has(key)) continue;
+      const pt = { x, y };
+      if (!isPointInsideAnyObstacle(pt)) {
+        seenKeys.add(key);
+        candidatePoints.push(pt);
+      }
+    }
+  }
+  candidatePoints.push(end);
+
+  const openSet: ControlPoint[] = [start];
+  const closedSet = new Set<ControlPoint>();
+  const cameFrom = new Map<ControlPoint, ControlPoint>();
+  const gScore = new Map<ControlPoint, number>([[start, 0]]);
+
+  const heuristic = (from: ControlPoint, to: ControlPoint): number => {
+    const base = estimateManhattanDistance(to, end);
+    // Reward continuing in the handle's exit/entry direction (idootop/reactflow-auto-layout heuristic)
+    const startBonus =
+      from === start && areLinesSameDirection(source, start, from, to) ? -18 : 0;
+    const endBonus =
+      to === end && areLinesSameDirection(from, to, end, target) ? -18 : 0;
+    return base + startBonus + endBonus;
+  };
+
+  const fScore = new Map<ControlPoint, number>([[start, heuristic(start, start)]]);
+
+  while (openSet.length > 0) {
+    let currentIdx = 0;
+    let lowestF = Infinity;
+    for (let i = 0; i < openSet.length; i++) {
+      const score = fScore.get(openSet[i]) ?? Infinity;
+      if (score < lowestF) {
+        lowestF = score;
+        currentIdx = i;
+      }
+    }
+
+    const current = openSet[currentIdx];
+    if (current === end) {
+      const path: ControlPoint[] = [current];
+      let prev = cameFrom.get(current);
+      while (prev) {
+        path.push(prev);
+        prev = cameFrom.get(prev);
+      }
+      return reducePoints(path.reverse());
+    }
+
+    openSet.splice(currentIdx, 1);
+    closedSet.add(current);
+
+    const prev = cameFrom.get(current);
+    const curG = gScore.get(current) ?? 0;
+
+    for (let i = 0; i < candidatePoints.length; i++) {
+      const neighbor = candidatePoints[i];
+      if (neighbor === current || closedSet.has(neighbor)) continue;
+
+      // Orthogonal moves only
+      const isOrtho = neighbor.x === current.x || neighbor.y === current.y;
+      if (!isOrtho) continue;
+
+      // Prevent 180-degree backtracking
+      if (prev && areLinesReverseDirection(prev, current, current, neighbor)) {
+        continue;
+      }
+
+      if (isSegmentBlocked(current, neighbor)) {
+        continue;
+      }
+
+      // Add a small bend penalty whenever the path changes direction so A* prefers fewer corners
+      const isTurn = prev && !areLinesSameDirection(prev, current, current, neighbor);
+      const turnPenalty = isTurn ? 35 : 0;
+      const tentativeG = curG + estimateManhattanDistance(current, neighbor) + turnPenalty;
+
+      const existingG = gScore.get(neighbor) ?? Infinity;
+      if (tentativeG >= existingG) continue;
+
+      if (!openSet.includes(neighbor)) {
+        openSet.push(neighbor);
+      }
+      cameFrom.set(neighbor, current);
+      gScore.set(neighbor, tentativeG);
+      fScore.set(neighbor, tentativeG + heuristic(current, neighbor));
+    }
+  }
+
+  return reducePoints([start, end]);
+}
+
 /**
  * Computes rich obstacle-avoidance & loopback routing metadata for all campaign edges.
+ * Incorporates A* Manhattan orthogonal routing from idootop/reactflow-auto-layout
+ * and concentric U-channel bundling for loopback edges.
  */
 export function computeSmartEdgeRoutes(
   quests: Record<string, QuestModel>,
-  edges: CampaignEdge[]
+  edges: CampaignEdge[],
+  measuredSizes?: Record<string, { width: number; height: number }>
 ): Record<string, SmartEdgeRoute> {
   const boxesByUid: Record<string, BoundingBox> = {};
   const boxes: BoundingBox[] = Object.values(quests).map((q) => {
-    const h = getNodeHeight(q);
+    const measured = measuredSizes?.[q.uid];
+    const w = measured?.width && measured.width > 100 ? measured.width : NODE_WIDTH;
+    const h = getNodeHeight(q, measured?.height);
     const box: BoundingBox = {
       uid: q.uid,
       act: q.act || 1,
       rawLeft: q.position.x,
-      rawRight: q.position.x + NODE_WIDTH,
+      rawRight: q.position.x + w,
       rawTop: q.position.y,
       rawBottom: q.position.y + h,
       left: q.position.x - NODE_MARGIN,
-      right: q.position.x + NODE_WIDTH + NODE_MARGIN,
+      right: q.position.x + w + NODE_MARGIN,
       top: q.position.y - NODE_MARGIN,
       bottom: q.position.y + h + NODE_MARGIN,
-      centerX: q.position.x + NODE_WIDTH / 2,
+      centerX: q.position.x + w / 2,
       centerY: q.position.y + h / 2
     };
     boxesByUid[q.uid] = box;
@@ -149,8 +535,8 @@ export function computeSmartEdgeRoutes(
     tgtQuest: QuestModel;
     srcBox: BoundingBox;
     tgtBox: BoundingBox;
-    start: { x: number; y: number };
-    end: { x: number; y: number };
+    start: ControlPoint;
+    end: ControlPoint;
     isLoopback: boolean;
   }
 
@@ -164,7 +550,8 @@ export function computeSmartEdgeRoutes(
     const tgtBox = boxesByUid[edge.target];
     if (!srcQuest || !tgtQuest || !srcBox || !tgtBox) return;
 
-    const start = getSourcePortCoords(srcQuest, edge.sourcePortId);
+    const nodeW = srcBox.rawRight - srcBox.rawLeft;
+    const start = getSourcePortCoords(srcQuest, edge.sourcePortId, nodeW);
     const end = getTargetPortCoords(tgtQuest);
     const isLoopback = edge.source === edge.target || end.x <= start.x + 24;
 
@@ -187,7 +574,6 @@ export function computeSmartEdgeRoutes(
   });
 
   // 1. Process Loopback Edges in Overlapping Corridor Bundles
-  // Group loopback edges that share the same Act and have overlapping X/Y spans
   const visitedLoopbacks = new Set<string>();
   const loopbackBundles: EdgeGeom[][] = [];
 
@@ -231,13 +617,11 @@ export function computeSmartEdgeRoutes(
     const act = bundle[0].srcBox.act;
     const sameActBoxes = boxes.filter((b) => b.act === act);
 
-    // Compute initial envelope of all source & target boxes in the bundle
     let corridorLeft = Math.min(...bundle.map((b) => Math.min(b.srcBox.rawLeft, b.tgtBox.rawLeft)));
     let corridorRight = Math.max(...bundle.map((b) => Math.max(b.srcBox.rawRight, b.tgtBox.rawRight)));
     let corridorTop = Math.min(...bundle.map((b) => Math.min(b.srcBox.rawTop, b.tgtBox.rawTop)));
     let corridorBottom = Math.max(...bundle.map((b) => Math.max(b.srcBox.rawBottom, b.tgtBox.rawBottom)));
 
-    // Expand envelope to include any intervening nodes sitting directly inside this span
     sameActBoxes.forEach((b) => {
       const horizInside = b.rawRight >= corridorLeft - 16 && b.rawLeft <= corridorRight + 16;
       const vertInside = b.rawBottom >= corridorTop - 16 && b.rawTop <= corridorBottom + 16;
@@ -251,7 +635,6 @@ export function computeSmartEdgeRoutes(
 
     const bundleDepth = 34 + bundle.length * 30;
 
-    // Check if any node sits immediately below corridorBottom in the underpass zone
     const underpassBlocked = sameActBoxes.some(
       (b) =>
         b.rawRight >= corridorLeft - 24 &&
@@ -268,12 +651,8 @@ export function computeSmartEdgeRoutes(
         b.rawBottom > corridorTop - bundleDepth - 20
     );
 
-    // Prefer UNDER by default so bottom-half outcome handles never cross top-half forward edges
     const direction: 'UNDER' | 'OVER' = underpassBlocked && !overpassBlocked ? 'OVER' : 'UNDER';
 
-    // Sort bundle for concentric PCB-style nesting (zero self-crossings):
-    // For UNDER: lowest source port (largest start.y) is innermost (nestIdx = 0)
-    // For OVER: highest source port (smallest start.y) is innermost (nestIdx = 0)
     const sortedBundle = [...bundle].sort((a, b) => {
       if (Math.abs(a.start.y - b.start.y) > 1) {
         return direction === 'UNDER' ? b.start.y - a.start.y : a.start.y - b.start.y;
@@ -299,6 +678,7 @@ export function computeSmartEdgeRoutes(
       routes[item.edge.id] = {
         waypoints,
         isLoopback: true,
+        hasObstacleDetour: true,
         loopbackChannel: {
           direction,
           exitX,
@@ -311,65 +691,60 @@ export function computeSmartEdgeRoutes(
     });
   });
 
-  // 2. Process Forward Edges (start.x < end.x)
-  // Track how many forward edges detour around the same obstacle key to stagger them
+  // 2. Process Forward Edges using A* Manhattan Orthogonal Routing when obstructed
   const obstacleDetourCounts: Record<string, number> = {};
 
   forwardGeoms.forEach((item) => {
-    const { edge, srcBox, start, end } = item;
+    const { edge, srcBox, tgtBox, start, end } = item;
     const candidateObstacles = boxes.filter(
       (b) => b.act === srcBox.act && b.uid !== edge.source && b.uid !== edge.target
     );
 
-    const intersectingObstacles = candidateObstacles.filter((b) =>
-      lineSegmentIntersectsBox(start.x, start.y, end.x, end.y, b)
+    const offset = 24;
+    const sourceOffset: ControlPoint = { x: start.x + offset, y: start.y };
+    const targetOffset: ControlPoint = { x: end.x - offset, y: end.y };
+
+    // Check if either the straight chord or the default orthogonal step path crosses any obstacle
+    const midX = (start.x + end.x) / 2;
+    const intersectingObstacles = candidateObstacles.filter(
+      (b) =>
+        lineSegmentIntersectsBox(start.x, start.y, end.x, end.y, b) ||
+        lineSegmentIntersectsBox(start.x, start.y, midX, start.y, b) ||
+        lineSegmentIntersectsBox(midX, start.y, midX, end.y, b) ||
+        lineSegmentIntersectsBox(midX, end.y, end.x, end.y, b)
     );
 
     if (intersectingObstacles.length === 0) {
       routes[edge.id] = {
         waypoints: [],
-        isLoopback: false
+        isLoopback: false,
+        hasObstacleDetour: false
       };
       return;
     }
 
-    intersectingObstacles.sort((a, b) => a.centerX - b.centerX);
-
-    const obsKey = intersectingObstacles.map((o) => o.uid).join(',');
+    const obsKey = intersectingObstacles
+      .map((o) => o.uid)
+      .sort()
+      .join(',');
     const laneIdx = obstacleDetourCounts[obsKey] || 0;
     obstacleDetourCounts[obsKey] = laneIdx + 1;
+    const laneShift = laneIdx * 18;
 
-    const minObsLeft = Math.min(...intersectingObstacles.map((o) => o.left));
-    const maxObsRight = Math.max(...intersectingObstacles.map((o) => o.right));
-    const minObsTop = Math.min(...intersectingObstacles.map((o) => o.top));
-    const maxObsBottom = Math.max(...intersectingObstacles.map((o) => o.bottom));
-
-    const midY = (start.y + end.y) / 2;
-    const distAbove = Math.abs(midY - minObsTop);
-    const distBelow = Math.abs(midY - maxObsBottom);
-
-    const routeAbove = distAbove <= distBelow;
-    const detourY = routeAbove
-      ? minObsTop - 18 - laneIdx * 22
-      : maxObsBottom + 18 + laneIdx * 22;
-
-    const entryX = Math.max(start.x + 24, minObsLeft - 20);
-    const exitX = Math.min(end.x - 24, maxObsRight + 20);
-
-    const waypoints: { x: number; y: number }[] = [];
-    if (entryX < exitX) {
-      waypoints.push({ x: Math.round(entryX), y: Math.round(detourY) });
-      waypoints.push({ x: Math.round(exitX), y: Math.round(detourY) });
-    } else {
-      waypoints.push({
-        x: Math.round((minObsLeft + maxObsRight) / 2),
-        y: Math.round(detourY)
-      });
-    }
+    const allRelevantObstacles = [srcBox, tgtBox, ...intersectingObstacles];
+    const aStarWaypoints = computeAStarOrthogonalPath({
+      source: start,
+      target: end,
+      sourceOffset,
+      targetOffset,
+      obstacles: allRelevantObstacles,
+      laneShift
+    });
 
     routes[edge.id] = {
-      waypoints,
-      isLoopback: false
+      waypoints: aStarWaypoints,
+      isLoopback: false,
+      hasObstacleDetour: aStarWaypoints.length > 0
     };
   });
 
@@ -381,10 +756,11 @@ export function computeSmartEdgeRoutes(
  */
 export function computeObstacleAvoidanceRoutes(
   quests: Record<string, QuestModel>,
-  edges: CampaignEdge[]
-): Record<string, { x: number; y: number }[]> {
-  const smartRoutes = computeSmartEdgeRoutes(quests, edges);
-  const result: Record<string, { x: number; y: number }[]> = {};
+  edges: CampaignEdge[],
+  measuredSizes?: Record<string, { width: number; height: number }>
+): Record<string, ControlPoint[]> {
+  const smartRoutes = computeSmartEdgeRoutes(quests, edges, measuredSizes);
+  const result: Record<string, ControlPoint[]> = {};
   Object.entries(smartRoutes).forEach(([id, route]) => {
     result[id] = route.waypoints;
   });

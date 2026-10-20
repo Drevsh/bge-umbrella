@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useRef, useState } from 'react';
+import React, { useMemo, useCallback, useRef, useState, useEffect } from 'react';
 import {
   ReactFlow,
   Controls,
@@ -7,29 +7,36 @@ import {
   Node,
   Edge,
   Connection,
-  addEdge as rfAddEdge,
   MarkerType,
   OnNodesChange,
   OnEdgesChange,
   applyNodeChanges,
   NodeChange,
   EdgeChange,
-  useReactFlow
+  useReactFlow,
+  useUpdateNodeInternals,
+  EdgeTypes,
+  NodeTypes
 } from '@xyflow/react';
-import { QuestNodeCard } from './QuestNodeCard';
+import { QuestNodeCard, QuestNodeCardData } from './QuestNodeCard';
 import { SemanticEdge } from './SemanticEdgeLayer';
 import { TierSwimlaneHeader } from './TierSwimlaneHeader';
 import { CanvasGraphToolbar } from './CanvasGraphToolbar';
 import { CanvasContextMenu, ContextMenuState } from './CanvasContextMenu';
 import { Sparkles, Maximize2, Expand, Shrink } from 'lucide-react';
-import { useCampaignStore } from '../../store/useCampaignStore';
+import {
+  useCampaignStore,
+  reportMeasuredNodeSize,
+  getMeasuredNodeSizes
+} from '../../store/useCampaignStore';
 import { evaluateCampaignSimulation } from '../../utils/simulatorEngine';
 import { computeSmartEdgeRoutes } from '../../utils/obstacleRouter';
-import { CampaignEdge, EdgeRelationType, QuestModel } from '../../types/campaign';
+import { estimateNodeHeight, DEFAULT_NODE_WIDTH } from '../../utils/layoutEngine';
+import { CampaignEdge, EdgeRelationType, QuestModel, QuestVariantOverride } from '../../types/campaign';
 
-import { EdgeTypes, NodeTypes } from '@xyflow/react';
+type SimulationEvaluation = ReturnType<typeof evaluateCampaignSimulation>;
 
-// Rule 3: Define nodeTypes and edgeTypes OUTSIDE the component
+// Define nodeTypes and edgeTypes OUTSIDE the component (React Flow Best Practice)
 const nodeTypes: NodeTypes = {
   questNode: QuestNodeCard as any
 };
@@ -37,6 +44,44 @@ const nodeTypes: NodeTypes = {
 const edgeTypes: EdgeTypes = {
   semanticEdge: SemanticEdge as any
 };
+
+const EMPTY_VARIANTS: QuestVariantOverride[] = [];
+
+/**
+ * Computes a lightweight signature of simulation-relevant state (ignoring node positions and edge waypoints)
+ * so dragging nodes or bending edges never triggers expensive campaign simulation re-evaluation.
+ */
+function buildSimulationSignature(
+  quests: Record<string, QuestModel>,
+  edges: CampaignEdge[],
+  simulator: {
+    activeRewardChoices: string[];
+    completedQuestIds: string[];
+    customTags: string[];
+    manualTimeOffset: number;
+  }
+): string {
+  const qPart = Object.values(quests)
+    .map(
+      (q) =>
+        `${q.uid}:${q.prereqLogic}:${q.requiredTag || ''}:${q.timeAdvance || 0}:${
+          q.isExplorationStage ? 1 : 0
+        }:${q.rewardOutcomes.map((r) => `${r.id}:${r.grantsStateTags.join(',')}:${r.timeAdvance || 0}`).join(';')}:${q.variants
+          .map((v) => `${v.id}:${v.requiredStateTag}`)
+          .join(';')}`
+    )
+    .join('|');
+
+  const ePart = edges
+    .map((e) => `${e.id}:${e.source}:${e.sourcePortId || ''}:${e.target}:${e.type}:${e.stateTag || ''}`)
+    .join('|');
+
+  const sPart = `${simulator.activeRewardChoices.join(',')}|${simulator.completedQuestIds.join(
+    ','
+  )}|${simulator.customTags.join(',')}|${simulator.manualTimeOffset || 0}`;
+
+  return `${qPart}#${ePart}#${sPart}`;
+}
 
 export const QuestGraphCanvas: React.FC = () => {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
@@ -49,22 +94,27 @@ export const QuestGraphCanvas: React.FC = () => {
   const edgeVisibility = useCampaignStore((s) => s.edgeVisibility);
   const snapToGrid = useCampaignStore((s) => s.snapToGrid);
   const simulator = useCampaignStore((s) => s.simulator);
-  const hSpacingPreset = useCampaignStore((s) => s.hSpacingPreset);
-  const vSpacingScale = useCampaignStore((s) => s.vSpacingScale);
+  const activeActId = useCampaignStore((s) => s.activeActId);
+  const layoutVersion = useCampaignStore((s) => s.layoutVersion);
 
   const selectQuest = useCampaignStore((s) => s.selectQuest);
   const selectEdge = useCampaignStore((s) => s.selectEdge);
   const deleteEdge = useCampaignStore((s) => s.deleteEdge);
   const updateQuestPosition = useCampaignStore((s) => s.updateQuestPosition);
+  const batchUpdateQuestPositions = useCampaignStore((s) => s.batchUpdateQuestPositions);
   const addCampaignEdge = useCampaignStore((s) => s.addEdge);
   const addQuest = useCampaignStore((s) => s.addQuest);
-  const setModalOpen = useCampaignStore((s) => s.setModalOpen);
   const openWizardWithConfig = useCampaignStore((s) => s.openWizardWithConfig);
   const autoArrangeCampaign = useCampaignStore((s) => s.autoArrangeCampaign);
+  const reconnectCampaignEdge = useCampaignStore((s) => s.reconnectEdge);
+  const updateEdgeWaypoints = useCampaignStore((s) => s.updateEdgeWaypoints);
+
+  const { screenToFlowPosition, fitView } = useReactFlow();
+  const updateNodeInternals = useUpdateNodeInternals();
 
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const toggleFullscreen = () => {
+  const toggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch(() => {});
       setIsFullscreen(true);
@@ -72,11 +122,20 @@ export const QuestGraphCanvas: React.FC = () => {
       document.exitFullscreen().catch(() => {});
       setIsFullscreen(false);
     }
-  };
+  }, []);
 
-  // Evaluate simulation state
+  // Evaluate simulation state ONLY when simulation-relevant fields change (ignores position/waypoint drags)
+  const simSignature = useMemo(
+    () => buildSimulationSignature(quests, edges, simulator),
+    [quests, edges, simulator]
+  );
+
+  const simStateRef = useRef<{ sig: string; value: SimulationEvaluation } | null>(null);
   const simState = useMemo(() => {
-    return evaluateCampaignSimulation(
+    if (simStateRef.current && simStateRef.current.sig === simSignature) {
+      return simStateRef.current.value;
+    }
+    const evaluated = evaluateCampaignSimulation(
       quests,
       edges,
       simulator.activeRewardChoices,
@@ -84,40 +143,108 @@ export const QuestGraphCanvas: React.FC = () => {
       simulator.customTags,
       simulator.manualTimeOffset || 0
     );
-  }, [quests, edges, simulator]);
+    simStateRef.current = { sig: simSignature, value: evaluated };
+    return evaluated;
+  }, [simSignature, quests, edges, simulator]);
 
-  const activeActId = useCampaignStore((s) => s.activeActId);
+  // Cache per-node data objects so unchanged QuestNodeCards keep strict referential equality
+  const nodeDataCacheRef = useRef<Record<string, QuestNodeCardData>>({});
 
-  // Transform Quests into React Flow Nodes
-  const nodes: Node[] = useMemo(() => {
-    return Object.values(quests)
-      .filter((quest) => {
-        if (activeActId === 'ALL') return true;
-        return (quest.act || 1) === activeActId;
-      })
-      .map((quest) => ({
-        id: quest.uid,
-        type: 'questNode',
-        position: quest.position,
-        width: 280,
-        height: 180,
-        initialWidth: 280,
-        initialHeight: 180,
-        selected: quest.uid === selectedQuestId,
-        data: {
-          quest,
-          status: simState.questStatuses[quest.uid] || 'AVAILABLE',
-          activeVariants: simState.activeVariantsByQuest[quest.uid] || [],
-          activeRewardChoices: simulator.activeRewardChoices,
-          activeStateTags: simState.activeStateTags
+  // Controlled React Flow nodes state that preserves internal `measured` dimensions & smooth 60fps dragging
+  const [rfNodes, setRfNodes] = useState<Node[]>([]);
+
+  useEffect(() => {
+    setRfNodes((prevNodes) => {
+      const prevMap = new Map<string, Node>();
+      prevNodes.forEach((n) => prevMap.set(n.id, n));
+
+      const nextNodes: Node[] = [];
+      Object.values(quests).forEach((quest) => {
+        if (activeActId !== 'ALL' && (quest.act || 1) !== activeActId) {
+          return;
         }
-      }));
+
+        const existingNode = prevMap.get(quest.uid);
+        const status = simState.questStatuses[quest.uid] || 'AVAILABLE';
+        const activeVariants = simState.activeVariantsByQuest[quest.uid] || EMPTY_VARIANTS;
+
+        const prevData = nodeDataCacheRef.current[quest.uid];
+        let nodeData: QuestNodeCardData;
+        if (
+          prevData &&
+          prevData.quest === quest &&
+          prevData.status === status &&
+          prevData.activeVariants === activeVariants &&
+          prevData.activeRewardChoices === simulator.activeRewardChoices &&
+          prevData.activeStateTags === simState.activeStateTags
+        ) {
+          nodeData = prevData;
+        } else {
+          nodeData = {
+            quest,
+            status,
+            activeVariants,
+            activeRewardChoices: simulator.activeRewardChoices,
+            activeStateTags: simState.activeStateTags
+          };
+          nodeDataCacheRef.current[quest.uid] = nodeData;
+        }
+
+        const isSelected = quest.uid === selectedQuestId;
+
+        // If the node is currently being dragged by the user, keep its live drag position
+        const isDragging = Boolean(existingNode?.dragging);
+        const position = isDragging && existingNode ? existingNode.position : quest.position;
+
+        if (
+          existingNode &&
+          existingNode.position.x === position.x &&
+          existingNode.position.y === position.y &&
+          Boolean(existingNode.selected) === isSelected &&
+          existingNode.data === nodeData
+        ) {
+          nextNodes.push(existingNode);
+          return;
+        }
+
+        nextNodes.push({
+          ...existingNode,
+          id: quest.uid,
+          type: 'questNode',
+          position,
+          initialWidth: DEFAULT_NODE_WIDTH,
+          initialHeight: estimateNodeHeight(quest, getMeasuredNodeSizes()),
+          selected: isSelected,
+          data: nodeData
+        });
+      });
+
+      return nextNodes;
+    });
   }, [quests, selectedQuestId, simState, simulator.activeRewardChoices, activeActId]);
 
-  // Compute automatic loopback & obstacle-avoidance routes in real time
+  // Whenever auto-layout completes (layoutVersion increments), refresh node handle internals and fitView
+  const prevLayoutVersionRef = useRef(layoutVersion);
+  useEffect(() => {
+    if (prevLayoutVersionRef.current !== layoutVersion) {
+      prevLayoutVersionRef.current = layoutVersion;
+      const visibleIds = Object.values(quests)
+        .filter((q) => activeActId === 'ALL' || (q.act || 1) === activeActId)
+        .map((q) => q.uid);
+      if (visibleIds.length > 0) {
+        updateNodeInternals(visibleIds);
+      }
+      const timer = setTimeout(() => {
+        fitView({ padding: 0.2, duration: 350 });
+      }, 40);
+      return () => clearTimeout(timer);
+    }
+  }, [layoutVersion, quests, activeActId, updateNodeInternals, fitView]);
+
+  // Compute automatic loopback & A* Manhattan obstacle-avoidance routes
   const smartRoutes = useMemo(() => {
-    return computeSmartEdgeRoutes(quests, edges);
-  }, [quests, edges]);
+    return computeSmartEdgeRoutes(quests, edges, getMeasuredNodeSizes());
+  }, [quests, edges, layoutVersion]);
 
   // Transform CampaignEdges into React Flow Edges
   const rfEdges: Edge[] = useMemo(() => {
@@ -128,7 +255,6 @@ export const QuestGraphCanvas: React.FC = () => {
         if (edge.type === 'MUTATION' && !edgeVisibility.mutations) return false;
         if (edge.type === 'LOCKOUT' && !edgeVisibility.lockouts) return false;
 
-        // If viewing a specific Act canvas, filter edges to the active Act
         if (activeActId !== 'ALL') {
           const srcQuest = quests[edge.source];
           const tgtQuest = quests[edge.target];
@@ -177,11 +303,16 @@ export const QuestGraphCanvas: React.FC = () => {
           }
         };
       });
-  }, [edges, quests, activeActId, edgeVisibility, edgeRoutingStyle, simState.activeEdgeIds, selectedEdgeId, smartRoutes]);
-
-  const reconnectCampaignEdge = useCampaignStore((s) => s.reconnectEdge);
-  const updateEdgeWaypoints = useCampaignStore((s) => s.updateEdgeWaypoints);
-  const { screenToFlowPosition, fitView } = useReactFlow();
+  }, [
+    edges,
+    quests,
+    activeActId,
+    edgeVisibility,
+    edgeRoutingStyle,
+    simState.activeEdgeIds,
+    selectedEdgeId,
+    smartRoutes
+  ]);
 
   const [contextMenu, setContextMenu] = useState<ContextMenuState>({
     isOpen: false,
@@ -244,10 +375,7 @@ export const QuestGraphCanvas: React.FC = () => {
 
   const handleAutoLayout = useCallback(() => {
     autoArrangeCampaign();
-    setTimeout(() => {
-      fitView({ padding: 0.2, duration: 400 });
-    }, 50);
-  }, [autoArrangeCampaign, fitView]);
+  }, [autoArrangeCampaign]);
 
   // Edge double-click handler to insert bend points
   const onEdgeDoubleClick = useCallback(
@@ -282,21 +410,59 @@ export const QuestGraphCanvas: React.FC = () => {
     [reconnectCampaignEdge]
   );
 
-  // Node position drag handler with optional 16px grid snap
+  // React Flow v12 Best Practice: Apply all NodeChanges (including dimensions & dragging) via applyNodeChanges
+  // and only commit final position to the global domain store when dragging ends.
   const onNodesChange: OnNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      changes.forEach((change) => {
+      const processedChanges = changes.map((change) => {
+        if (change.type === 'dimensions' && change.dimensions) {
+          reportMeasuredNodeSize(change.id, change.dimensions.width, change.dimensions.height);
+        }
         if (change.type === 'position' && change.position) {
           let { x, y } = change.position;
           if (snapToGrid) {
             x = Math.round(x / 16) * 16;
             y = Math.round(y / 16) * 16;
+          } else {
+            x = Math.round(x);
+            y = Math.round(y);
           }
-          updateQuestPosition(change.id, { x, y });
+          // Commit to domain store only when drag ends (or non-drag programmatic position change)
+          if (change.dragging === false) {
+            updateQuestPosition(change.id, { x, y });
+          }
+          return {
+            ...change,
+            position: { x, y }
+          };
         }
+        return change;
       });
+
+      setRfNodes((nds) => applyNodeChanges(processedChanges, nds));
     },
     [snapToGrid, updateQuestPosition]
+  );
+
+  // Guarantee drag stop always syncs final node coordinates to store & temporal undo history
+  const onNodeDragStop = useCallback(
+    (_event: React.MouseEvent | MouseEvent | TouchEvent, _node: Node, draggedNodes: Node[]) => {
+      if (!draggedNodes || draggedNodes.length === 0) return;
+      const updates: Record<string, { x: number; y: number }> = {};
+      draggedNodes.forEach((n) => {
+        let { x, y } = n.position;
+        if (snapToGrid) {
+          x = Math.round(x / 16) * 16;
+          y = Math.round(y / 16) * 16;
+        } else {
+          x = Math.round(x);
+          y = Math.round(y);
+        }
+        updates[n.id] = { x, y };
+      });
+      batchUpdateQuestPositions(updates);
+    },
+    [snapToGrid, batchUpdateQuestPositions]
   );
 
   // Edge selection and keyboard delete (Delete/Backspace) handler
@@ -357,14 +523,25 @@ export const QuestGraphCanvas: React.FC = () => {
     [quests, addCampaignEdge]
   );
 
-  const connectingNodeRef = useRef<{ nodeId: string | null; handleId: string | null; handleType: string | null }>({
+  const connectingNodeRef = useRef<{
+    nodeId: string | null;
+    handleId: string | null;
+    handleType: string | null;
+  }>({
     nodeId: null,
     handleId: null,
     handleType: null
   });
 
   const onConnectStart = useCallback(
-    (_: any, { nodeId, handleId, handleType }: { nodeId: string | null; handleId: string | null; handleType: string | null }) => {
+    (
+      _: any,
+      {
+        nodeId,
+        handleId,
+        handleType
+      }: { nodeId: string | null; handleId: string | null; handleType: string | null }
+    ) => {
       connectingNodeRef.current = { nodeId, handleId, handleType };
     },
     []
@@ -374,10 +551,9 @@ export const QuestGraphCanvas: React.FC = () => {
     (event: MouseEvent | TouchEvent) => {
       if (!connectingNodeRef.current.nodeId) return;
 
-      const { nodeId, handleId, handleType } = connectingNodeRef.current;
+      const { nodeId, handleId } = connectingNodeRef.current;
       connectingNodeRef.current = { nodeId: null, handleId: null, handleType: null };
 
-      // Check if dropped on another handle or node
       const targetIsPane = (event.target as Element)?.classList?.contains('react-flow__pane');
       if (!targetIsPane) return;
 
@@ -395,9 +571,8 @@ export const QuestGraphCanvas: React.FC = () => {
       const targetTier = (sourceQuest.tier || 1) + 1;
       const actId = sourceQuest.act || (typeof activeActId === 'number' ? activeActId : 1);
 
-      // Generate next code
       const existing = new Set(Object.values(quests).map((q) => q.code.toUpperCase()));
-      let prefix = sourceQuest.category === 'SIDE' ? 'S' : 'M';
+      const prefix = sourceQuest.category === 'SIDE' ? 'S' : 'M';
       let num = 1;
       while (existing.has(`${prefix}${String(num).padStart(2, '0')}`)) {
         num++;
@@ -465,16 +640,29 @@ export const QuestGraphCanvas: React.FC = () => {
     [screenToFlowPosition, openWizardWithConfig]
   );
 
-  // Distinct progression tiers for header
+  // Distinct progression tiers for header (scoped to active Act)
   const tiers = useMemo(() => {
     const set = new Set<number>();
-    Object.values(quests).forEach((q) => set.add(q.tier || 1));
+    Object.values(quests).forEach((q) => {
+      if (activeActId === 'ALL' || (q.act || 1) === activeActId) {
+        set.add(q.tier || 1);
+      }
+    });
     return Array.from(set).sort((a, b) => a - b);
-  }, [quests]);
+  }, [quests, activeActId]);
 
-  const handleAddQuestInTier = (tier: number) => {
-    openWizardWithConfig({ tier });
-  };
+  const handleAddQuestInTier = useCallback(
+    (tier: number) => {
+      openWizardWithConfig({ tier });
+    },
+    [openWizardWithConfig]
+  );
+
+  const handlePaneClick = useCallback(() => {
+    closeContextMenu();
+    selectQuest(null);
+    selectEdge(null);
+  }, [closeContextMenu, selectQuest, selectEdge]);
 
   return (
     <div
@@ -491,11 +679,12 @@ export const QuestGraphCanvas: React.FC = () => {
       </div>
 
       <ReactFlow
-        nodes={nodes}
+        nodes={rfNodes}
         edges={rfEdges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
+        onNodeDragStop={onNodeDragStop}
         onEdgesChange={onEdgesChange}
         onEdgeClick={onEdgeClick}
         onConnect={onConnect}
@@ -508,6 +697,7 @@ export const QuestGraphCanvas: React.FC = () => {
         onNodeContextMenu={onNodeContextMenu}
         onEdgeContextMenu={onEdgeContextMenu}
         onMoveStart={closeContextMenu}
+        onPaneClick={handlePaneClick}
         edgesReconnectable={true}
         reconnectRadius={35}
         connectionRadius={35}
@@ -515,11 +705,7 @@ export const QuestGraphCanvas: React.FC = () => {
         zoomOnPinch={true}
         edgesFocusable={true}
         selectNodesOnDrag={false}
-        onPaneClick={() => {
-          closeContextMenu();
-          selectQuest(null);
-          selectEdge(null);
-        }}
+        onlyRenderVisibleElements={false}
         fitView
         fitViewOptions={{ padding: 0.2 }}
         minZoom={0.2}
@@ -549,7 +735,7 @@ export const QuestGraphCanvas: React.FC = () => {
         <button
           type="button"
           onClick={toggleFullscreen}
-          className="px-3 py-2 rounded-xl bg-slate-900/95 text-indigo-300 border border-indigo-500/60 shadow-2xl backdrop-blur-md active:scale-95 transition-all flex items-center gap-1.5 text-xs font-semibold"
+          className="px-3 py-2 rounded-xl bg-slate-900 text-indigo-300 border border-indigo-500/60 shadow-2xl active:scale-95 transition-transform flex items-center gap-1.5 text-xs font-semibold"
           title="Toggle Fullscreen (Hide address bar)"
         >
           {isFullscreen ? (
@@ -568,7 +754,7 @@ export const QuestGraphCanvas: React.FC = () => {
         <button
           type="button"
           onClick={handleAutoLayout}
-          className="px-3 py-2 rounded-xl bg-slate-900/95 text-indigo-400 border border-slate-700/80 shadow-2xl backdrop-blur-md active:scale-95 transition-all flex items-center gap-1.5 text-xs font-semibold"
+          className="px-3 py-2 rounded-xl bg-slate-900 text-indigo-400 border border-slate-700/80 shadow-2xl active:scale-95 transition-transform flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
           title="Auto-Align Layout"
         >
           <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
@@ -578,7 +764,7 @@ export const QuestGraphCanvas: React.FC = () => {
         <button
           type="button"
           onClick={() => fitView({ padding: 0.2, duration: 300 })}
-          className="p-2 rounded-xl bg-slate-900/95 text-slate-300 border border-slate-700/80 shadow-2xl backdrop-blur-md active:scale-95 transition-all"
+          className="p-2 rounded-xl bg-slate-900 text-slate-300 border border-slate-700/80 shadow-2xl active:scale-95 transition-transform cursor-pointer"
           title="Fit View"
         >
           <Maximize2 className="w-4 h-4" />

@@ -60,7 +60,7 @@ export const DEFAULT_QUESTS: Record<string, QuestModel> = {
     category: 'MAIN',
     prereqLogic: 'START',
     parentSlot: null,
-    position: { x: 50, y: 180 },
+    position: { x: 60, y: 192 },
     flavorText:
       'Water drips from the ancient vault ceiling. Upon the obsidian dais rests the pulsing Blood Idol, surrounded by scattered navigational charts of the jagged coast.',
     setupInstructions:
@@ -105,7 +105,7 @@ export const DEFAULT_QUESTS: Record<string, QuestModel> = {
     category: 'SIDE',
     prereqLogic: 'ALL',
     parentSlot: null,
-    position: { x: 440, y: 40 },
+    position: { x: 500, y: 80 },
     flavorText:
       'Using the coastal chart recovered from the shrine, your party locates a hidden sea cave beneath the cathedral cliffs where smugglers move illicit cargo.',
     setupInstructions:
@@ -135,7 +135,7 @@ export const DEFAULT_QUESTS: Record<string, QuestModel> = {
     prereqLogic: 'ALL',
     requiredTag: '++Idol_Kept',
     parentSlot: 'SLOT_M02',
-    position: { x: 440, y: 240 },
+    position: { x: 500, y: 354 },
     flavorText:
       'The Blood Idol whispers through the night. Drawn by its dark resonance, Fanatic Assassins ambush your camp in the Highgate alleys!',
     setupInstructions:
@@ -165,7 +165,7 @@ export const DEFAULT_QUESTS: Record<string, QuestModel> = {
     prereqLogic: 'ALL',
     requiredTag: '++Idol_Broken',
     parentSlot: 'SLOT_M02',
-    position: { x: 440, y: 440 },
+    position: { x: 500, y: 628 },
     flavorText:
       'Word of the Idol’s destruction reaches the Sun Clerics. They welcome you into their fortified cloister to consecrate your weapons for the coming purge.',
     setupInstructions:
@@ -194,7 +194,7 @@ export const DEFAULT_QUESTS: Record<string, QuestModel> = {
     category: 'BOSS',
     prereqLogic: 'ANY',
     parentSlot: null,
-    position: { x: 840, y: 200 },
+    position: { x: 940, y: 440 },
     flavorText:
       'At the heart of the Grand Basilica stands High Inquisitor Malakor, orchestrating both the city watch and the sunken cult from behind his gilded mask.',
     setupInstructions:

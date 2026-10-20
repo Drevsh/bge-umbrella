@@ -28,12 +28,30 @@ import {
   getGameProfileById,
   CORE_GENERAL_GAME
 } from '../config/builtInGames';
-import { calculateAutoArrangement } from '../utils/layoutEngine';
+import { calculateAutoArrangement, LayoutAlgorithmType } from '../utils/layoutEngine';
 import { deleteQuestAudioBlob } from '../utils/audioStorage';
 
 const IDB_GAMES_CATALOG_KEY = 'questflow_games_catalog';
 const IDB_LEGACY_CATALOG_KEY = 'questflow_campaigns_catalog';
 const IDB_CAMPAIGN_PREFIX = 'questflow_campaign_';
+
+// Module-level cache of React Flow measured DOM dimensions (avoids triggering store re-renders on ResizeObserver callbacks)
+const measuredNodeSizesCache: Record<string, { width: number; height: number }> = {};
+
+export function reportMeasuredNodeSize(uid: string, width: number, height: number): boolean {
+  const prev = measuredNodeSizesCache[uid];
+  if (prev && Math.abs(prev.width - width) < 1 && Math.abs(prev.height - height) < 1) {
+    return false;
+  }
+  measuredNodeSizesCache[uid] = { width, height };
+  return true;
+}
+
+export function getMeasuredNodeSizes(): Record<string, { width: number; height: number }> {
+  return measuredNodeSizesCache;
+}
+
+let saveToStorageTimer: ReturnType<typeof setTimeout> | null = null;
 
 export function getGameCampaignCatalogKey(gameId: string): string {
   return `questflow_catalog_${gameId}`;
@@ -70,6 +88,8 @@ export interface CampaignStoreState {
   };
   hSpacingPreset: 'COMPACT' | 'BALANCED' | 'WIDE';
   vSpacingScale: number;
+  layoutAlgorithm: LayoutAlgorithmType;
+  layoutVersion: number;
   snapToGrid: boolean;
   geminiApiKey: string;
   isActDrawerOpen: boolean;
@@ -107,6 +127,7 @@ export interface CampaignStoreState {
   setEdgeRoutingStyle: (style: EdgeRoutingStyle) => void;
   toggleEdgeVisibility: (key: keyof CampaignStoreState['edgeVisibility']) => void;
   setSpacing: (hPreset: 'COMPACT' | 'BALANCED' | 'WIDE', vScale: number) => void;
+  setLayoutAlgorithm: (algorithm: LayoutAlgorithmType) => void;
   toggleSnapToGrid: () => void;
   setModalOpen: (modal: keyof CampaignStoreState['modals'], open: boolean) => void;
   openWizardWithConfig: (config?: CampaignStoreState['wizardInitOptions']) => void;
@@ -128,6 +149,7 @@ export interface CampaignStoreState {
 
   // Quest Actions
   updateQuestPosition: (uid: string, pos: { x: number; y: number }) => void;
+  batchUpdateQuestPositions: (positions: Record<string, { x: number; y: number }>) => void;
   updateQuestField: <K extends keyof QuestModel>(uid: string, field: K, value: QuestModel[K]) => void;
   addQuest: (quest: QuestModel) => void;
   duplicateQuest: (uid: string, offset?: { x: number; y: number }) => void;
@@ -158,7 +180,7 @@ export interface CampaignStoreState {
   updateEdgeWaypoints: (edgeId: string, waypoints: { x: number; y: number }[]) => void;
   clearEdgeWaypoints: (edgeId: string) => void;
   smartRouteAllEdges: () => void;
-  autoArrangeCampaign: (options?: { reorderChoices?: boolean }) => void;
+  autoArrangeCampaign: (options?: { reorderChoices?: boolean; algorithm?: LayoutAlgorithmType }) => void;
 
   // Simulator Actions
   toggleSimulatorRewardChoice: (rewardId: string, questUid: string) => void;
@@ -174,7 +196,7 @@ export interface CampaignStoreState {
   deleteCampaign: (campaignId: string) => Promise<void>;
   renameActiveCampaign: (name: string, description: string) => Promise<void>;
   importCampaign: (projectFile: CampaignProjectFile) => Promise<void>;
-  saveToStorage: () => Promise<void>;
+  saveToStorage: (immediate?: boolean) => Promise<void>;
 }
 
 export const useCampaignStore = create<CampaignStoreState>()(
@@ -208,6 +230,8 @@ export const useCampaignStore = create<CampaignStoreState>()(
       },
       hSpacingPreset: 'BALANCED',
       vSpacingScale: 1.0,
+      layoutAlgorithm: 'TIERED',
+      layoutVersion: 0,
       snapToGrid: true,
       geminiApiKey: (typeof window !== 'undefined' ? localStorage.getItem('questflow_gemini_api_key') : '') || '',
       isActDrawerOpen: false,
@@ -373,6 +397,9 @@ export const useCampaignStore = create<CampaignStoreState>()(
       setSpacing: (hPreset, vScale) =>
         set({ hSpacingPreset: hPreset, vSpacingScale: vScale }),
 
+      setLayoutAlgorithm: (algorithm) =>
+        set({ layoutAlgorithm: algorithm }),
+
       toggleSnapToGrid: () =>
         set((state) => ({ snapToGrid: !state.snapToGrid })),
 
@@ -397,7 +424,7 @@ export const useCampaignStore = create<CampaignStoreState>()(
         if (state.activeGameId === gameId) return;
 
         // Save current campaign first
-        await state.saveToStorage();
+        await state.saveToStorage(true);
 
         if (typeof window !== 'undefined') {
           localStorage.setItem('questflow_active_game_id', gameId);
@@ -594,6 +621,13 @@ export const useCampaignStore = create<CampaignStoreState>()(
       },
 
       updateQuestPosition: (uid, pos) => {
+        const currentQuest = get().quests[uid];
+        if (
+          !currentQuest ||
+          (currentQuest.position.x === pos.x && currentQuest.position.y === pos.y)
+        ) {
+          return;
+        }
         set((state) => {
           const quest = state.quests[uid];
           if (!quest) return state;
@@ -603,6 +637,30 @@ export const useCampaignStore = create<CampaignStoreState>()(
               [uid]: { ...quest, position: pos }
             }
           };
+        });
+        get().saveToStorage();
+      },
+
+      batchUpdateQuestPositions: (positions) => {
+        const currentQuests = get().quests;
+        let hasChanges = false;
+        Object.entries(positions).forEach(([uid, pos]) => {
+          const q = currentQuests[uid];
+          if (q && (q.position.x !== pos.x || q.position.y !== pos.y)) {
+            hasChanges = true;
+          }
+        });
+        if (!hasChanges) return;
+
+        set((state) => {
+          const nextQuests = { ...state.quests };
+          Object.entries(positions).forEach(([uid, pos]) => {
+            const q = nextQuests[uid];
+            if (q && (q.position.x !== pos.x || q.position.y !== pos.y)) {
+              nextQuests[uid] = { ...q, position: pos };
+            }
+          });
+          return { quests: nextQuests };
         });
         get().saveToStorage();
       },
@@ -1014,13 +1072,17 @@ export const useCampaignStore = create<CampaignStoreState>()(
       autoArrangeCampaign: (options = {}) => {
         const state = get();
         const shouldReorder = options.reorderChoices ?? true;
-        const { positions, reorderedChoices } = calculateAutoArrangement(
+        const algorithm = options.algorithm ?? state.layoutAlgorithm;
+        const { positions, reorderedChoices, updatedTiers } = calculateAutoArrangement(
           state.quests,
           state.edges,
           {
             hSpacing: state.hSpacingPreset,
             vScale: state.vSpacingScale,
-            reorderChoices: shouldReorder
+            reorderChoices: shouldReorder,
+            algorithm,
+            activeActId: state.activeActId,
+            measuredSizes: getMeasuredNodeSizes()
           }
         );
 
@@ -1032,6 +1094,7 @@ export const useCampaignStore = create<CampaignStoreState>()(
               nextQuests[uid] = {
                 ...nextQuests[uid],
                 position: pos,
+                tier: updatedTiers[uid] ?? nextQuests[uid].tier,
                 rewardOutcomes:
                   shouldReorder && reorderedChoices[uid]
                     ? reorderedChoices[uid]
@@ -1040,15 +1103,19 @@ export const useCampaignStore = create<CampaignStoreState>()(
             }
           });
 
-          // Reset manual edge waypoints so lines render clean default curves
-          const nextEdges = curr.edges.map((e) => ({
-            ...e,
-            waypoints: []
-          }));
+          // Reset manual edge waypoints on arranged edges so lines render clean routes
+          const nextEdges = curr.edges.map((e) => {
+            if (positions[e.source] || positions[e.target]) {
+              return { ...e, waypoints: [] };
+            }
+            return e;
+          });
 
           return {
             quests: nextQuests,
-            edges: nextEdges
+            edges: nextEdges,
+            layoutAlgorithm: algorithm,
+            layoutVersion: curr.layoutVersion + 1
           };
         });
 
@@ -1145,31 +1212,46 @@ export const useCampaignStore = create<CampaignStoreState>()(
         });
       },
 
-      // Storage
-      saveToStorage: async () => {
-        const state = get();
-        try {
-          const payload = {
-            metadata: {
-              ...state.activeMetadata,
-              gameId: state.activeGameId,
-              updatedAt: new Date().toISOString()
-            },
-            acts: state.acts,
-            quests: state.quests,
-            edges: state.edges
-          };
-          await idb.set(`${IDB_CAMPAIGN_PREFIX}${state.activeCampaignId}`, payload);
+      // Storage (Debounced to prevent IndexedDB & state thrashing during rapid canvas interactions)
+      saveToStorage: async (immediate = false) => {
+        const persistNow = async () => {
+          const state = get();
+          try {
+            const payload = {
+              metadata: {
+                ...state.activeMetadata,
+                gameId: state.activeGameId,
+                updatedAt: new Date().toISOString()
+              },
+              acts: state.acts,
+              quests: state.quests,
+              edges: state.edges
+            };
+            await idb.set(`${IDB_CAMPAIGN_PREFIX}${state.activeCampaignId}`, payload);
 
-          // Update catalog for active game
-          const updatedCatalog = state.campaignCatalog.map((c) =>
-            c.id === state.activeCampaignId ? payload.metadata : c
-          );
-          const catalogKey = getGameCampaignCatalogKey(state.activeGameId);
-          await idb.set(catalogKey, updatedCatalog);
-          set({ campaignCatalog: updatedCatalog });
-        } catch (err) {
-          console.error('Failed saving to IndexedDB:', err);
+            // Update catalog in IndexedDB without triggering a secondary store re-render unless metadata name/description changed
+            const updatedCatalog = state.campaignCatalog.map((c) =>
+              c.id === state.activeCampaignId ? payload.metadata : c
+            );
+            const catalogKey = getGameCampaignCatalogKey(state.activeGameId);
+            await idb.set(catalogKey, updatedCatalog);
+          } catch (err) {
+            console.error('Failed saving to IndexedDB:', err);
+          }
+        };
+
+        if (saveToStorageTimer) {
+          clearTimeout(saveToStorageTimer);
+          saveToStorageTimer = null;
+        }
+
+        if (immediate) {
+          await persistNow();
+        } else {
+          saveToStorageTimer = setTimeout(() => {
+            saveToStorageTimer = null;
+            persistNow();
+          }, 350);
         }
       },
 

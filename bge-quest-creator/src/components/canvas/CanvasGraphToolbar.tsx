@@ -8,10 +8,12 @@ import {
   Zap,
   Lock,
   Grid,
-  Check
+  Check,
+  Sparkles
 } from 'lucide-react';
 import { useCampaignStore } from '../../store/useCampaignStore';
 import { EdgeRoutingStyle } from '../../types/campaign';
+import { LayoutAlgorithmType } from '../../utils/layoutEngine';
 
 export const CanvasGraphToolbar: React.FC = () => {
   const edgeRoutingStyle = useCampaignStore((s) => s.edgeRoutingStyle);
@@ -21,6 +23,8 @@ export const CanvasGraphToolbar: React.FC = () => {
   const hSpacingPreset = useCampaignStore((s) => s.hSpacingPreset);
   const vSpacingScale = useCampaignStore((s) => s.vSpacingScale);
   const setSpacing = useCampaignStore((s) => s.setSpacing);
+  const layoutAlgorithm = useCampaignStore((s) => s.layoutAlgorithm);
+  const autoArrangeCampaign = useCampaignStore((s) => s.autoArrangeCampaign);
   const snapToGrid = useCampaignStore((s) => s.snapToGrid);
   const toggleSnapToGrid = useCampaignStore((s) => s.toggleSnapToGrid);
   const smartRouteAllEdges = useCampaignStore((s) => s.smartRouteAllEdges);
@@ -130,6 +134,38 @@ export const CanvasGraphToolbar: React.FC = () => {
               </div>
             </div>
 
+            {/* Auto-Layout Algorithm */}
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-emerald-400" />
+                Auto-Layout Engine
+              </label>
+              <div className="grid grid-cols-3 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                {(
+                  [
+                    { id: 'TIERED', label: 'Tiered' },
+                    { id: 'DAGRE_TREE', label: 'Dagre Tree' },
+                    { id: 'DAGRE_NETWORK', label: 'Simplex' }
+                  ] as { id: LayoutAlgorithmType; label: string }[]
+                ).map((alg) => (
+                  <button
+                    key={alg.id}
+                    type="button"
+                    onClick={() => {
+                      autoArrangeCampaign({ algorithm: alg.id });
+                    }}
+                    className={`px-2 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                      layoutAlgorithm === alg.id
+                        ? 'bg-emerald-700/80 text-white shadow-md font-semibold'
+                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
+                    }`}
+                  >
+                    {alg.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Horizontal Spacing Preset */}
             <div className="space-y-1.5">
               <label className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1">
@@ -141,7 +177,10 @@ export const CanvasGraphToolbar: React.FC = () => {
                   <button
                     key={preset}
                     type="button"
-                    onClick={() => setSpacing(preset, vSpacingScale)}
+                    onClick={() => {
+                      setSpacing(preset, vSpacingScale);
+                      setTimeout(() => autoArrangeCampaign(), 0);
+                    }}
                     className={`px-2 py-1.5 rounded-lg text-xs font-medium transition-all ${
                       hSpacingPreset === preset
                         ? 'bg-slate-800 text-white shadow-md font-semibold'
@@ -155,22 +194,31 @@ export const CanvasGraphToolbar: React.FC = () => {
             </div>
 
             {/* Smart Route Edges Button */}
-            <div className="pt-2 border-t border-slate-800">
+            <div className="pt-2 border-t border-slate-800 space-y-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  autoArrangeCampaign();
+                  setActiveMenu(null);
+                }}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700/60 text-emerald-300 hover:text-white text-xs font-semibold transition-all shadow-md active:scale-98 cursor-pointer"
+                title="Run Auto-Layout & Port Alignment"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Auto-Align Nodes & Ports</span>
+              </button>
               <button
                 type="button"
                 onClick={() => {
                   smartRouteAllEdges();
                   setActiveMenu(null);
                 }}
-                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/60 text-indigo-300 hover:text-white text-xs font-semibold transition-all shadow-md active:scale-98"
-                title="Automatically route edges around quest nodes to prevent crossing cards"
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-700/60 text-indigo-300 hover:text-white text-xs font-semibold transition-all shadow-md active:scale-98 cursor-pointer"
+                title="Automatically route edges around quest nodes using A* Manhattan pathfinding"
               >
                 <Route className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Smart Route Edges</span>
+                <span>A* Smart Route Edges</span>
               </button>
-              <p className="text-[10px] text-slate-500 mt-1 text-center">
-                Inserts obstacle bend-points around cards
-              </p>
             </div>
           </div>
         )}

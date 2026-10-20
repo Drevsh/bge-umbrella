@@ -3,7 +3,6 @@ import {
   Edge,
   EdgeProps,
   getBezierPath,
-  getSmoothStepPath,
   getStraightPath,
   EdgeLabelRenderer,
   BaseEdge,
@@ -11,7 +10,14 @@ import {
 } from '@xyflow/react';
 import { RotateCcw, X, Plus, Trash2, CornerDownLeft } from 'lucide-react';
 import { EdgeRelationType, EdgeRoutingStyle } from '../../types/campaign';
-import { SmartEdgeRoute } from '../../utils/obstacleRouter';
+import {
+  SmartEdgeRoute,
+  ControlPoint,
+  getPathWithRoundCorners,
+  getLabelPosition,
+  reducePoints,
+  distance
+} from '../../utils/obstacleRouter';
 import { useCampaignStore } from '../../store/useCampaignStore';
 
 export type SemanticEdgeType = Edge<{
@@ -33,52 +39,36 @@ const EDGE_COLORS: Record<EdgeRelationType, string> = {
   TIME_EXPIRED: '#f43f5e'  // Rose
 };
 
-/**
- * Builds an SVG path through a sequence of points using smooth quadratic rounded corners.
- * Unlike unconstrained Catmull-Rom splines, rounded orthogonal/polyline paths are convex-bounded
- * and guaranteed never to bow inward into quest card bounding boxes.
- */
-function buildRoundedWaypointPath(
-  pts: { x: number; y: number }[],
-  maxRadius: number = 24
-): string {
-  if (pts.length < 2) return '';
-  if (pts.length === 2 || maxRadius <= 0) {
-    return pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+function areEdgePropsEqual(
+  prev: EdgeProps<SemanticEdgeType>,
+  next: EdgeProps<SemanticEdgeType>
+): boolean {
+  if (
+    prev.id !== next.id ||
+    Boolean(prev.selected) !== Boolean(next.selected) ||
+    Math.abs(prev.sourceX - next.sourceX) > 0.5 ||
+    Math.abs(prev.sourceY - next.sourceY) > 0.5 ||
+    Math.abs(prev.targetX - next.targetX) > 0.5 ||
+    Math.abs(prev.targetY - next.targetY) > 0.5 ||
+    prev.markerEnd !== next.markerEnd
+  ) {
+    return false;
   }
-
-  let path = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
-
-  for (let i = 1; i < pts.length - 1; i++) {
-    const prev = pts[i - 1];
-    const curr = pts[i];
-    const next = pts[i + 1];
-
-    const dx1 = curr.x - prev.x;
-    const dy1 = curr.y - prev.y;
-    const len1 = Math.hypot(dx1, dy1);
-
-    const dx2 = next.x - curr.x;
-    const dy2 = next.y - curr.y;
-    const len2 = Math.hypot(dx2, dy2);
-
-    if (len1 < 2 || len2 < 2) {
-      path += ` L ${curr.x.toFixed(1)} ${curr.y.toFixed(1)}`;
-      continue;
-    }
-
-    const r = Math.min(maxRadius, len1 * 0.45, len2 * 0.45);
-    const startX = curr.x - (dx1 / len1) * r;
-    const startY = curr.y - (dy1 / len1) * r;
-    const endX = curr.x + (dx2 / len2) * r;
-    const endY = curr.y + (dy2 / len2) * r;
-
-    path += ` L ${startX.toFixed(1)} ${startY.toFixed(1)} Q ${curr.x.toFixed(1)} ${curr.y.toFixed(1)} ${endX.toFixed(1)} ${endY.toFixed(1)}`;
+  const pData = prev.data;
+  const nData = next.data;
+  if (pData === nData) return true;
+  if (!pData || !nData) return false;
+  if (
+    pData.type !== nData.type ||
+    pData.routingStyle !== nData.routingStyle ||
+    pData.label !== nData.label ||
+    Boolean(pData.isActive) !== Boolean(nData.isActive) ||
+    pData.waypoints !== nData.waypoints ||
+    pData.smartRoute !== nData.smartRoute
+  ) {
+    return false;
   }
-
-  const last = pts[pts.length - 1];
-  path += ` L ${last.x.toFixed(1)} ${last.y.toFixed(1)}`;
-  return path;
+  return true;
 }
 
 export const SemanticEdge = memo((props: EdgeProps<SemanticEdgeType>) => {
@@ -108,28 +98,21 @@ export const SemanticEdge = memo((props: EdgeProps<SemanticEdgeType>) => {
   const smartRoute = data?.smartRoute;
 
   const isLoopback = Boolean(smartRoute?.isLoopback || targetX <= sourceX + 20);
-  const cornerRadius = routingStyle === 'STRAIGHT' ? 0 : routingStyle === 'STEP' ? 14 : 24;
+  const cornerRadius = routingStyle === 'STRAIGHT' ? 0 : routingStyle === 'STEP' ? 14 : 20;
 
   let edgePath = '';
   let labelX = (sourceX + targetX) / 2;
   let labelY = (sourceY + targetY) / 2;
-  let effectiveAutoWaypoints: { x: number; y: number }[] = [];
+  let effectiveAutoWaypoints: ControlPoint[] = [];
 
   if (waypoints.length > 0) {
     // 1. User-defined manual waypoints
-    const allPts = [{ x: sourceX, y: sourceY }, ...waypoints, { x: targetX, y: targetY }];
-    edgePath = buildRoundedWaypointPath(allPts, cornerRadius);
-
-    if (waypoints.length >= 2) {
-      const midIdx = Math.floor(waypoints.length / 2);
-      const pA = waypoints[midIdx - 1];
-      const pB = waypoints[midIdx];
-      labelX = (pA.x + pB.x) / 2;
-      labelY = (pA.y + pB.y) / 2;
-    } else {
-      labelX = waypoints[0].x;
-      labelY = waypoints[0].y - 16;
-    }
+    const allPts: ControlPoint[] = [{ x: sourceX, y: sourceY }, ...waypoints, { x: targetX, y: targetY }];
+    edgePath = getPathWithRoundCorners(allPts, cornerRadius);
+    const lblPos = getLabelPosition(allPts);
+    labelX = lblPos.x;
+    labelY = lblPos.y;
+    effectiveAutoWaypoints = waypoints;
   } else if (isLoopback) {
     // 2. Automatic U-Channel Loopback Routing (Underpass / Overpass)
     const ch = smartRoute?.loopbackChannel;
@@ -154,46 +137,48 @@ export const SemanticEdge = memo((props: EdgeProps<SemanticEdgeType>) => {
       { x: entryX, y: Math.round(targetY) }
     ];
 
-    const allPts = [
+    const allPts: ControlPoint[] = [
       { x: sourceX, y: sourceY },
       ...effectiveAutoWaypoints,
       { x: targetX, y: targetY }
     ];
 
-    edgePath = buildRoundedWaypointPath(allPts, cornerRadius);
+    edgePath = getPathWithRoundCorners(allPts, cornerRadius);
 
-    // Place label along the dedicated horizontal bypass track, staggered per lane
     const midChannelX = (exitX + entryX) / 2;
     const staggerX = bundleSize > 1 ? (nestIdx - (bundleSize - 1) / 2) * 58 : 0;
     labelX = midChannelX + staggerX;
     labelY = channelY;
   } else if (smartRoute?.waypoints && smartRoute.waypoints.length > 0) {
-    // 3. Automatic Forward Obstacle-Avoidance Detour
+    // 3. Automatic Forward A* Manhattan Obstacle-Avoidance Detour (idootop/reactflow-auto-layout)
     effectiveAutoWaypoints = smartRoute.waypoints;
-    const allPts = [
+    const allPts: ControlPoint[] = [
       { x: sourceX, y: sourceY },
       ...effectiveAutoWaypoints,
       { x: targetX, y: targetY }
     ];
-    edgePath = buildRoundedWaypointPath(allPts, cornerRadius);
-
-    if (effectiveAutoWaypoints.length >= 2) {
-      labelX = (effectiveAutoWaypoints[0].x + effectiveAutoWaypoints[1].x) / 2;
-      labelY = (effectiveAutoWaypoints[0].y + effectiveAutoWaypoints[1].y) / 2;
-    } else {
-      labelX = effectiveAutoWaypoints[0].x;
-      labelY = effectiveAutoWaypoints[0].y;
-    }
+    edgePath = getPathWithRoundCorners(allPts, cornerRadius);
+    const lblPos = getLabelPosition(allPts);
+    labelX = lblPos.x;
+    labelY = lblPos.y;
   } else if (routingStyle === 'STEP') {
-    [edgePath, labelX, labelY] = getSmoothStepPath({
-      sourceX,
-      sourceY,
-      sourcePosition,
-      targetX,
-      targetY,
-      targetPosition,
-      borderRadius: 16
-    });
+    // 4. Orthogonal Step Path with interactive middle segment
+    const midX = Math.round((sourceX + targetX) / 2);
+    if (Math.abs(sourceY - targetY) > 2) {
+      effectiveAutoWaypoints = [
+        { x: midX, y: Math.round(sourceY) },
+        { x: midX, y: Math.round(targetY) }
+      ];
+    }
+    const allPts: ControlPoint[] = [
+      { x: sourceX, y: sourceY },
+      ...effectiveAutoWaypoints,
+      { x: targetX, y: targetY }
+    ];
+    edgePath = getPathWithRoundCorners(allPts, 14);
+    const lblPos = getLabelPosition(allPts);
+    labelX = lblPos.x;
+    labelY = lblPos.y;
   } else if (routingStyle === 'STRAIGHT') {
     [edgePath, labelX, labelY] = getStraightPath({
       sourceX,
@@ -221,20 +206,30 @@ export const SemanticEdge = memo((props: EdgeProps<SemanticEdgeType>) => {
     edgeType === 'TIME_EXPIRED';
   const strokeDasharray = isDashed ? '6,6' : undefined;
 
-  // Drag waypoint handler
+  // Drag individual waypoint handle (rAF-throttled)
   const handleWaypointPointerDown = useCallback(
     (index: number, e: React.PointerEvent) => {
       e.stopPropagation();
       (e.target as HTMLElement).setPointerCapture(e.pointerId);
 
+      const baseWaypoints = waypoints.length > 0 ? waypoints : effectiveAutoWaypoints;
+      let rafId: number | null = null;
+
       const onPointerMove = (moveEvt: PointerEvent) => {
-        const flowPos = screenToFlowPosition({ x: moveEvt.clientX, y: moveEvt.clientY });
-        const updated = [...waypoints];
-        updated[index] = { x: Math.round(flowPos.x), y: Math.round(flowPos.y) };
-        updateEdgeWaypoints(id, updated);
+        if (rafId !== null) return;
+        const clientX = moveEvt.clientX;
+        const clientY = moveEvt.clientY;
+        rafId = requestAnimationFrame(() => {
+          rafId = null;
+          const flowPos = screenToFlowPosition({ x: clientX, y: clientY });
+          const updated = [...baseWaypoints];
+          updated[index] = { x: Math.round(flowPos.x), y: Math.round(flowPos.y) };
+          updateEdgeWaypoints(id, updated);
+        });
       };
 
       const onPointerUp = () => {
+        if (rafId !== null) cancelAnimationFrame(rafId);
         window.removeEventListener('pointermove', onPointerMove);
         window.removeEventListener('pointerup', onPointerUp);
       };
@@ -242,22 +237,90 @@ export const SemanticEdge = memo((props: EdgeProps<SemanticEdgeType>) => {
       window.addEventListener('pointermove', onPointerMove);
       window.addEventListener('pointerup', onPointerUp);
     },
-    [id, waypoints, screenToFlowPosition, updateEdgeWaypoints]
+    [id, waypoints, effectiveAutoWaypoints, screenToFlowPosition, updateEdgeWaypoints]
+  );
+
+  // Figma-style orthogonal segment drag handler (inspired by idootop/reactflow-auto-layout EdgeController)
+  const handleSegmentPointerDown = useCallback(
+    (wpIndexA: number, wpIndexB: number, isHorizontal: boolean, e: React.PointerEvent) => {
+      e.stopPropagation();
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+
+      const initialWaypoints = (waypoints.length > 0 ? waypoints : effectiveAutoWaypoints).map((p) => ({
+        ...p
+      }));
+      let latestWaypoints = initialWaypoints;
+      let rafId: number | null = null;
+
+      const onPointerMove = (moveEvt: PointerEvent) => {
+        if (rafId !== null) return;
+        const clientX = moveEvt.clientX;
+        const clientY = moveEvt.clientY;
+        rafId = requestAnimationFrame(() => {
+          rafId = null;
+          const flowPos = screenToFlowPosition({ x: clientX, y: clientY });
+          const updated = latestWaypoints.map((p) => ({ ...p }));
+          if (isHorizontal) {
+            const newY = Math.round(flowPos.y);
+            if (updated[wpIndexA]) updated[wpIndexA].y = newY;
+            if (updated[wpIndexB]) updated[wpIndexB].y = newY;
+          } else {
+            const newX = Math.round(flowPos.x);
+            if (updated[wpIndexA]) updated[wpIndexA].x = newX;
+            if (updated[wpIndexB]) updated[wpIndexB].x = newX;
+          }
+          latestWaypoints = updated;
+          updateEdgeWaypoints(id, updated);
+        });
+      };
+
+      const onPointerUp = () => {
+        if (rafId !== null) cancelAnimationFrame(rafId);
+        // Merge/reduce collinear points after segment drag (idootop/reactflow-auto-layout mergePoints)
+        const allPts: ControlPoint[] = [
+          { x: Math.round(sourceX), y: Math.round(sourceY) },
+          ...latestWaypoints,
+          { x: Math.round(targetX), y: Math.round(targetY) }
+        ];
+        const reduced = reducePoints(allPts).slice(1, -1);
+        updateEdgeWaypoints(id, reduced);
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerup', onPointerUp);
+      };
+
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerUp);
+    },
+    [
+      id,
+      waypoints,
+      effectiveAutoWaypoints,
+      sourceX,
+      sourceY,
+      targetX,
+      targetY,
+      screenToFlowPosition,
+      updateEdgeWaypoints
+    ]
   );
 
   const handleDeleteWaypoint = useCallback(
     (index: number, e: React.MouseEvent) => {
       e.stopPropagation();
       e.preventDefault();
-      const filtered = waypoints.filter((_, i) => i !== index);
+      const baseWaypoints = waypoints.length > 0 ? waypoints : effectiveAutoWaypoints;
+      const filtered = baseWaypoints.filter((_, i) => i !== index);
       updateEdgeWaypoints(id, filtered);
     },
-    [id, waypoints, updateEdgeWaypoints]
+    [id, waypoints, effectiveAutoWaypoints, updateEdgeWaypoints]
   );
+
+  // Active waypoints available for editing when edge is selected
+  const editableWaypoints = waypoints.length > 0 ? waypoints : effectiveAutoWaypoints;
 
   return (
     <>
-      {/* Main Visible Edge Line (React Flow instruments this with its interaction layer) */}
+      {/* Main Visible Edge Line */}
       <BaseEdge
         id={id}
         path={edgePath}
@@ -266,17 +329,13 @@ export const SemanticEdge = memo((props: EdgeProps<SemanticEdgeType>) => {
           stroke: selected ? '#818cf8' : color,
           strokeWidth: selected ? 3.5 : isActive ? 3 : 2,
           strokeDasharray,
-          filter: selected
-            ? 'drop-shadow(0 0 8px rgba(129, 140, 248, 0.8))'
-            : isActive
-            ? `drop-shadow(0 0 6px ${color})`
-            : undefined,
+          filter: selected ? 'drop-shadow(0 0 6px rgba(129, 140, 248, 0.7))' : undefined,
           opacity: isActive || selected ? 1 : 0.85
         }}
         className={isActive && isDashed ? 'animate-edge-flow' : ''}
       />
 
-      {/* Edge Label & Waypoints Controls */}
+      {/* Edge Label & Interactive Waypoint / Segment Controls */}
       <EdgeLabelRenderer>
         <div
           style={{
@@ -292,7 +351,7 @@ export const SemanticEdge = memo((props: EdgeProps<SemanticEdgeType>) => {
                 borderColor: `${color}99`,
                 color: color
               }}
-              className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-slate-950/95 border shadow-md backdrop-blur-sm whitespace-nowrap flex items-center gap-1"
+              className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-slate-950 border shadow-md whitespace-nowrap flex items-center gap-1"
               title={isLoopback ? `Loopback connection: ${data.label}` : data.label}
             >
               {isLoopback && <CornerDownLeft className="w-2.5 h-2.5 opacity-90 shrink-0" />}
@@ -316,7 +375,7 @@ export const SemanticEdge = memo((props: EdgeProps<SemanticEdgeType>) => {
                   updateEdgeWaypoints(id, [...waypoints, newWp]);
                 }
               }}
-              className="px-1.5 py-0.5 rounded-full bg-indigo-950/90 border border-indigo-700/80 hover:bg-indigo-900 text-[10px] text-indigo-300 hover:text-white flex items-center gap-1 shadow-md transition-colors cursor-pointer"
+              className="px-1.5 py-0.5 rounded-full bg-indigo-950 border border-indigo-700/80 hover:bg-indigo-900 text-[10px] text-indigo-300 hover:text-white flex items-center gap-1 shadow-md transition-colors cursor-pointer"
               title="Customize bend waypoints on this edge"
             >
               <Plus className="w-2.5 h-2.5 text-indigo-400" />
@@ -348,7 +407,7 @@ export const SemanticEdge = memo((props: EdgeProps<SemanticEdgeType>) => {
                 e.stopPropagation();
                 deleteEdge(id);
               }}
-              className="px-1.5 py-0.5 rounded-full bg-rose-950/90 border border-rose-700/80 hover:bg-rose-900 text-[10px] text-rose-300 hover:text-white flex items-center gap-1 shadow-md transition-colors cursor-pointer"
+              className="px-1.5 py-0.5 rounded-full bg-rose-950 border border-rose-700/80 hover:bg-rose-900 text-[10px] text-rose-300 hover:text-white flex items-center gap-1 shadow-md transition-colors cursor-pointer"
               title="Delete this connection"
             >
               <Trash2 className="w-2.5 h-2.5" />
@@ -357,11 +416,48 @@ export const SemanticEdge = memo((props: EdgeProps<SemanticEdgeType>) => {
           )}
         </div>
 
-        {/* Draggable Waypoint Handles (Visible when edge is selected) */}
+        {/* Figma-style Orthogonal Segment Drag Bars (idootop/reactflow-auto-layout EdgeControllers) */}
         {selected &&
-          waypoints.map((wp, idx) => (
+          editableWaypoints.length >= 2 &&
+          editableWaypoints.slice(0, -1).map((wpA, idx) => {
+            const wpB = editableWaypoints[idx + 1];
+            const segLen = distance(wpA, wpB);
+            if (segLen < 42) return null;
+            const isHorizontal = Math.abs(wpA.y - wpB.y) <= 2;
+            const isVertical = Math.abs(wpA.x - wpB.x) <= 2;
+            if (!isHorizontal && !isVertical) return null;
+
+            const midX = (wpA.x + wpB.x) / 2;
+            const midY = (wpA.y + wpB.y) / 2;
+
+            return (
+              <div
+                key={`seg-${idx}`}
+                style={{
+                  position: 'absolute',
+                  transform: `translate(-50%, -50%) translate(${midX}px,${midY}px)`,
+                  width: isHorizontal ? '24px' : '6px',
+                  height: isHorizontal ? '6px' : '24px',
+                  cursor: isHorizontal ? 'row-resize' : 'col-resize',
+                  pointerEvents: 'all',
+                  zIndex: 990
+                }}
+                className="nodrag nopan rounded-full bg-indigo-500 hover:bg-indigo-400 border border-white shadow-md transition-transform hover:scale-110"
+                title={
+                  isHorizontal
+                    ? 'Drag horizontal segment up/down'
+                    : 'Drag vertical segment left/right'
+                }
+                onPointerDown={(e) => handleSegmentPointerDown(idx, idx + 1, isHorizontal, e)}
+              />
+            );
+          })}
+
+        {/* Draggable Waypoint Corner Handles (Visible when edge is selected) */}
+        {selected &&
+          editableWaypoints.map((wp, idx) => (
             <div
-              key={idx}
+              key={`wp-${idx}`}
               style={{
                 position: 'absolute',
                 transform: `translate(-50%, -50%) translate(${wp.x}px,${wp.y}px)`,
@@ -374,7 +470,7 @@ export const SemanticEdge = memo((props: EdgeProps<SemanticEdgeType>) => {
             >
               <div
                 className="w-4 h-4 rounded-full border-2 border-slate-900 bg-indigo-400 hover:bg-indigo-300 shadow-lg cursor-grab active:cursor-grabbing hover:scale-125 transition-transform flex items-center justify-center relative"
-                title="Drag to bend curve • Click X or Right-click to remove"
+                title="Drag corner point • Click X or Right-click to remove"
               >
                 <div className="w-1.5 h-1.5 rounded-full bg-slate-950" />
                 <button
@@ -391,6 +487,6 @@ export const SemanticEdge = memo((props: EdgeProps<SemanticEdgeType>) => {
       </EdgeLabelRenderer>
     </>
   );
-});
+}, areEdgePropsEqual);
 
 SemanticEdge.displayName = 'SemanticEdge';

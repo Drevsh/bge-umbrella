@@ -19,6 +19,8 @@ import { useCampaignStore } from '../../store/useCampaignStore';
 import { evaluateCampaignSimulation } from '../../utils/simulatorEngine';
 import { DragonEclipseEventSlot } from '../../types/campaign';
 
+type SimulationEvaluation = ReturnType<typeof evaluateCampaignSimulation>;
+
 export const ExplorationHudPill: React.FC = () => {
   const quests = useCampaignStore((s) => s.quests);
   const edges = useCampaignStore((s) => s.edges);
@@ -29,9 +31,32 @@ export const ExplorationHudPill: React.FC = () => {
 
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Evaluate simulation state
+  const simSignature = React.useMemo(() => {
+    const qPart = Object.values(quests)
+      .map(
+        (q) =>
+          `${q.uid}:${q.prereqLogic}:${q.requiredTag || ''}:${q.timeAdvance || 0}:${
+            q.isExplorationStage ? 1 : 0
+          }:${q.rewardOutcomes.map((r) => `${r.id}:${r.grantsStateTags.join(',')}:${r.timeAdvance || 0}`).join(';')}`
+      )
+      .join('|');
+    const ePart = edges
+      .map((e) => `${e.id}:${e.source}:${e.sourcePortId || ''}:${e.target}:${e.type}`)
+      .join('|');
+    const sPart = `${simulator.activeRewardChoices.join(',')}|${simulator.completedQuestIds.join(
+      ','
+    )}|${simulator.customTags.join(',')}|${simulator.manualTimeOffset || 0}`;
+    return `${qPart}#${ePart}#${sPart}`;
+  }, [quests, edges, simulator]);
+
+  const simCacheRef = React.useRef<{ sig: string; value: SimulationEvaluation } | null>(null);
+
+  // Evaluate simulation state only when simulation logic changes (ignores node position updates)
   const simState = React.useMemo(() => {
-    return evaluateCampaignSimulation(
+    if (simCacheRef.current && simCacheRef.current.sig === simSignature) {
+      return simCacheRef.current.value;
+    }
+    const evaluated = evaluateCampaignSimulation(
       quests,
       edges,
       simulator.activeRewardChoices,
@@ -39,7 +64,9 @@ export const ExplorationHudPill: React.FC = () => {
       simulator.customTags,
       simulator.manualTimeOffset || 0
     );
-  }, [quests, edges, simulator]);
+    simCacheRef.current = { sig: simSignature, value: evaluated };
+    return evaluated;
+  }, [simSignature, quests, edges, simulator]);
 
   // Check if any quest has exploration or Dragon Eclipse
   const explorationQuests = Object.values(quests).filter(
