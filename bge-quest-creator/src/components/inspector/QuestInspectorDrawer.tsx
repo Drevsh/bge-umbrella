@@ -208,6 +208,116 @@ export const QuestInspectorDrawer: React.FC = () => {
 
   const currentEdge = selectedEdgeId ? edges.find((e) => e.id === selectedEdgeId) : null;
 
+  // Compute synthesized text and word/char counts based on target scope and field
+  // (Must be declared before any conditional early returns to satisfy Rules of Hooks)
+  const computedNarration = useMemo(() => {
+    if (!currentQuest) {
+      return {
+        scope: 'base' as const,
+        variant: null as QuestVariantOverride | null,
+        effectiveTitle: '',
+        body: '',
+        fullText: '',
+        wordCount: 0,
+        charCount: 0
+      };
+    }
+
+    let scope: 'base' | 'mutation' | 'merged' = 'base';
+    let variant: QuestVariantOverride | null = null;
+
+    if (selectedVariantTarget.startsWith('mutation:')) {
+      scope = 'mutation';
+      const vid = selectedVariantTarget.slice('mutation:'.length);
+      variant = currentQuest.variants.find((v) => v.id === vid) || null;
+    } else if (selectedVariantTarget.startsWith('merged:')) {
+      scope = 'merged';
+      const vid = selectedVariantTarget.slice('merged:'.length);
+      variant = currentQuest.variants.find((v) => v.id === vid) || null;
+    }
+
+    // Effective title (overrideTitle if present on variant, else quest base title)
+    const effectiveTitle = (variant && variant.overrideTitle?.trim())
+      ? variant.overrideTitle.trim()
+      : currentQuest.title.trim();
+
+    let body = '';
+    if (scope === 'base' || !variant) {
+      scope = 'base';
+      if (audioTargetField === 'flavorText') {
+        body = currentQuest.flavorText?.trim() || '';
+      } else if (audioTargetField === 'setupInstructions') {
+        body = currentQuest.setupInstructions?.trim() || '';
+      } else {
+        body = [currentQuest.flavorText?.trim(), currentQuest.setupInstructions?.trim()]
+          .filter(Boolean)
+          .join('\n\n');
+      }
+    } else if (scope === 'mutation') {
+      if (audioTargetField === 'flavorText') {
+        body = variant.additionalFlavorText?.trim() || '';
+      } else if (audioTargetField === 'setupInstructions') {
+        body = variant.setupModifications?.trim() || '';
+      } else {
+        body = [variant.additionalFlavorText?.trim(), variant.setupModifications?.trim()]
+          .filter(Boolean)
+          .join('\n\n');
+      }
+    } else if (scope === 'merged') {
+      const mergedFlavor = [currentQuest.flavorText?.trim(), variant.additionalFlavorText?.trim()]
+        .filter(Boolean)
+        .join('\n\n');
+      const mergedSetup = [currentQuest.setupInstructions?.trim(), variant.setupModifications?.trim()]
+        .filter(Boolean)
+        .join('\n\n');
+
+      if (audioTargetField === 'flavorText') {
+        body = mergedFlavor;
+      } else if (audioTargetField === 'setupInstructions') {
+        body = mergedSetup;
+      } else {
+        body = [mergedFlavor, mergedSetup].filter(Boolean).join('\n\n');
+      }
+    }
+
+    let fullText = '';
+    if (effectiveTitle && body) {
+      const titleWithPunctuation = /[.!?]$/.test(effectiveTitle) ? effectiveTitle : `${effectiveTitle}.`;
+      fullText = `${titleWithPunctuation}\n\n${body}`;
+    } else if (effectiveTitle) {
+      fullText = effectiveTitle;
+    } else {
+      fullText = body;
+    }
+
+    const trimmed = fullText.trim();
+    const wordCount = trimmed ? trimmed.split(/\s+/).length : 0;
+    const charCount = fullText.length;
+
+    return {
+      scope,
+      variant,
+      effectiveTitle,
+      body,
+      fullText,
+      wordCount,
+      charCount
+    };
+  }, [currentQuest, selectedVariantTarget, audioTargetField]);
+
+  const previewFileName = useMemo(() => {
+    if (!currentQuest) return '';
+    const { scope, variant } = computedNarration;
+    const fieldCode = audioTargetField === 'flavorText' ? 'flavor' : audioTargetField === 'setupInstructions' ? 'setup' : 'combined';
+    const cleanTag = variant?.requiredStateTag
+      ? variant.requiredStateTag.replace(/^\+{1,2}/, '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_')
+      : '';
+    const styleCode = selectedStyleId.toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+    return cleanTag
+      ? `${currentQuest.code.toLowerCase()}_${scope}_${cleanTag}_${fieldCode}_${selectedVoice.toLowerCase()}_${styleCode}.wav`
+      : `${currentQuest.code.toLowerCase()}_${scope}_${fieldCode}_${selectedVoice.toLowerCase()}_${styleCode}.wav`;
+  }, [currentQuest, computedNarration, audioTargetField, selectedVoice, selectedStyleId]);
+
   // If an edge is selected, render Connection Properties Inspector
   if (selectedEdgeId && currentEdge) {
     const srcQuest = quests[currentEdge.source];
@@ -568,115 +678,6 @@ export const QuestInspectorDrawer: React.FC = () => {
     setEditingRewardId(null);
     setEditRewardTargetTestId('');
   };
-
-  // Compute synthesized text and word/char counts based on target scope and field
-  const computedNarration = useMemo(() => {
-    if (!currentQuest) {
-      return {
-        scope: 'base' as const,
-        variant: null as QuestVariantOverride | null,
-        effectiveTitle: '',
-        body: '',
-        fullText: '',
-        wordCount: 0,
-        charCount: 0
-      };
-    }
-
-    let scope: 'base' | 'mutation' | 'merged' = 'base';
-    let variant: QuestVariantOverride | null = null;
-
-    if (selectedVariantTarget.startsWith('mutation:')) {
-      scope = 'mutation';
-      const vid = selectedVariantTarget.slice('mutation:'.length);
-      variant = currentQuest.variants.find((v) => v.id === vid) || null;
-    } else if (selectedVariantTarget.startsWith('merged:')) {
-      scope = 'merged';
-      const vid = selectedVariantTarget.slice('merged:'.length);
-      variant = currentQuest.variants.find((v) => v.id === vid) || null;
-    }
-
-    // Effective title (overrideTitle if present on variant, else quest base title)
-    const effectiveTitle = (variant && variant.overrideTitle?.trim())
-      ? variant.overrideTitle.trim()
-      : currentQuest.title.trim();
-
-    let body = '';
-    if (scope === 'base' || !variant) {
-      scope = 'base';
-      if (audioTargetField === 'flavorText') {
-        body = currentQuest.flavorText?.trim() || '';
-      } else if (audioTargetField === 'setupInstructions') {
-        body = currentQuest.setupInstructions?.trim() || '';
-      } else {
-        body = [currentQuest.flavorText?.trim(), currentQuest.setupInstructions?.trim()]
-          .filter(Boolean)
-          .join('\n\n');
-      }
-    } else if (scope === 'mutation') {
-      if (audioTargetField === 'flavorText') {
-        body = variant.additionalFlavorText?.trim() || '';
-      } else if (audioTargetField === 'setupInstructions') {
-        body = variant.setupModifications?.trim() || '';
-      } else {
-        body = [variant.additionalFlavorText?.trim(), variant.setupModifications?.trim()]
-          .filter(Boolean)
-          .join('\n\n');
-      }
-    } else if (scope === 'merged') {
-      const mergedFlavor = [currentQuest.flavorText?.trim(), variant.additionalFlavorText?.trim()]
-        .filter(Boolean)
-        .join('\n\n');
-      const mergedSetup = [currentQuest.setupInstructions?.trim(), variant.setupModifications?.trim()]
-        .filter(Boolean)
-        .join('\n\n');
-
-      if (audioTargetField === 'flavorText') {
-        body = mergedFlavor;
-      } else if (audioTargetField === 'setupInstructions') {
-        body = mergedSetup;
-      } else {
-        body = [mergedFlavor, mergedSetup].filter(Boolean).join('\n\n');
-      }
-    }
-
-    let fullText = '';
-    if (effectiveTitle && body) {
-      const titleWithPunctuation = /[.!?]$/.test(effectiveTitle) ? effectiveTitle : `${effectiveTitle}.`;
-      fullText = `${titleWithPunctuation}\n\n${body}`;
-    } else if (effectiveTitle) {
-      fullText = effectiveTitle;
-    } else {
-      fullText = body;
-    }
-
-    const trimmed = fullText.trim();
-    const wordCount = trimmed ? trimmed.split(/\s+/).length : 0;
-    const charCount = fullText.length;
-
-    return {
-      scope,
-      variant,
-      effectiveTitle,
-      body,
-      fullText,
-      wordCount,
-      charCount
-    };
-  }, [currentQuest, selectedVariantTarget, audioTargetField]);
-
-  const previewFileName = useMemo(() => {
-    if (!currentQuest) return '';
-    const { scope, variant } = computedNarration;
-    const fieldCode = audioTargetField === 'flavorText' ? 'flavor' : audioTargetField === 'setupInstructions' ? 'setup' : 'combined';
-    const cleanTag = variant?.requiredStateTag
-      ? variant.requiredStateTag.replace(/^\+{1,2}/, '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '_')
-      : '';
-    const styleCode = selectedStyleId.toLowerCase().replace(/[^a-z0-9_-]/g, '_');
-    return cleanTag
-      ? `${currentQuest.code.toLowerCase()}_${scope}_${cleanTag}_${fieldCode}_${selectedVoice.toLowerCase()}_${styleCode}.wav`
-      : `${currentQuest.code.toLowerCase()}_${scope}_${fieldCode}_${selectedVoice.toLowerCase()}_${styleCode}.wav`;
-  }, [currentQuest, computedNarration, audioTargetField, selectedVoice, selectedStyleId]);
 
   const handleGenerateAudio = async () => {
     if (!currentQuest) return;
