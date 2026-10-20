@@ -177,7 +177,7 @@ export interface CampaignStoreState {
     oldEdgeId: string,
     newConnection: { source: string; sourcePortId: string | null; target: string }
   ) => void;
-  updateEdgeWaypoints: (edgeId: string, waypoints: { x: number; y: number }[]) => void;
+  updateEdgeWaypoints: (edgeId: string, waypoints: { id?: string; x: number; y: number }[]) => void;
   clearEdgeWaypoints: (edgeId: string) => void;
   smartRouteAllEdges: () => void;
   autoArrangeCampaign: (options?: { reorderChoices?: boolean; algorithm?: LayoutAlgorithmType }) => void;
@@ -221,7 +221,7 @@ export const useCampaignStore = create<CampaignStoreState>()(
       selectedEdgeId: null,
       activeVariantTab: 'base',
       viewMode: 'SPLIT',
-      edgeRoutingStyle: 'BEZIER',
+      edgeRoutingStyle: 'STEP',
       edgeVisibility: {
         unlocks: true,
         choices: true,

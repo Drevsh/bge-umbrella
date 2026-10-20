@@ -225,7 +225,7 @@ export interface CampaignEdge {
   type: EdgeRelationType;     // Drives color, dash, and simulator evaluation
   stateTag?: string | null;   // Tag carried across this connection
   label?: string;
-  waypoints?: { x: number; y: number }[]; // Custom bend points or obstacle avoidance routes
+  waypoints?: { id?: string; x: number; y: number }[]; // Custom bend points or obstacle avoidance routes
 }
 
 export interface CampaignProjectMetadata {

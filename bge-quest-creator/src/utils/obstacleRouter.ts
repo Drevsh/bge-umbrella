@@ -1,8 +1,19 @@
+import { Position } from '@xyflow/react';
 import { QuestModel, CampaignEdge } from '../types/campaign';
 
 export interface ControlPoint {
+  id?: string;
   x: number;
   y: number;
+}
+
+export interface HandlePosition extends ControlPoint {
+  position: Position;
+}
+
+export interface ILine {
+  start: ControlPoint;
+  end: ControlPoint;
 }
 
 export interface NodeRect {
@@ -90,6 +101,62 @@ export function getTargetPortCoords(quest: QuestModel): ControlPoint {
 // ============================================================================
 // Geometry & Polyline Helpers (Adapted from idootop/reactflow-auto-layout)
 // ============================================================================
+
+let _ptCounter = 0;
+export function nextPointId(prefix = 'pt'): string {
+  _ptCounter = (_ptCounter + 1) % 1000000;
+  return `${prefix}-${_ptCounter}`;
+}
+
+export function isHorizontalFromPosition(position: Position): boolean {
+  return position === Position.Left || position === Position.Right;
+}
+
+export function getOffsetPoint(box: HandlePosition, offset: number): ControlPoint {
+  switch (box.position) {
+    case Position.Top:
+      return { id: nextPointId(), x: box.x, y: box.y - offset };
+    case Position.Bottom:
+      return { id: nextPointId(), x: box.x, y: box.y + offset };
+    case Position.Left:
+      return { id: nextPointId(), x: box.x - offset, y: box.y };
+    case Position.Right:
+    default:
+      return { id: nextPointId(), x: box.x + offset, y: box.y };
+  }
+}
+
+export function getLineCenter(p1: ControlPoint, p2: ControlPoint): ControlPoint {
+  return {
+    id: nextPointId('center'),
+    x: (p1.x + p2.x) / 2,
+    y: (p1.y + p2.y) / 2
+  };
+}
+
+export function isLineContainsPoint(
+  start: ControlPoint,
+  end: ControlPoint,
+  p: ControlPoint
+): boolean {
+  return (
+    (Math.abs(start.x - end.x) < 1 &&
+      Math.abs(p.x - start.x) < 1 &&
+      p.y <= Math.max(start.y, end.y) + 1 &&
+      p.y >= Math.min(start.y, end.y) - 1) ||
+    (Math.abs(start.y - end.y) < 1 &&
+      Math.abs(p.y - start.y) < 1 &&
+      p.x <= Math.max(start.x, end.x) + 1 &&
+      p.x >= Math.min(start.x, end.x) - 1)
+  );
+}
+
+export function isOnLine(p: ControlPoint, p1: ControlPoint, p2: ControlPoint): boolean {
+  return (
+    (Math.abs(p1.x - p.x) < 1 && Math.abs(p.x - p2.x) < 1) ||
+    (Math.abs(p1.y - p.y) < 1 && Math.abs(p.y - p2.y) < 1)
+  );
+}
 
 export function distance(p1: ControlPoint, p2: ControlPoint): number {
   return Math.hypot(p2.x - p1.x, p2.y - p1.y);
@@ -201,9 +268,296 @@ export function mergeClosePoints(
   };
 
   return points.map((point) => ({
+    ...point,
     x: findPosition('x', point.x),
     y: findPosition('y', point.y)
   }));
+}
+
+export function removeRepeatPoints(points: ControlPoint[]): ControlPoint[] {
+  if (points.length === 0) return [];
+  const lastP = points[points.length - 1];
+  const uniquePoints = new Set([`${lastP.x}-${lastP.y}`]);
+  const finalPoints: ControlPoint[] = [];
+  points.forEach((p, idx) => {
+    if (idx === points.length - 1) {
+      finalPoints.push(p);
+      return;
+    }
+    const key = `${p.x}-${p.y}`;
+    if (!uniquePoints.has(key)) {
+      uniquePoints.add(key);
+      finalPoints.push(p);
+    }
+  });
+  return finalPoints;
+}
+
+/**
+ * When two nodes are directly connected or close, compute simple orthogonal path
+ * (Directly adapted from idootop/reactflow-auto-layout/src/layout/edge/algorithms/simple.ts)
+ */
+export function getSimplePath({
+  isDirectConnect,
+  source,
+  target,
+  sourceOffset,
+  targetOffset
+}: {
+  isDirectConnect?: boolean;
+  source: ControlPoint;
+  target: ControlPoint;
+  sourceOffset: ControlPoint;
+  targetOffset: ControlPoint;
+}): ControlPoint[] {
+  const points: ControlPoint[] = [];
+  const sourceDirection = Math.abs(source.x - sourceOffset.x) < 1 ? 'vertical' : 'horizontal';
+  const targetDirection = Math.abs(target.x - targetOffset.x) < 1 ? 'vertical' : 'horizontal';
+  const isHorizontalLayout = sourceDirection === 'horizontal';
+
+  if (isDirectConnect) {
+    if (isHorizontalLayout) {
+      if (sourceOffset.x <= targetOffset.x) {
+        const centerX = (sourceOffset.x + targetOffset.x) / 2;
+        return [
+          { id: nextPointId(), x: centerX, y: sourceOffset.y },
+          { id: nextPointId(), x: centerX, y: targetOffset.y }
+        ];
+      } else {
+        const centerY = (sourceOffset.y + targetOffset.y) / 2;
+        return [
+          sourceOffset,
+          { id: nextPointId(), x: sourceOffset.x, y: centerY },
+          { id: nextPointId(), x: targetOffset.x, y: centerY },
+          targetOffset
+        ];
+      }
+    } else {
+      if (sourceOffset.y <= targetOffset.y) {
+        const centerY = (sourceOffset.y + targetOffset.y) / 2;
+        return [
+          { id: nextPointId(), x: sourceOffset.x, y: centerY },
+          { id: nextPointId(), x: targetOffset.x, y: centerY }
+        ];
+      } else {
+        const centerX = (sourceOffset.x + targetOffset.x) / 2;
+        return [
+          sourceOffset,
+          { id: nextPointId(), x: centerX, y: sourceOffset.y },
+          { id: nextPointId(), x: centerX, y: targetOffset.y },
+          targetOffset
+        ];
+      }
+    }
+  }
+
+  if (sourceDirection === targetDirection) {
+    if (Math.abs(source.y - sourceOffset.y) < 1) {
+      points.push({
+        id: nextPointId(),
+        x: sourceOffset.x,
+        y: (sourceOffset.y + targetOffset.y) / 2
+      });
+      points.push({
+        id: nextPointId(),
+        x: targetOffset.x,
+        y: (sourceOffset.y + targetOffset.y) / 2
+      });
+    } else {
+      points.push({
+        id: nextPointId(),
+        x: (sourceOffset.x + targetOffset.x) / 2,
+        y: sourceOffset.y
+      });
+      points.push({
+        id: nextPointId(),
+        x: (sourceOffset.x + targetOffset.x) / 2,
+        y: targetOffset.y
+      });
+    }
+  } else {
+    let point: ControlPoint = { id: nextPointId(), x: sourceOffset.x, y: targetOffset.y };
+    const inStart = isInLine(point, source, sourceOffset);
+    const inEnd = isInLine(point, target, targetOffset);
+    if (inStart || inEnd) {
+      point = { id: nextPointId(), x: targetOffset.x, y: sourceOffset.y };
+    } else {
+      const onStart = isOnLine(point, source, sourceOffset);
+      const onEnd = isOnLine(point, target, targetOffset);
+      if (onStart && onEnd) {
+        point = { id: nextPointId(), x: targetOffset.x, y: sourceOffset.y };
+      }
+    }
+    points.push(point);
+  }
+  return [sourceOffset, ...points, targetOffset];
+}
+
+export function optimizeInputPoints(p: {
+  edgePoints: ControlPoint[];
+  source: HandlePosition;
+  target: HandlePosition;
+  sourceOffset: ControlPoint;
+  targetOffset: ControlPoint;
+}) {
+  let edgePoints = mergeClosePoints([
+    p.source,
+    p.sourceOffset,
+    ...p.edgePoints,
+    p.targetOffset,
+    p.target
+  ]);
+  const source = edgePoints.shift()!;
+  const target = edgePoints.pop()!;
+  const sourceOffset = edgePoints[0];
+  const targetOffset = edgePoints[edgePoints.length - 1];
+
+  if (isHorizontalFromPosition(p.source.position)) {
+    source.x = Math.round(p.source.x);
+  } else {
+    source.y = Math.round(p.source.y);
+  }
+  if (isHorizontalFromPosition(p.target.position)) {
+    target.x = Math.round(p.target.x);
+  } else {
+    target.y = Math.round(p.target.y);
+  }
+
+  edgePoints = removeRepeatPoints(edgePoints).map((pt, idx) => ({
+    ...pt,
+    id: `${idx + 1}`
+  }));
+  return { source, target, sourceOffset, targetOffset, edgePoints };
+}
+
+/**
+ * Computes the complete orthogonal polyline `points` (including source at [0] and target at [length-1])
+ * for rendering and Figma-like interactive segment dragging (idootop/reactflow-auto-layout).
+ */
+export function buildEditableEdgePoints(params: {
+  id: string;
+  sourceX: number;
+  sourceY: number;
+  targetX: number;
+  targetY: number;
+  sourcePosition: Position;
+  targetPosition: Position;
+  offset?: number;
+  waypoints?: ControlPoint[];
+  smartRoute?: SmartEdgeRoute;
+}): ControlPoint[] {
+  const {
+    id,
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    sourcePosition,
+    targetPosition,
+    offset = 20,
+    waypoints = [],
+    smartRoute
+  } = params;
+
+  const source: HandlePosition = {
+    id: `source-${id}`,
+    x: Math.round(sourceX),
+    y: Math.round(sourceY),
+    position: sourcePosition
+  };
+  const target: HandlePosition = {
+    id: `target-${id}`,
+    x: Math.round(targetX),
+    y: Math.round(targetY),
+    position: targetPosition
+  };
+
+  // 1. User-customized waypoints
+  if (waypoints.length > 0) {
+    const cloned = waypoints.map((wp, idx) => ({
+      id: wp.id || `wp-${id}-${idx}`,
+      x: Math.round(wp.x),
+      y: Math.round(wp.y)
+    }));
+    // Keep end segments orthogonal to moving handles when endpoints shift
+    if (cloned.length >= 1) {
+      if (isHorizontalFromPosition(sourcePosition)) {
+        cloned[0].y = source.y;
+      } else {
+        cloned[0].x = source.x;
+      }
+      const lastIdx = cloned.length - 1;
+      if (isHorizontalFromPosition(targetPosition)) {
+        cloned[lastIdx].y = target.y;
+      } else {
+        cloned[lastIdx].x = target.x;
+      }
+    }
+    return reducePoints([source, ...cloned, target]);
+  }
+
+  // 2. Loopback U-Channel route
+  const isLoopback = Boolean(smartRoute?.isLoopback || target.x <= source.x + 20);
+  if (isLoopback) {
+    const ch = smartRoute?.loopbackChannel;
+    const nestIdx = ch?.nestIdx ?? 0;
+    const exitX = Math.max(
+      Math.round(source.x + 34 + nestIdx * 22),
+      ch?.exitX ?? Math.round(Math.max(source.x, target.x) + 40)
+    );
+    const entryX = Math.min(
+      Math.round(target.x - 34 - nestIdx * 22),
+      ch?.entryX ?? Math.round(Math.min(source.x, target.x) - 40)
+    );
+    const channelY =
+      ch?.channelY ?? Math.round(Math.max(source.y, target.y) + 95 + nestIdx * 30);
+
+    const loopPts: ControlPoint[] = [
+      { id: nextPointId(), x: exitX, y: source.y },
+      { id: nextPointId(), x: exitX, y: channelY },
+      { id: nextPointId(), x: entryX, y: channelY },
+      { id: nextPointId(), x: entryX, y: target.y }
+    ];
+    return reducePoints([source, ...loopPts, target]);
+  }
+
+  // 3. A* Obstacle-Avoidance Route
+  if (smartRoute?.waypoints && smartRoute.waypoints.length > 0) {
+    return reducePoints([
+      source,
+      ...smartRoute.waypoints.map((wp, i) => ({
+        id: `astar-${id}-${i}`,
+        x: Math.round(wp.x),
+        y: Math.round(wp.y)
+      })),
+      target
+    ]);
+  }
+
+  // 4. Default Orthogonal Simple Path (idootop/reactflow-auto-layout)
+  const sourceOffset = getOffsetPoint(source, offset);
+  const targetOffset = getOffsetPoint(target, offset);
+  const isDirectConnect = isHorizontalFromPosition(sourcePosition)
+    ? source.x < target.x
+    : source.y < target.y;
+
+  const simplePts = getSimplePath({
+    isDirectConnect,
+    source,
+    target,
+    sourceOffset,
+    targetOffset
+  });
+
+  const optimized = optimizeInputPoints({
+    source,
+    target,
+    sourceOffset,
+    targetOffset,
+    edgePoints: simplePts
+  });
+
+  return reducePoints([optimized.source, ...optimized.edgePoints, optimized.target]);
 }
 
 /**
