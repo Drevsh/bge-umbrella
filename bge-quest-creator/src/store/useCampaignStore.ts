@@ -91,6 +91,7 @@ export interface CampaignStoreState {
   layoutAlgorithm: LayoutAlgorithmType;
   layoutVersion: number;
   snapToGrid: boolean;
+  collapsedQuestUids: Record<string, boolean>;
   geminiApiKey: string;
   isActDrawerOpen: boolean;
 
@@ -129,6 +130,8 @@ export interface CampaignStoreState {
   setSpacing: (hPreset: 'COMPACT' | 'BALANCED' | 'WIDE', vScale: number) => void;
   setLayoutAlgorithm: (algorithm: LayoutAlgorithmType) => void;
   toggleSnapToGrid: () => void;
+  toggleQuestNodeCollapsed: (uid: string) => void;
+  setAllQuestNodesCollapsed: (collapsed: boolean) => void;
   setModalOpen: (modal: keyof CampaignStoreState['modals'], open: boolean) => void;
   openWizardWithConfig: (config?: CampaignStoreState['wizardInitOptions']) => void;
   setActDrawerOpen: (open: boolean) => void;
@@ -233,6 +236,7 @@ export const useCampaignStore = create<CampaignStoreState>()(
       layoutAlgorithm: 'TIERED',
       layoutVersion: 0,
       snapToGrid: true,
+      collapsedQuestUids: {},
       geminiApiKey: (typeof window !== 'undefined' ? localStorage.getItem('questflow_gemini_api_key') : '') || '',
       isActDrawerOpen: false,
 
@@ -402,6 +406,26 @@ export const useCampaignStore = create<CampaignStoreState>()(
 
       toggleSnapToGrid: () =>
         set((state) => ({ snapToGrid: !state.snapToGrid })),
+
+      toggleQuestNodeCollapsed: (uid) =>
+        set((state) => ({
+          collapsedQuestUids: {
+            ...state.collapsedQuestUids,
+            [uid]: !state.collapsedQuestUids[uid]
+          }
+        })),
+
+      setAllQuestNodesCollapsed: (collapsed) =>
+        set((state) => {
+          if (!collapsed) {
+            return { collapsedQuestUids: {} };
+          }
+          const next: Record<string, boolean> = {};
+          Object.keys(state.quests).forEach((uid) => {
+            next[uid] = true;
+          });
+          return { collapsedQuestUids: next };
+        }),
 
       setModalOpen: (modal, open) =>
         set((state) => ({

@@ -16,10 +16,15 @@ import {
   Heart,
   HeartCrack,
   Layers,
-  Sparkles
+  Sparkles,
+  ChevronUp,
+  ChevronDown,
+  AlertTriangle,
+  AlertCircle
 } from 'lucide-react';
 import { QuestModel, QuestVariantOverride } from '../../types/campaign';
 import { QuestSimStatus } from '../../utils/simulatorEngine';
+import { CampaignLintIssue } from '../../utils/campaignLinter';
 import { useCampaignStore } from '../../store/useCampaignStore';
 
 export interface QuestNodeCardData extends Record<string, unknown> {
@@ -28,6 +33,7 @@ export interface QuestNodeCardData extends Record<string, unknown> {
   activeVariants: QuestVariantOverride[];
   activeRewardChoices: string[];
   activeStateTags?: Set<string>;
+  lintIssues?: CampaignLintIssue[];
 }
 
 interface QuestNodeCardProps {
@@ -42,6 +48,14 @@ function areQuestNodePropsEqual(prev: QuestNodeCardProps, next: QuestNodeCardPro
   }
   if (prev.data.quest !== next.data.quest || prev.data.status !== next.data.status) {
     return false;
+  }
+  if (prev.data.lintIssues !== next.data.lintIssues) {
+    const prevIssues = prev.data.lintIssues || [];
+    const nextIssues = next.data.lintIssues || [];
+    if (prevIssues.length !== nextIssues.length) return false;
+    for (let i = 0; i < prevIssues.length; i++) {
+      if (prevIssues[i].id !== nextIssues[i].id) return false;
+    }
   }
   const prevVars = prev.data.activeVariants;
   const nextVars = next.data.activeVariants;
@@ -84,8 +98,10 @@ export const QuestNodeCard = memo(({ id, data, selected }: QuestNodeCardProps) =
   const toggleSimulatorRewardChoice = useCampaignStore((s) => s.toggleSimulatorRewardChoice);
   const toggleSimulatorQuestCompletion = useCampaignStore((s) => s.toggleSimulatorQuestCompletion);
   const activeGameProfile = useCampaignStore((s) => s.activeGameProfile);
+  const isCollapsed = useCampaignStore((s) => Boolean(s.collapsedQuestUids[id]));
+  const toggleQuestNodeCollapsed = useCampaignStore((s) => s.toggleQuestNodeCollapsed);
 
-  const { quest, status, activeVariants, activeRewardChoices, activeStateTags } = data;
+  const { quest, status, activeVariants, activeRewardChoices, activeStateTags, lintIssues = [] } = data;
   const [isEditingTitle, setIsEditingTitle] = React.useState(false);
   const [editedTitle, setEditedTitle] = React.useState(quest.title);
 
@@ -93,8 +109,8 @@ export const QuestNodeCard = memo(({ id, data, selected }: QuestNodeCardProps) =
     setEditedTitle(quest.title);
   }, [quest.title]);
 
-  // Only recalculate node handle internals when handle topology changes AFTER initial mount
-  const handleSignature = `${quest.prereqLogic}|${quest.category}|${Boolean(quest.testConfig)}|${quest.rewardOutcomes
+  // Recalculate node handle internals when handle topology or collapsed state changes AFTER initial mount
+  const handleSignature = `${isCollapsed}|${quest.prereqLogic}|${quest.category}|${Boolean(quest.testConfig)}|${quest.rewardOutcomes
     .map((r) => r.id)
     .join(',')}`;
   const prevHandleSignatureRef = useRef<string | null>(null);
@@ -106,9 +122,15 @@ export const QuestNodeCard = memo(({ id, data, selected }: QuestNodeCardProps) =
     }
     if (prevHandleSignatureRef.current !== handleSignature) {
       prevHandleSignatureRef.current = handleSignature;
-      updateNodeInternals(id);
+      requestAnimationFrame(() => {
+        updateNodeInternals(id);
+      });
     }
   }, [id, handleSignature, updateNodeInternals]);
+
+  const errorIssues = lintIssues.filter((i) => i.severity === 'error');
+  const warningIssues = lintIssues.filter((i) => i.severity === 'warning');
+  const actionableLintIssues = lintIssues.filter((i) => i.severity === 'error' || i.severity === 'warning');
 
   const categoryColors: Record<string, string> = {
     MAIN: 'border-blue-500/60 bg-blue-950/40 text-blue-300',
@@ -193,18 +215,35 @@ export const QuestNodeCard = memo(({ id, data, selected }: QuestNodeCardProps) =
       )}
 
       {/* Card Header */}
-      <div className="p-3 pb-2 border-b border-slate-800/80">
-        <div className="flex items-center justify-between gap-2 mb-1.5">
-          <div className="flex items-center gap-1.5">
-            <span className="font-mono text-xs font-black tracking-wider text-slate-200 bg-slate-800/90 px-1.5 py-0.5 rounded border border-slate-700">
+      <div className={`p-3 pb-2 ${isCollapsed ? '' : 'border-b border-slate-800/80'}`}>
+        <div className="flex items-center justify-between gap-1.5 mb-1.5">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="font-mono text-xs font-black tracking-wider text-slate-200 bg-slate-800/90 px-1.5 py-0.5 rounded border border-slate-700 shrink-0">
               {quest.code}
             </span>
-            <span className={`text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded border ${categoryBadgeStyle}`}>
+            <span className={`text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded border truncate ${categoryBadgeStyle}`}>
               {categoryLabel}
             </span>
+            {actionableLintIssues.length > 0 && (
+              <span
+                className={`flex items-center gap-0.5 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border shrink-0 ${
+                  errorIssues.length > 0
+                    ? 'bg-rose-950/90 text-rose-300 border-rose-600/80'
+                    : 'bg-amber-950/90 text-amber-300 border-amber-600/80'
+                }`}
+                title={actionableLintIssues.map((i) => `[${i.severity.toUpperCase()}] ${i.message}`).join('\n')}
+              >
+                {errorIssues.length > 0 ? (
+                  <AlertCircle className="w-2.5 h-2.5 text-rose-400 shrink-0" />
+                ) : (
+                  <AlertTriangle className="w-2.5 h-2.5 text-amber-400 shrink-0" />
+                )}
+                <span>{actionableLintIssues.length}</span>
+              </span>
+            )}
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 shrink-0">
             {quest.prereqLogic !== 'START' && (
               <span className="text-[10px] font-mono font-bold bg-slate-800 text-slate-400 px-1 py-0.5 rounded border border-slate-700/60">
                 {quest.prereqLogic === 'ALL' ? 'AND' : 'OR'}
@@ -214,6 +253,17 @@ export const QuestNodeCard = memo(({ id, data, selected }: QuestNodeCardProps) =
               {currentStatus.icon}
               {status}
             </span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleQuestNodeCollapsed(quest.uid);
+              }}
+              className="nodrag p-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-slate-100 border border-slate-700/70 transition-colors cursor-pointer"
+              title={isCollapsed ? 'Expand quest card details' : 'Collapse quest card to compact mode'}
+            >
+              {isCollapsed ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
+            </button>
           </div>
         </div>
 
@@ -258,7 +308,7 @@ export const QuestNodeCard = memo(({ id, data, selected }: QuestNodeCardProps) =
         )}
 
         {/* Dragon Eclipse Exploration Stage Badge */}
-        {(quest.isExplorationStage || quest.category === 'EXPLORATION' || Boolean(quest.explorationConfig)) && (
+        {!isCollapsed && (quest.isExplorationStage || quest.category === 'EXPLORATION' || Boolean(quest.explorationConfig)) && (
           <div className="flex items-center gap-1.5 mt-1.5">
             <span className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-teal-300 bg-teal-950 border border-teal-500/50 px-1.5 py-0.5 rounded">
               <Compass className="w-2.5 h-2.5 text-teal-400" />
@@ -275,17 +325,22 @@ export const QuestNodeCard = memo(({ id, data, selected }: QuestNodeCardProps) =
           </div>
         )}
 
-        {/* Simulator Toggle Button */}
+        {/* Simulator Toggle Button & Compact Summary */}
         <div className="mt-2 flex items-center justify-between pt-1 border-t border-slate-800/40">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0">
             <span className="text-[10px] text-slate-400">Tier {quest.tier}</span>
+            {isCollapsed && (
+              <span className="text-[10px] font-mono text-slate-400 bg-slate-950 px-1.5 py-0.2 rounded border border-slate-800">
+                {quest.rewardOutcomes.length} port{quest.rewardOutcomes.length === 1 ? '' : 's'}
+              </span>
+            )}
             {quest.audioTracks && quest.audioTracks.length > 0 && (
               <span
                 className="text-[9px] font-medium px-1.5 py-0.5 rounded flex items-center gap-1 bg-indigo-950 text-indigo-300 border border-indigo-700/60"
                 title={`${quest.audioTracks.length} Voice Narration track(s)`}
               >
                 <Volume2 className="w-2.5 h-2.5 text-indigo-400" />
-                Audio
+                {!isCollapsed && 'Audio'}
               </span>
             )}
           </div>
@@ -301,13 +356,35 @@ export const QuestNodeCard = memo(({ id, data, selected }: QuestNodeCardProps) =
                 : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700'
             }`}
           >
-            {status === 'COMPLETED' ? '✓ Done' : 'Playtest Complete'}
+            {status === 'COMPLETED' ? '✓ Done' : isCollapsed ? 'Complete' : 'Playtest Complete'}
           </button>
         </div>
       </div>
 
+      {/* When Collapsed: keep all source handles mounted along the right edge so React Flow edges stay connected */}
+      {isCollapsed &&
+        quest.rewardOutcomes.map((reward, idx) => {
+          const total = quest.rewardOutcomes.length;
+          const topPct = total <= 1 ? 50 : 25 + (idx / (total - 1)) * 55;
+          return (
+            <Handle
+              key={reward.id}
+              type="source"
+              position={Position.Right}
+              id={reward.id}
+              title={`Output Port: ${reward.label}`}
+              className="!w-3 !h-3 !bg-slate-400 hover:!bg-indigo-400 !border-2 !border-slate-900 after:content-[''] after:absolute after:-inset-2 after:bg-transparent"
+              style={{
+                top: `${topPct}%`,
+                transform: 'translateY(-50%)',
+                right: '-6px'
+              }}
+            />
+          );
+        })}
+
       {/* Active Variants Pills */}
-      {quest.variants.length > 0 && (
+      {!isCollapsed && quest.variants.length > 0 && (
         <div className="px-3 py-1.5 bg-slate-950 border-b border-slate-800/60 flex flex-wrap gap-1">
           {quest.variants.map((variant) => {
             const isActive = activeVariants.some((v) => v.id === variant.id);
@@ -330,6 +407,7 @@ export const QuestNodeCard = memo(({ id, data, selected }: QuestNodeCardProps) =
       )}
 
       {/* Dynamic Multi-Port Reward Rows / Test Table */}
+      {!isCollapsed && (
       <div className="p-2 space-y-1.5">
         {quest.testConfig ? (
           <div className="flex items-center justify-between text-[10px] font-bold text-amber-300 uppercase tracking-wider px-1 pb-1 mb-1 border-b border-amber-900/40">
@@ -577,6 +655,7 @@ export const QuestNodeCard = memo(({ id, data, selected }: QuestNodeCardProps) =
           );
         })}
       </div>
+      )}
     </div>
   );
 }, areQuestNodePropsEqual);

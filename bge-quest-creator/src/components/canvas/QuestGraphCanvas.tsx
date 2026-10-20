@@ -31,6 +31,7 @@ import {
   getMeasuredNodeSizes
 } from '../../store/useCampaignStore';
 import { evaluateCampaignSimulation } from '../../utils/simulatorEngine';
+import { evaluateCampaignLinter, CampaignLintIssue, CampaignLintReport } from '../../utils/campaignLinter';
 import { computeSmartEdgeRoutes } from '../../utils/obstacleRouter';
 import { estimateNodeHeight, DEFAULT_NODE_WIDTH } from '../../utils/layoutEngine';
 import { CampaignEdge, EdgeRelationType, QuestModel, QuestVariantOverride } from '../../types/campaign';
@@ -47,6 +48,7 @@ const edgeTypes: EdgeTypes = {
 };
 
 const EMPTY_VARIANTS: QuestVariantOverride[] = [];
+const EMPTY_LINT_ISSUES: CampaignLintIssue[] = [];
 
 /**
  * Computes a lightweight signature of simulation-relevant state (ignoring node positions and edge waypoints)
@@ -65,9 +67,13 @@ function buildSimulationSignature(
   const qPart = Object.values(quests)
     .map(
       (q) =>
-        `${q.uid}:${q.prereqLogic}:${q.requiredTag || ''}:${q.timeAdvance || 0}:${
+        `${q.uid}:${q.act || 1}:${q.tier}:${q.prereqLogic}:${q.requiredTag || ''}:${q.timeAdvance || 0}:${
           q.isExplorationStage ? 1 : 0
-        }:${q.rewardOutcomes.map((r) => `${r.id}:${r.grantsStateTags.join(',')}:${r.timeAdvance || 0}`).join(';')}:${q.variants
+        }:${q.explorationConfig?.scenarioEndQuestId || ''}:${(q.explorationConfig?.eventSlots || [])
+          .map((slot) => `${slot.slotNumber}:${slot.grantsStateTag || ''}:${slot.targetQuestId || ''}`)
+          .join(',')}:${q.rewardOutcomes
+          .map((r) => `${r.id}:${r.isExclusiveChoice ? 1 : 0}:${r.grantsStateTags.join(',')}:${r.timeAdvance || 0}`)
+          .join(';')}:${q.variants
           .map((v) => `${v.id}:${v.requiredStateTag}`)
           .join(';')}`
     )
@@ -148,6 +154,17 @@ export const QuestGraphCanvas: React.FC = () => {
     return evaluated;
   }, [simSignature, quests, edges, simulator]);
 
+  const lintReportRef = useRef<{ sig: string; value: CampaignLintReport } | null>(null);
+  const lintReport = useMemo(() => {
+    const lintSig = `${simSignature}#act:${activeActId}`;
+    if (lintReportRef.current && lintReportRef.current.sig === lintSig) {
+      return lintReportRef.current.value;
+    }
+    const evaluated = evaluateCampaignLinter(quests, edges, activeActId);
+    lintReportRef.current = { sig: lintSig, value: evaluated };
+    return evaluated;
+  }, [simSignature, quests, edges, activeActId]);
+
   // Cache per-node data objects so unchanged QuestNodeCards keep strict referential equality
   const nodeDataCacheRef = useRef<Record<string, QuestNodeCardData>>({});
 
@@ -168,6 +185,7 @@ export const QuestGraphCanvas: React.FC = () => {
         const existingNode = prevMap.get(quest.uid);
         const status = simState.questStatuses[quest.uid] || 'AVAILABLE';
         const activeVariants = simState.activeVariantsByQuest[quest.uid] || EMPTY_VARIANTS;
+        const lintIssues = lintReport.issuesByQuest[quest.uid] || EMPTY_LINT_ISSUES;
 
         const prevData = nodeDataCacheRef.current[quest.uid];
         let nodeData: QuestNodeCardData;
@@ -177,7 +195,8 @@ export const QuestGraphCanvas: React.FC = () => {
           prevData.status === status &&
           prevData.activeVariants === activeVariants &&
           prevData.activeRewardChoices === simulator.activeRewardChoices &&
-          prevData.activeStateTags === simState.activeStateTags
+          prevData.activeStateTags === simState.activeStateTags &&
+          prevData.lintIssues === lintIssues
         ) {
           nodeData = prevData;
         } else {
@@ -186,7 +205,8 @@ export const QuestGraphCanvas: React.FC = () => {
             status,
             activeVariants,
             activeRewardChoices: simulator.activeRewardChoices,
-            activeStateTags: simState.activeStateTags
+            activeStateTags: simState.activeStateTags,
+            lintIssues
           };
           nodeDataCacheRef.current[quest.uid] = nodeData;
         }
@@ -222,7 +242,7 @@ export const QuestGraphCanvas: React.FC = () => {
 
       return nextNodes;
     });
-  }, [quests, selectedQuestId, simState, simulator.activeRewardChoices, activeActId]);
+  }, [quests, selectedQuestId, simState, lintReport, simulator.activeRewardChoices, activeActId]);
 
   // Whenever auto-layout completes (layoutVersion increments), refresh node handle internals and fitView
   const prevLayoutVersionRef = useRef(layoutVersion);
@@ -677,7 +697,7 @@ export const QuestGraphCanvas: React.FC = () => {
             tiers={tiers.length > 0 ? tiers : [1, 2, 3]}
             onAddQuestInTier={handleAddQuestInTier}
           />
-          <CanvasGraphToolbar />
+          <CanvasGraphToolbar lintReport={lintReport} />
         </div>
         <ExplorationHudPill />
       </div>
