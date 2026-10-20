@@ -146,20 +146,69 @@ export function createDefaultDragonEclipseTestConfig(testName: string = 'Skill T
   };
 }
 
-export function syncTestOutcomesToRewardOutcomes(testConfig: DragonEclipseTestConfig): RewardOutcome[] {
-  return testConfig.outcomes.map((o) => ({
-    id: o.id,
-    label: `[${o.rangeLabel}] ${o.title}`,
-    isExclusiveChoice: true,
-    gold: o.gold || 0,
-    damage: o.damage || 0,
-    fatigue: o.fatigue || 0,
-    energy: o.energy || 0,
-    essence: o.essence || 0,
-    items: o.items || [],
-    grantsStateTags: o.grantsStateTags || [],
-    timeAdvance: o.timeAdvance || 0
-  }));
+export function syncTestOutcomesToRewardOutcomes(
+  testConfig: DragonEclipseTestConfig,
+  existingRewards: RewardOutcome[] = []
+): RewardOutcome[] {
+  const existingMap = new Map(existingRewards.map((r) => [r.id, r]));
+  return testConfig.outcomes.map((o) => {
+    const existing = existingMap.get(o.id);
+    return {
+      id: o.id,
+      label: `[${o.rangeLabel}] ${o.title}`,
+      isExclusiveChoice: true,
+      gold: o.gold !== undefined ? o.gold : (existing?.gold ?? 0),
+      damage: o.damage !== undefined ? o.damage : (existing?.damage ?? 0),
+      fatigue: o.fatigue !== undefined ? o.fatigue : (existing?.fatigue ?? 0),
+      energy: o.energy !== undefined ? o.energy : (existing?.energy ?? 0),
+      essence: o.essence !== undefined ? o.essence : (existing?.essence ?? 0),
+      items: o.items !== undefined ? o.items : (existing?.items ?? []),
+      grantsStateTags: o.grantsStateTags !== undefined ? o.grantsStateTags : (existing?.grantsStateTags ?? []),
+      timeAdvance: o.timeAdvance !== undefined ? o.timeAdvance : (existing?.timeAdvance ?? 0),
+      customResources: existing?.customResources
+    };
+  });
+}
+
+export function syncRewardOutcomeToTestOutcome(
+  testConfig: DragonEclipseTestConfig,
+  rewardId: string,
+  partialReward: Partial<RewardOutcome>
+): DragonEclipseTestConfig {
+  const matchingOutcome = testConfig.outcomes.find((o) => o.id === rewardId);
+  if (!matchingOutcome) return testConfig;
+
+  let newTitle = matchingOutcome.title;
+  let newRange = matchingOutcome.rangeLabel;
+  if (partialReward.label !== undefined) {
+    const match = partialReward.label.match(/^\[(.*?)\]\s*(.*)$/);
+    if (match) {
+      newRange = match[1];
+      newTitle = match[2];
+    } else {
+      newTitle = partialReward.label;
+    }
+  }
+
+  return {
+    ...testConfig,
+    outcomes: testConfig.outcomes.map((o) => {
+      if (o.id !== rewardId) return o;
+      return {
+        ...o,
+        title: newTitle,
+        rangeLabel: newRange,
+        gold: partialReward.gold !== undefined ? partialReward.gold : o.gold,
+        damage: partialReward.damage !== undefined ? partialReward.damage : o.damage,
+        fatigue: partialReward.fatigue !== undefined ? partialReward.fatigue : o.fatigue,
+        energy: partialReward.energy !== undefined ? partialReward.energy : o.energy,
+        essence: partialReward.essence !== undefined ? partialReward.essence : o.essence,
+        items: partialReward.items !== undefined ? partialReward.items : o.items,
+        grantsStateTags: partialReward.grantsStateTags !== undefined ? partialReward.grantsStateTags : o.grantsStateTags,
+        timeAdvance: partialReward.timeAdvance !== undefined ? partialReward.timeAdvance : o.timeAdvance
+      };
+    })
+  };
 }
 
 export interface DragonEclipseEventSlot {

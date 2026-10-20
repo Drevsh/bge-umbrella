@@ -11,7 +11,8 @@ import {
   QuestVariantOverride,
   QuestAudioTrack,
   EdgeRoutingStyle,
-  EdgeRelationType
+  EdgeRelationType,
+  syncRewardOutcomeToTestOutcome
 } from '../types/campaign';
 import {
   DEFAULT_CAMPAIGN_METADATA,
@@ -875,6 +876,12 @@ export const useCampaignStore = create<CampaignStoreState>()(
             r.id === rewardId ? { ...r, ...partial } : r
           );
 
+          // Bidirectional sync: if this quest has a Dragon Eclipse Test Table, update the matching test outcome
+          let updatedTestConfig = quest.testConfig;
+          if (quest.testConfig && quest.testConfig.outcomes.some((o) => o.id === rewardId)) {
+            updatedTestConfig = syncRewardOutcomeToTestOutcome(quest.testConfig, rewardId, partial);
+          }
+
           // Auto-sync connected edges
           const updatedEdges = state.edges.map((e) => {
             if (e.source === questUid && e.sourcePortId === rewardId) {
@@ -897,7 +904,8 @@ export const useCampaignStore = create<CampaignStoreState>()(
               ...state.quests,
               [questUid]: {
                 ...quest,
-                rewardOutcomes: updatedRewards
+                rewardOutcomes: updatedRewards,
+                testConfig: updatedTestConfig
               }
             },
             edges: updatedEdges
@@ -936,12 +944,22 @@ export const useCampaignStore = create<CampaignStoreState>()(
         set((state) => {
           const quest = state.quests[questUid];
           if (!quest) return state;
+
+          let updatedTestConfig = quest.testConfig;
+          if (quest.testConfig && quest.testConfig.outcomes.some((o) => o.id === rewardId)) {
+            updatedTestConfig = {
+              ...quest.testConfig,
+              outcomes: quest.testConfig.outcomes.filter((o) => o.id !== rewardId)
+            };
+          }
+
           return {
             quests: {
               ...state.quests,
               [questUid]: {
                 ...quest,
-                rewardOutcomes: quest.rewardOutcomes.filter((r) => r.id !== rewardId)
+                rewardOutcomes: quest.rewardOutcomes.filter((r) => r.id !== rewardId),
+                testConfig: updatedTestConfig
               }
             },
             edges: state.edges.filter(

@@ -24,6 +24,9 @@ export const ExplorationHudPill: React.FC = () => {
   const adjustSimulatorTime = useCampaignStore((s) => s.adjustSimulatorTime);
   const selectQuest = useCampaignStore((s) => s.selectQuest);
   const activeGameProfile = useCampaignStore((s) => s.activeGameProfile);
+  const activeActId = useCampaignStore((s) => s.activeActId);
+  const acts = useCampaignStore((s) => s.acts);
+  const setActiveActId = useCampaignStore((s) => s.setActiveActId);
 
   const [isExpanded, setIsExpanded] = useState(false);
   const pillRef = useRef<HTMLElement | null>(null);
@@ -53,7 +56,7 @@ export const ExplorationHudPill: React.FC = () => {
     const qPart = Object.values(quests)
       .map(
         (q) =>
-          `${q.uid}:${q.prereqLogic}:${q.requiredTag || ''}:${q.timeAdvance || 0}:${
+          `${q.uid}:${q.act || 1}:${q.prereqLogic}:${q.requiredTag || ''}:${q.timeAdvance || 0}:${
             q.isExplorationStage ? 1 : 0
           }:${q.rewardOutcomes.map((r) => `${r.id}:${r.grantsStateTags.join(',')}:${r.timeAdvance || 0}`).join(';')}`
       )
@@ -63,9 +66,9 @@ export const ExplorationHudPill: React.FC = () => {
       .join('|');
     const sPart = `${simulator.activeRewardChoices.join(',')}|${simulator.completedQuestIds.join(
       ','
-    )}|${simulator.customTags.join(',')}|${simulator.manualTimeOffset || 0}`;
+    )}|${simulator.customTags.join(',')}|${simulator.manualTimeOffset || 0}|${activeActId}`;
     return `${qPart}#${ePart}#${sPart}`;
-  }, [quests, edges, simulator]);
+  }, [quests, edges, simulator, activeActId]);
 
   const simCacheRef = React.useRef<{ sig: string; value: SimulationEvaluation } | null>(null);
 
@@ -80,15 +83,18 @@ export const ExplorationHudPill: React.FC = () => {
       simulator.activeRewardChoices,
       simulator.completedQuestIds,
       simulator.customTags,
-      simulator.manualTimeOffset || 0
+      simulator.manualTimeOffset || 0,
+      activeActId
     );
     simCacheRef.current = { sig: simSignature, value: evaluated };
     return evaluated;
-  }, [simSignature, quests, edges, simulator]);
+  }, [simSignature, quests, edges, simulator, activeActId]);
 
-  // Check if any quest has exploration or Dragon Eclipse
+  // Check if any quest in the active view has exploration or Dragon Eclipse
   const explorationQuests = Object.values(quests).filter(
-    (q) => q.isExplorationStage || q.category === 'EXPLORATION' || q.explorationConfig
+    (q) =>
+      (activeActId === 'ALL' || (q.act || 1) === activeActId) &&
+      (q.isExplorationStage || q.category === 'EXPLORATION' || q.explorationConfig)
   );
 
   const isDragonEclipse = activeGameProfile.id === 'dragon-eclipse';
@@ -109,7 +115,7 @@ export const ExplorationHudPill: React.FC = () => {
     ? 'text-amber-400 bg-amber-950/80 border-amber-500/60 ring-amber-500/30'
     : 'text-teal-400 bg-teal-950/80 border-teal-500/50 ring-teal-500/20';
 
-  // Aggregate event slots from active exploration config or defaults
+  // Aggregate event slots scoped to the active Act's exploration quests
   const eventSlots: DragonEclipseEventSlot[] = [];
   explorationQuests.forEach((q) => {
     if (q.explorationConfig?.eventSlots) {
@@ -155,8 +161,10 @@ export const ExplorationHudPill: React.FC = () => {
             <span className={`p-1 rounded-lg border ${statusColor}`}>
               <Compass className="w-3.5 h-3.5" />
             </span>
-            <span className="font-semibold text-slate-200 hidden xl:inline text-[11px] uppercase tracking-wider">
-              Exploration
+            <span className="font-semibold text-slate-200 text-[11px] uppercase tracking-wider">
+              {activeActId !== 'ALL'
+                ? `${activeGameProfile.terminology?.actTerm || 'Chapter'} ${activeActId}`
+                : 'Exploration'}
             </span>
           </div>
 
@@ -290,6 +298,30 @@ export const ExplorationHudPill: React.FC = () => {
       {/* Floating Audit Trail Popover (Does not stretch the pill bar) */}
       {isExpanded && (
         <div className="absolute left-0 sm:left-auto sm:right-0 top-full mt-2 w-[min(92vw,340px)] p-3 bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 rounded-2xl shadow-2xl space-y-2.5 max-h-64 overflow-y-auto animate-in fade-in zoom-in-95 duration-150 text-xs z-50">
+          {/* Chapter Quick Switcher */}
+          {acts.length > 1 && (
+            <div className="flex items-center justify-between pb-1.5 border-b border-slate-800">
+              <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                Viewing Chapter:
+              </span>
+              <div className="flex items-center gap-1">
+                {acts.map((a) => (
+                  <button
+                    key={a.id}
+                    type="button"
+                    onClick={() => setActiveActId(a.id)}
+                    className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-medium transition-colors ${
+                      activeActId === a.id
+                        ? 'bg-teal-600 text-white font-bold'
+                        : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    Ch. {a.id}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           {scenarioEndTriggered && (
             <div className="p-2 rounded-lg bg-rose-950/60 border border-rose-800/60 text-rose-200 text-[11px] flex items-center justify-between gap-2">
               <span className="flex items-center gap-1.5 font-semibold">

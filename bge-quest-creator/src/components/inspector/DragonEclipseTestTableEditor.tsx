@@ -69,7 +69,7 @@ export const DragonEclipseTestTableEditor: React.FC<DragonEclipseTestTableEditor
   }, [testConfig.outcomes, totalScore, drawnCards.length]);
 
   const handleUpdateConfig = (newConfig: DragonEclipseTestConfig) => {
-    const updatedRewards = syncTestOutcomesToRewardOutcomes(newConfig);
+    const updatedRewards = syncTestOutcomesToRewardOutcomes(newConfig, quest.rewardOutcomes);
     updateQuestField(quest.uid, 'testConfig', newConfig);
     updateQuestField(quest.uid, 'rewardOutcomes', updatedRewards);
   };
@@ -403,6 +403,28 @@ export const DragonEclipseTestTableEditor: React.FC<DragonEclipseTestTableEditor
                     }}
                     onChange={(partial) => handleUpdateOutcome(idx, partial)}
                   />
+
+                  <div>
+                    <label className="block text-[10px] font-medium text-slate-400 mb-0.5">
+                      Items (comma-separated)
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <Package className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                      <input
+                        type="text"
+                        value={(outcome.items || []).join(', ')}
+                        onChange={(e) => {
+                          const items = e.target.value
+                            .split(',')
+                            .map((item) => item.trim())
+                            .filter(Boolean);
+                          handleUpdateOutcome(idx, { items });
+                        }}
+                        placeholder="e.g. Ancient Compass, Healing Herb"
+                        className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-amber-500"
+                      />
+                    </div>
+                  </div>
 
                   <div>
                     <div className="flex items-center justify-between mb-0.5">

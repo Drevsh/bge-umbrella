@@ -21,6 +21,18 @@ export interface TriggeredEventSlot {
   targetQuestId?: string;
 }
 
+export interface ActTimeTrackState {
+  actId: number;
+  timeLimit: number;
+  timeConsumed: number;
+  timeRemaining: number;
+  timeContributors: TimeTrackContributor[];
+  triggeredEventSlots: TriggeredEventSlot[];
+  scenarioEndTriggered: boolean;
+  scenarioEndQuestUid?: string;
+  autoLockoutStageOnEnd: boolean;
+}
+
 export interface EvaluatedCampaignState {
   activeStateTags: Set<string>;
   questStatuses: Record<string, QuestSimStatus>;
@@ -35,6 +47,7 @@ export interface EvaluatedCampaignState {
   triggeredEventSlots: TriggeredEventSlot[];
   scenarioEndTriggered: boolean;
   scenarioEndQuestUid?: string;
+  timeTrackByAct: Record<number, ActTimeTrackState>;
 }
 
 export function evaluateCampaignSimulation(
@@ -43,52 +56,14 @@ export function evaluateCampaignSimulation(
   selectedRewardOutcomeIds: string[],
   completedQuestIds: string[],
   customTags: string[] = [],
-  manualTimeOffset: number = 0
+  manualTimeOffset: number = 0,
+  targetActId: number | 'ALL' = 'ALL'
 ): EvaluatedCampaignState {
   const activeTags = new Set<string>(customTags);
   const completedSet = new Set<string>(completedQuestIds);
   const selectedRewardsSet = new Set<string>(selectedRewardOutcomeIds);
-  const timeContributors: TimeTrackContributor[] = [];
 
-  // Determine track time limit from exploration configs or default to 8
-  let timeLimit = 8;
-  let scenarioEndQuestUid: string | undefined = undefined;
-  let autoLockoutStageOnEnd = true;
-
-  Object.values(quests).forEach((q) => {
-    if (q.explorationConfig) {
-      if (q.explorationConfig.trackLength && q.explorationConfig.trackLength > timeLimit) {
-        timeLimit = q.explorationConfig.trackLength;
-      }
-      if (q.explorationConfig.scenarioEndQuestId) {
-        scenarioEndQuestUid = q.explorationConfig.scenarioEndQuestId;
-      }
-      if (q.explorationConfig.autoLockoutStageOnEnd !== undefined) {
-        autoLockoutStageOnEnd = q.explorationConfig.autoLockoutStageOnEnd;
-      }
-    }
-  });
-
-  // Calculate consumed time
-  let timeConsumed = manualTimeOffset;
-
-  // 1. Time from completed quests base duration
-  completedSet.forEach((uid) => {
-    const q = quests[uid];
-    if (q && q.timeAdvance && q.timeAdvance > 0) {
-      timeConsumed += q.timeAdvance;
-      timeContributors.push({
-        questUid: q.uid,
-        questCode: q.code,
-        questTitle: q.title,
-        source: 'QUEST',
-        label: 'Base Exploration Cost',
-        amount: q.timeAdvance
-      });
-    }
-  });
-
-  // 2. Accumulate state tags & time from reward outcomes on completed quests / selected choices
+  // 1. Accumulate state tags from reward outcomes across all completed quests / selected choices
   Object.values(quests).forEach((quest) => {
     quest.rewardOutcomes.forEach((reward) => {
       if (
@@ -96,81 +71,184 @@ export function evaluateCampaignSimulation(
         (!reward.isExclusiveChoice && completedSet.has(quest.uid))
       ) {
         reward.grantsStateTags.forEach((tag) => activeTags.add(tag));
+      }
+    });
+  });
 
-        if (reward.timeAdvance && reward.timeAdvance > 0) {
-          timeConsumed += reward.timeAdvance;
-          timeContributors.push({
-            questUid: quest.uid,
-            questCode: quest.code,
-            questTitle: quest.title,
+  // 2. Identify all Acts present in the campaign
+  const allQuestsList = Object.values(quests);
+  const actsPresentSet = new Set<number>();
+  allQuestsList.forEach((q) => actsPresentSet.add(q.act || 1));
+  const actsPresent = Array.from(actsPresentSet).sort((a, b) => a - b);
+  if (actsPresent.length === 0) actsPresent.push(1);
+
+  // 3. Compute independent Time Tracks per Act/Chapter
+  const timeTrackByAct: Record<number, ActTimeTrackState> = {};
+  const timeTriggeredQuestUids = new Set<string>();
+
+  actsPresent.forEach((actId) => {
+    const actQuests = allQuestsList.filter((q) => (q.act || 1) === actId);
+
+    let actTimeLimit = 8;
+    let actScenarioEndQuestUid: string | undefined = undefined;
+    let actAutoLockout = true;
+
+    actQuests.forEach((q) => {
+      if (q.explorationConfig) {
+        if (q.explorationConfig.trackLength && q.explorationConfig.trackLength > actTimeLimit) {
+          actTimeLimit = q.explorationConfig.trackLength;
+        }
+        if (q.explorationConfig.scenarioEndQuestId) {
+          actScenarioEndQuestUid = q.explorationConfig.scenarioEndQuestId;
+        }
+        if (q.explorationConfig.autoLockoutStageOnEnd !== undefined) {
+          actAutoLockout = q.explorationConfig.autoLockoutStageOnEnd;
+        }
+      }
+    });
+
+    // Time consumed in this specific Act (manualTimeOffset applies to target Act or first Act)
+    const isTargetedAct = targetActId === actId || (targetActId === 'ALL' && actId === actsPresent[0]);
+    let actTimeConsumed = isTargetedAct ? manualTimeOffset : 0;
+    const actTimeContributors: TimeTrackContributor[] = [];
+
+    // Base time costs and choice time advances from quests in THIS Act only
+    actQuests.forEach((q) => {
+      if (completedSet.has(q.uid) && q.timeAdvance && q.timeAdvance > 0) {
+        actTimeConsumed += q.timeAdvance;
+        actTimeContributors.push({
+          questUid: q.uid,
+          questCode: q.code,
+          questTitle: q.title,
+          source: 'QUEST',
+          label: 'Base Exploration Cost',
+          amount: q.timeAdvance
+        });
+      }
+
+      q.rewardOutcomes.forEach((reward) => {
+        if (
+          (selectedRewardsSet.has(reward.id) || (!reward.isExclusiveChoice && completedSet.has(q.uid))) &&
+          reward.timeAdvance &&
+          reward.timeAdvance > 0
+        ) {
+          actTimeConsumed += reward.timeAdvance;
+          actTimeContributors.push({
+            questUid: q.uid,
+            questCode: q.code,
+            questTitle: q.title,
             source: 'CHOICE',
             label: reward.label,
             amount: reward.timeAdvance
           });
         }
-      }
+      });
     });
-  });
 
-  // Countdown time remaining
-  const timeRemaining = Math.max(0, timeLimit - timeConsumed);
+    const actTimeRemaining = Math.max(0, actTimeLimit - actTimeConsumed);
+    const actTriggeredEventSlots: TriggeredEventSlot[] = [];
+    const seenEventKeys = new Set<string>();
 
-  // 3. Evaluate Triggered Event Slots from exploration quests
-  const triggeredEventSlots: TriggeredEventSlot[] = [];
-  const timeTriggeredQuestUids = new Set<string>();
-  const seenEventKeys = new Set<string>();
+    actQuests.forEach((quest) => {
+      if (quest.explorationConfig?.eventSlots) {
+        quest.explorationConfig.eventSlots.forEach((slot) => {
+          const threshold =
+            slot.triggerAtRemaining !== undefined
+              ? slot.triggerAtRemaining
+              : Math.max(0, actTimeLimit - slot.slotNumber);
+          const isTriggered = actTimeRemaining <= threshold;
 
-  Object.values(quests).forEach((quest) => {
-    if (quest.explorationConfig?.eventSlots) {
-      quest.explorationConfig.eventSlots.forEach((slot) => {
-        // Triggers if timeRemaining <= triggerAtRemaining (or if legacy slotNumber passed)
-        const threshold = slot.triggerAtRemaining !== undefined ? slot.triggerAtRemaining : Math.max(0, timeLimit - slot.slotNumber);
-        const isTriggered = timeRemaining <= threshold;
-
-        if (isTriggered) {
-          const key = `${quest.code}_slot_${slot.slotNumber}`;
-          if (!seenEventKeys.has(key)) {
-            seenEventKeys.add(key);
-            triggeredEventSlots.push({
-              slotNumber: slot.slotNumber,
-              triggerAtRemaining: threshold,
-              title: slot.title,
-              description: slot.description,
-              questCode: quest.code,
-              grantsStateTag: slot.grantsStateTag,
-              targetQuestId: slot.targetQuestId
-            });
-            if (slot.grantsStateTag) {
-              activeTags.add(slot.grantsStateTag);
-            }
-            if (slot.targetQuestId) {
-              timeTriggeredQuestUids.add(slot.targetQuestId);
+          if (isTriggered) {
+            const key = `${quest.code}_slot_${slot.slotNumber}`;
+            if (!seenEventKeys.has(key)) {
+              seenEventKeys.add(key);
+              actTriggeredEventSlots.push({
+                slotNumber: slot.slotNumber,
+                triggerAtRemaining: threshold,
+                title: slot.title,
+                description: slot.description,
+                questCode: quest.code,
+                grantsStateTag: slot.grantsStateTag,
+                targetQuestId: slot.targetQuestId
+              });
+              if (slot.grantsStateTag) {
+                activeTags.add(slot.grantsStateTag);
+              }
+              if (slot.targetQuestId) {
+                timeTriggeredQuestUids.add(slot.targetQuestId);
+              }
             }
           }
-        }
-      });
-    }
-  });
-
-  // Check TIME_TRIGGER and TIME_EXPIRED edges
-  edges.forEach((edge) => {
-    if (edge.type === 'TIME_EXPIRED' && timeRemaining <= 0) {
-      timeTriggeredQuestUids.add(edge.target);
-      if (!scenarioEndQuestUid) scenarioEndQuestUid = edge.target;
-    } else if (edge.type === 'TIME_TRIGGER') {
-      // Look for custom threshold in edge label e.g. "≤4" or default to trigger
-      const match = edge.label?.match(/<=?(\d+)/);
-      const thresh = match ? parseInt(match[1], 10) : 0;
-      if (timeRemaining <= thresh) {
-        timeTriggeredQuestUids.add(edge.target);
+        });
       }
-    }
+    });
+
+    // Check Act-specific TIME_EXPIRED and TIME_TRIGGER edges
+    edges.forEach((edge) => {
+      const srcQuest = quests[edge.source];
+      const tgtQuest = quests[edge.target];
+      const edgeAct = srcQuest?.act || tgtQuest?.act || 1;
+      if (edgeAct === actId) {
+        if (edge.type === 'TIME_EXPIRED' && actTimeRemaining <= 0) {
+          timeTriggeredQuestUids.add(edge.target);
+          if (!actScenarioEndQuestUid) actScenarioEndQuestUid = edge.target;
+        } else if (edge.type === 'TIME_TRIGGER') {
+          const match = edge.label?.match(/<=?(\d+)/);
+          const thresh = match ? parseInt(match[1], 10) : 0;
+          if (actTimeRemaining <= thresh) {
+            timeTriggeredQuestUids.add(edge.target);
+          }
+        }
+      }
+    });
+
+    const isTimeRanOut = actTimeRemaining <= 0;
+    const isScenarioEndCompleted = Boolean(
+      actScenarioEndQuestUid && completedSet.has(actScenarioEndQuestUid)
+    );
+    const actScenarioEndTriggered =
+      isTimeRanOut ||
+      isScenarioEndCompleted ||
+      (actScenarioEndQuestUid ? timeTriggeredQuestUids.has(actScenarioEndQuestUid) : false);
+
+    timeTrackByAct[actId] = {
+      actId,
+      timeLimit: actTimeLimit,
+      timeConsumed: actTimeConsumed,
+      timeRemaining: actTimeRemaining,
+      timeContributors: actTimeContributors,
+      triggeredEventSlots: actTriggeredEventSlots,
+      scenarioEndTriggered: actScenarioEndTriggered,
+      scenarioEndQuestUid: actScenarioEndQuestUid,
+      autoLockoutStageOnEnd: actAutoLockout
+    };
   });
 
-  // Check if scenario end is triggered
-  const isTimeRanOut = timeRemaining <= 0;
-  const isScenarioEndCompleted = Boolean(scenarioEndQuestUid && completedSet.has(scenarioEndQuestUid));
-  const scenarioEndTriggered = isTimeRanOut || isScenarioEndCompleted || (scenarioEndQuestUid ? timeTriggeredQuestUids.has(scenarioEndQuestUid) : false);
+  // Determine which Act's metrics to surface at the root for HUD & backward compatibility
+  let focusedActId = actsPresent[0] || 1;
+  if (typeof targetActId === 'number' && timeTrackByAct[targetActId]) {
+    focusedActId = targetActId;
+  } else {
+    const actWithExploration = actsPresent.find((act) =>
+      allQuestsList.some(
+        (q) =>
+          (q.act || 1) === act &&
+          (q.isExplorationStage || q.category === 'EXPLORATION' || q.explorationConfig)
+      )
+    );
+    if (actWithExploration) focusedActId = actWithExploration;
+  }
+
+  const focusedTrack = timeTrackByAct[focusedActId] || {
+    actId: focusedActId,
+    timeLimit: 8,
+    timeConsumed: 0,
+    timeRemaining: 8,
+    timeContributors: [],
+    triggeredEventSlots: [],
+    scenarioEndTriggered: false,
+    autoLockoutStageOnEnd: true
+  };
 
   // 4. Identify Lockouts
   const lockedOutQuests = new Set<string>();
@@ -187,18 +265,24 @@ export function evaluateCampaignSimulation(
       }
     });
 
-  // B. Automatic Stage Lockout when Scenario Ends
-  if (scenarioEndTriggered && autoLockoutStageOnEnd) {
-    Object.values(quests).forEach((q) => {
-      // If it's an exploration quest, not completed, and not the scenario end quest itself
-      const isExplorationTask = q.isExplorationStage || q.category === 'EXPLORATION';
-      const isScenarioEndNode = q.uid === scenarioEndQuestUid || timeTriggeredQuestUids.has(q.uid) || q.category === 'BOSS';
+  // B. Automatic Stage Lockout when Scenario Ends (Scoped strictly per Act!)
+  actsPresent.forEach((actId) => {
+    const actTrack = timeTrackByAct[actId];
+    if (actTrack && actTrack.scenarioEndTriggered && actTrack.autoLockoutStageOnEnd) {
+      const actQuests = allQuestsList.filter((q) => (q.act || 1) === actId);
+      actQuests.forEach((q) => {
+        const isExplorationTask = q.isExplorationStage || q.category === 'EXPLORATION';
+        const isScenarioEndNode =
+          q.uid === actTrack.scenarioEndQuestUid ||
+          timeTriggeredQuestUids.has(q.uid) ||
+          q.category === 'BOSS';
 
-      if (isExplorationTask && !isScenarioEndNode && !completedSet.has(q.uid)) {
-        lockedOutQuests.add(q.uid);
-      }
-    });
-  }
+        if (isExplorationTask && !isScenarioEndNode && !completedSet.has(q.uid)) {
+          lockedOutQuests.add(q.uid);
+        }
+      });
+    }
+  });
 
   // 5. Evaluate quest statuses
   const questStatuses: Record<string, QuestSimStatus> = {};
@@ -244,13 +328,17 @@ export function evaluateCampaignSimulation(
     }
 
     const isPrereqSatisfied = (edge: CampaignEdge): boolean => {
+      const srcQuest = quests[edge.source];
+      const edgeAct = srcQuest?.act || quest.act || 1;
+      const actTimeRemaining = timeTrackByAct[edgeAct]?.timeRemaining ?? focusedTrack.timeRemaining;
+
       if (edge.type === 'TIME_EXPIRED') {
-        return timeRemaining <= 0;
+        return actTimeRemaining <= 0;
       }
       if (edge.type === 'TIME_TRIGGER') {
         const match = edge.label?.match(/<=?(\d+)/);
         const thresh = match ? parseInt(match[1], 10) : 0;
-        return timeRemaining <= thresh;
+        return actTimeRemaining <= thresh;
       }
 
       const sourceCompleted = completedSet.has(edge.source);
@@ -289,6 +377,11 @@ export function evaluateCampaignSimulation(
   // 7. Active Edges for visual glow / animated particles
   const activeEdgeIds = new Set<string>();
   edges.forEach((edge) => {
+    const srcQuest = quests[edge.source];
+    const tgtQuest = quests[edge.target];
+    const edgeAct = srcQuest?.act || tgtQuest?.act || 1;
+    const edgeActTimeRemaining = timeTrackByAct[edgeAct]?.timeRemaining ?? focusedTrack.timeRemaining;
+
     if (edge.type === 'MUTATION') {
       if (edge.stateTag && activeTags.has(edge.stateTag)) {
         activeEdgeIds.add(edge.id);
@@ -298,13 +391,13 @@ export function evaluateCampaignSimulation(
         activeEdgeIds.add(edge.id);
       }
     } else if (edge.type === 'TIME_EXPIRED') {
-      if (timeRemaining <= 0) {
+      if (edgeActTimeRemaining <= 0) {
         activeEdgeIds.add(edge.id);
       }
     } else if (edge.type === 'TIME_TRIGGER') {
       const match = edge.label?.match(/<=?(\d+)/);
       const thresh = match ? parseInt(match[1], 10) : 0;
-      if (timeRemaining <= thresh) {
+      if (edgeActTimeRemaining <= thresh) {
         activeEdgeIds.add(edge.id);
       }
     } else {
@@ -323,13 +416,14 @@ export function evaluateCampaignSimulation(
     activeVariantsByQuest,
     activeEdgeIds,
     lockedOutQuests,
-    timeConsumed,
-    timeLimit,
-    timeRemaining,
-    totalTimeElapsed: timeConsumed,
-    timeContributors,
-    triggeredEventSlots,
-    scenarioEndTriggered,
-    scenarioEndQuestUid
+    timeConsumed: focusedTrack.timeConsumed,
+    timeLimit: focusedTrack.timeLimit,
+    timeRemaining: focusedTrack.timeRemaining,
+    totalTimeElapsed: focusedTrack.timeConsumed,
+    timeContributors: focusedTrack.timeContributors,
+    triggeredEventSlots: focusedTrack.triggeredEventSlots,
+    scenarioEndTriggered: focusedTrack.scenarioEndTriggered,
+    scenarioEndQuestUid: focusedTrack.scenarioEndQuestUid,
+    timeTrackByAct
   };
 }

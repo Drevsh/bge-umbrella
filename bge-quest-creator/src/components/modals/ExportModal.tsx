@@ -24,6 +24,8 @@ export const ExportModal: React.FC = () => {
   const activeMetadata = useCampaignStore((s) => s.activeMetadata);
   const quests = useCampaignStore((s) => s.quests);
   const edges = useCampaignStore((s) => s.edges);
+  const acts = useCampaignStore((s) => s.acts);
+  const activeGameProfile = useCampaignStore((s) => s.activeGameProfile);
   const importCampaign = useCampaignStore((s) => s.importCampaign);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -35,7 +37,7 @@ export const ExportModal: React.FC = () => {
   };
 
   const handleExportJson = () => {
-    const project = exportCampaignProject(activeMetadata, quests, edges);
+    const project = exportCampaignProject(activeMetadata, quests, edges, acts, activeGameProfile.id);
     const filename = `${activeMetadata.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}_campaign.json`;
     downloadJsonFile(filename, project);
   };

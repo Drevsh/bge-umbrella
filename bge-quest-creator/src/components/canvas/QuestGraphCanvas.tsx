@@ -133,8 +133,8 @@ export const QuestGraphCanvas: React.FC = () => {
 
   // Evaluate simulation state ONLY when simulation-relevant fields change (ignores position/waypoint drags)
   const simSignature = useMemo(
-    () => buildSimulationSignature(quests, edges, simulator),
-    [quests, edges, simulator]
+    () => `${buildSimulationSignature(quests, edges, simulator)}#activeAct:${activeActId}`,
+    [quests, edges, simulator, activeActId]
   );
 
   const simStateRef = useRef<{ sig: string; value: SimulationEvaluation } | null>(null);
@@ -148,11 +148,12 @@ export const QuestGraphCanvas: React.FC = () => {
       simulator.activeRewardChoices,
       simulator.completedQuestIds,
       simulator.customTags,
-      simulator.manualTimeOffset || 0
+      simulator.manualTimeOffset || 0,
+      activeActId
     );
     simStateRef.current = { sig: simSignature, value: evaluated };
     return evaluated;
-  }, [simSignature, quests, edges, simulator]);
+  }, [simSignature, quests, edges, simulator, activeActId]);
 
   const lintReportRef = useRef<{ sig: string; value: CampaignLintReport } | null>(null);
   const lintReport = useMemo(() => {

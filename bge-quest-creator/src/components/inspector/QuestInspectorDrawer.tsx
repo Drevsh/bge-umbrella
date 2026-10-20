@@ -410,6 +410,8 @@ export const QuestInspectorDrawer: React.FC = () => {
               <option value="CHOICE_BRANCH">CHOICE_BRANCH (Exclusive Pick)</option>
               <option value="MUTATION">MUTATION (Carries State Tag)</option>
               <option value="LOCKOUT">LOCKOUT (Mutually Exclusive)</option>
+              <option value="TIME_TRIGGER">TIME_TRIGGER (Exploration Milestone)</option>
+              <option value="TIME_EXPIRED">TIME_EXPIRED (Scenario End at 0 Time)</option>
             </select>
           </div>
 
