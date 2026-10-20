@@ -12,7 +12,11 @@ import {
   Volume2,
   Dices,
   Compass,
-  Clock
+  Clock,
+  Heart,
+  HeartCrack,
+  Layers,
+  Sparkles
 } from 'lucide-react';
 import { QuestModel, QuestVariantOverride } from '../../types/campaign';
 import { QuestSimStatus } from '../../utils/simulatorEngine';
@@ -400,24 +404,120 @@ export const QuestNodeCard = memo(({ id, data, selected }: QuestNodeCardProps) =
                 </span>
               </div>
 
-              <div className="flex items-center gap-1.5 text-[10px] shrink-0 text-slate-400 mr-2">
-                {Boolean(
-                  (reward.timeAdvance || testOutcome?.timeAdvance) &&
-                    ((reward.timeAdvance || 0) > 0 || (testOutcome?.timeAdvance || 0) > 0)
-                ) && (
-                  <span
-                    className="flex items-center gap-0.5 font-mono text-[9px] font-bold text-teal-300 bg-teal-950 border border-teal-600/70 px-1.5 py-0.2 rounded"
-                    title={`Advances Exploration Time Track by +${reward.timeAdvance || testOutcome?.timeAdvance}`}
-                  >
-                    <Clock className="w-2.5 h-2.5 text-teal-400" />+{reward.timeAdvance || testOutcome?.timeAdvance}h
-                  </span>
-                )}
-                {reward.gold > 0 && (
-                  <span className="flex items-center gap-0.5 text-amber-400">
-                    <Coins className="w-2.5 h-2.5" />
-                    {reward.gold}g
-                  </span>
-                )}
+              <div className="flex flex-wrap items-center justify-end gap-1 text-[10px] shrink-0 text-slate-400 mr-2 max-w-[145px]">
+                {(() => {
+                  const effTime = reward.timeAdvance ?? testOutcome?.timeAdvance ?? 0;
+                  const effDamage = reward.damage ?? testOutcome?.damage ?? 0;
+                  const effFatigue = reward.fatigue ?? testOutcome?.fatigue ?? 0;
+                  const effEnergy = reward.energy ?? testOutcome?.energy ?? 0;
+                  const effEssence = reward.essence ?? testOutcome?.essence ?? 0;
+                  const effGold = reward.gold ?? testOutcome?.gold ?? 0;
+
+                  return (
+                    <>
+                      {effTime > 0 && (
+                        <span
+                          className="flex items-center gap-0.5 font-mono text-[9px] font-bold text-teal-300 bg-teal-950 border border-teal-600/70 px-1 py-0.2 rounded"
+                          title={`Advances Exploration Time Track by +${effTime}`}
+                        >
+                          <Clock className="w-2.5 h-2.5 text-teal-400" />+{effTime}h
+                        </span>
+                      )}
+
+                      {effDamage !== 0 && (
+                        <span
+                          className={`flex items-center gap-0.5 font-mono text-[9px] font-bold px-1 py-0.2 rounded border ${
+                            effDamage > 0
+                              ? 'text-rose-300 bg-rose-950/90 border-rose-600/70'
+                              : 'text-emerald-300 bg-emerald-950/90 border-emerald-600/70'
+                          }`}
+                          title={
+                            effDamage > 0
+                              ? `Deals ${effDamage} Damage`
+                              : `Removes / Heals ${Math.abs(effDamage)} Damage`
+                          }
+                        >
+                          {effDamage > 0 ? (
+                            <HeartCrack className="w-2.5 h-2.5 text-rose-400" />
+                          ) : (
+                            <Heart className="w-2.5 h-2.5 text-emerald-400" />
+                          )}
+                          {effDamage > 0 ? `+${effDamage}` : effDamage} Dmg
+                        </span>
+                      )}
+
+                      {effFatigue !== 0 && (
+                        <span
+                          className={`flex items-center gap-0.5 font-mono text-[9px] font-bold px-1 py-0.2 rounded border ${
+                            effFatigue > 0
+                              ? 'text-orange-300 bg-orange-950/90 border-orange-600/70'
+                              : 'text-sky-300 bg-sky-950/90 border-sky-600/70'
+                          }`}
+                          title={
+                            effFatigue > 0
+                              ? `Gives ${effFatigue} Fatigue card${effFatigue === 1 ? '' : 's'}`
+                              : `Removes ${Math.abs(effFatigue)} Fatigue card${Math.abs(effFatigue) === 1 ? '' : 's'}`
+                          }
+                        >
+                          <Layers
+                            className={`w-2.5 h-2.5 ${
+                              effFatigue > 0 ? 'text-orange-400' : 'text-sky-400'
+                            }`}
+                          />
+                          {effFatigue > 0 ? `+${effFatigue}` : effFatigue} Fat
+                        </span>
+                      )}
+
+                      {effEnergy !== 0 && (
+                        <span
+                          className={`flex items-center gap-0.5 font-mono text-[9px] font-bold px-1 py-0.2 rounded border ${
+                            effEnergy > 0
+                              ? 'text-cyan-300 bg-cyan-950/90 border-cyan-600/70'
+                              : 'text-rose-300 bg-rose-950/90 border-rose-600/70'
+                          }`}
+                          title={
+                            effEnergy > 0
+                              ? `Grants +${effEnergy} Energy`
+                              : `Loses ${Math.abs(effEnergy)} Energy`
+                          }
+                        >
+                          <Zap className="w-2.5 h-2.5 text-cyan-400" />
+                          {effEnergy > 0 ? `+${effEnergy}` : effEnergy} Eng
+                        </span>
+                      )}
+
+                      {effEssence !== 0 && (
+                        <span
+                          className={`flex items-center gap-0.5 font-mono text-[9px] font-bold px-1 py-0.2 rounded border ${
+                            effEssence > 0
+                              ? 'text-purple-300 bg-purple-950/90 border-purple-600/70'
+                              : 'text-rose-300 bg-rose-950/90 border-rose-600/70'
+                          }`}
+                          title={
+                            effEssence > 0
+                              ? `Grants +${effEssence} Essence`
+                              : `Loses ${Math.abs(effEssence)} Essence`
+                          }
+                        >
+                          <Sparkles className="w-2.5 h-2.5 text-purple-400" />
+                          {effEssence > 0 ? `+${effEssence}` : effEssence} Ess
+                        </span>
+                      )}
+
+                      {effGold !== 0 && (
+                        <span
+                          className={`flex items-center gap-0.5 font-mono text-[9px] font-bold ${
+                            effGold > 0 ? 'text-amber-400' : 'text-rose-400'
+                          }`}
+                          title={effGold > 0 ? `Grants ${effGold} Gold` : `Costs / Loses ${Math.abs(effGold)} Gold`}
+                        >
+                          <Coins className="w-2.5 h-2.5" />
+                          {effGold > 0 ? `${effGold}g` : `${effGold}g`}
+                        </span>
+                      )}
+                    </>
+                  );
+                })()}
                 {reward.items.length > 0 && (
                   <span title={reward.items.join(', ')}>
                     <Package className="w-2.5 h-2.5 text-blue-400" />

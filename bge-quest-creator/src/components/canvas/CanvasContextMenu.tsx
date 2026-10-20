@@ -173,7 +173,7 @@ export const CanvasContextMenu: React.FC<CanvasContextMenuProps> = ({
         id: `r-${newUid}-1`,
         label: 'Scenario Victory',
         isExclusiveChoice: false,
-        gold: 25,
+        gold: 0,
         items: [],
         grantsStateTags: []
       }
@@ -289,7 +289,7 @@ export const CanvasContextMenu: React.FC<CanvasContextMenuProps> = ({
           id: `r-${newUid}-1`,
           label: 'Victory',
           isExclusiveChoice: false,
-          gold: 25,
+          gold: 0,
           items: [],
           grantsStateTags: []
         }

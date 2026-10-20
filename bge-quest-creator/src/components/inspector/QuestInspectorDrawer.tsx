@@ -6,7 +6,6 @@ import {
   Zap,
   Eye,
   EyeOff,
-  Coins,
   Package,
   Layers,
   Tag,
@@ -31,6 +30,7 @@ import {
 import { useCampaignStore } from '../../store/useCampaignStore';
 import { VariantTabsEditor } from './VariantTabsEditor';
 import { DragonEclipseTestTableEditor } from './DragonEclipseTestTableEditor';
+import { OutcomeEffectsEditor, OutcomeEffectsBadges, OutcomeEffectsValues } from './OutcomeEffectsEditor';
 import { TabletopCardPreview } from './TabletopCardPreview';
 import { evaluateCampaignSimulation } from '../../utils/simulatorEngine';
 import {
@@ -138,8 +138,14 @@ export const QuestInspectorDrawer: React.FC = () => {
   // New reward outcome form state
   const [newRewardLabel, setNewRewardLabel] = useState('');
   const [newRewardIsChoice, setNewRewardIsChoice] = useState(false);
-  const [newRewardGold, setNewRewardGold] = useState(0);
-  const [newRewardTime, setNewRewardTime] = useState(0);
+  const [newRewardEffects, setNewRewardEffects] = useState<OutcomeEffectsValues>({
+    gold: 0,
+    damage: 0,
+    fatigue: 0,
+    energy: 0,
+    essence: 0,
+    timeAdvance: 0
+  });
   const [newRewardItems, setNewRewardItems] = useState('');
   const [newRewardTags, setNewRewardTags] = useState('');
   const [isAddingReward, setIsAddingReward] = useState(false);
@@ -148,8 +154,14 @@ export const QuestInspectorDrawer: React.FC = () => {
   const [editingRewardId, setEditingRewardId] = useState<string | null>(null);
   const [editRewardLabel, setEditRewardLabel] = useState('');
   const [editRewardIsChoice, setEditRewardIsChoice] = useState(false);
-  const [editRewardGold, setEditRewardGold] = useState(0);
-  const [editRewardTime, setEditRewardTime] = useState(0);
+  const [editRewardEffects, setEditRewardEffects] = useState<OutcomeEffectsValues>({
+    gold: 0,
+    damage: 0,
+    fatigue: 0,
+    energy: 0,
+    essence: 0,
+    timeAdvance: 0
+  });
   const [editRewardItems, setEditRewardItems] = useState('');
   const [editRewardTags, setEditRewardTags] = useState('');
   const [newRewardTargetTestId, setNewRewardTargetTestId] = useState('');
@@ -594,8 +606,12 @@ export const QuestInspectorDrawer: React.FC = () => {
       id: newRewardId,
       label: newRewardLabel.trim(),
       isExclusiveChoice: newRewardIsChoice,
-      gold: Number(newRewardGold) || 0,
-      timeAdvance: Number(newRewardTime) || 0,
+      gold: Number(newRewardEffects.gold) || 0,
+      damage: Number(newRewardEffects.damage) || 0,
+      fatigue: Number(newRewardEffects.fatigue) || 0,
+      energy: Number(newRewardEffects.energy) || 0,
+      essence: Number(newRewardEffects.essence) || 0,
+      timeAdvance: Number(newRewardEffects.timeAdvance) || 0,
       items: cleanItems,
       grantsStateTags: cleanTags
     };
@@ -608,8 +624,14 @@ export const QuestInspectorDrawer: React.FC = () => {
 
     setNewRewardLabel('');
     setNewRewardIsChoice(false);
-    setNewRewardGold(0);
-    setNewRewardTime(0);
+    setNewRewardEffects({
+      gold: 0,
+      damage: 0,
+      fatigue: 0,
+      energy: 0,
+      essence: 0,
+      timeAdvance: 0
+    });
     setNewRewardItems('');
     setNewRewardTags('');
     setNewRewardTargetTestId('');
@@ -620,8 +642,14 @@ export const QuestInspectorDrawer: React.FC = () => {
     setEditingRewardId(reward.id);
     setEditRewardLabel(reward.label);
     setEditRewardIsChoice(reward.isExclusiveChoice);
-    setEditRewardGold(reward.gold);
-    setEditRewardTime(reward.timeAdvance || 0);
+    setEditRewardEffects({
+      gold: reward.gold || 0,
+      damage: reward.damage || 0,
+      fatigue: reward.fatigue || 0,
+      energy: reward.energy || 0,
+      essence: reward.essence || 0,
+      timeAdvance: reward.timeAdvance || 0
+    });
     setEditRewardItems(reward.items.join(', '));
     setEditRewardTags(reward.grantsStateTags.join(', '));
 
@@ -657,8 +685,12 @@ export const QuestInspectorDrawer: React.FC = () => {
     updateRewardOutcome(currentQuest.uid, rewardId, {
       label: editRewardLabel.trim(),
       isExclusiveChoice: editRewardIsChoice,
-      gold: Number(editRewardGold) || 0,
-      timeAdvance: Number(editRewardTime) || 0,
+      gold: Number(editRewardEffects.gold) || 0,
+      damage: Number(editRewardEffects.damage) || 0,
+      fatigue: Number(editRewardEffects.fatigue) || 0,
+      energy: Number(editRewardEffects.energy) || 0,
+      essence: Number(editRewardEffects.essence) || 0,
+      timeAdvance: Number(editRewardEffects.timeAdvance) || 0,
       items: cleanItems,
       grantsStateTags: cleanTags
     });
@@ -1587,37 +1619,14 @@ export const QuestInspectorDrawer: React.FC = () => {
                         />
                         <span>Pick-1 Exclusive Choice</span>
                       </label>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1">
-                          <span className="text-[11px] text-amber-400 font-semibold flex items-center gap-0.5">
-                            <Coins className="w-3 h-3" />
-                            Gold:
-                          </span>
-                          <NumberStepperInput
-                            value={editRewardGold}
-                            onChange={(val) => setEditRewardGold(val)}
-                            min={0}
-                            max={999}
-                            step={5}
-                            colorScheme="amber"
-                          />
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-[11px] text-teal-400 font-semibold flex items-center gap-0.5">
-                            <Clock className="w-3 h-3" />
-                            +Time:
-                          </span>
-                          <NumberStepperInput
-                            value={editRewardTime}
-                            onChange={(val) => setEditRewardTime(val)}
-                            min={0}
-                            max={10}
-                            step={1}
-                            colorScheme="teal"
-                            title="Exploration Time Track advance"
-                          />
-                        </div>
-                      </div>
+                    </div>
+
+                    <div className="p-2 rounded-lg bg-slate-900/60 border border-slate-800/80">
+                      <OutcomeEffectsEditor
+                        values={editRewardEffects}
+                        onChange={(patch) => setEditRewardEffects((prev) => ({ ...prev, ...patch }))}
+                        compact
+                      />
                     </div>
 
                     <div>
@@ -1797,18 +1806,7 @@ export const QuestInspectorDrawer: React.FC = () => {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-400 pl-5">
-                    {Boolean(reward.timeAdvance && reward.timeAdvance > 0) && (
-                      <span className="flex items-center gap-1 font-mono text-[10px] px-1.5 py-0.5 rounded bg-teal-950/80 text-teal-300 border border-teal-800/80 font-bold">
-                        <Clock className="w-2.5 h-2.5 text-teal-400" />
-                        +{reward.timeAdvance} Time
-                      </span>
-                    )}
-                    {reward.gold > 0 && (
-                      <span className="flex items-center gap-1 text-amber-400">
-                        <Coins className="w-3 h-3" />
-                        {reward.gold}g
-                      </span>
-                    )}
+                    <OutcomeEffectsBadges values={reward} />
                     {reward.items.length > 0 && (
                       <span className="flex items-center gap-1 text-blue-400">
                         <Package className="w-3 h-3" />
@@ -1881,37 +1879,14 @@ export const QuestInspectorDrawer: React.FC = () => {
                   />
                   <span>Pick-1 Exclusive Choice</span>
                 </label>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1">
-                    <span className="text-[10px] text-amber-400 font-semibold flex items-center gap-0.5">
-                      <Coins className="w-3 h-3" />
-                      Gold:
-                    </span>
-                    <NumberStepperInput
-                      value={newRewardGold}
-                      onChange={(val) => setNewRewardGold(val)}
-                      min={0}
-                      max={999}
-                      step={5}
-                      colorScheme="amber"
-                    />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-[10px] text-teal-400 font-semibold flex items-center gap-0.5">
-                      <Clock className="w-3 h-3" />
-                      +Time:
-                    </span>
-                    <NumberStepperInput
-                      value={newRewardTime}
-                      onChange={(val) => setNewRewardTime(val)}
-                      min={0}
-                      max={10}
-                      step={1}
-                      colorScheme="teal"
-                      title="Exploration Time Track advance"
-                    />
-                  </div>
-                </div>
+              </div>
+
+              <div className="p-2 rounded-lg bg-slate-900/60 border border-slate-800/80">
+                <OutcomeEffectsEditor
+                  values={newRewardEffects}
+                  onChange={(patch) => setNewRewardEffects((prev) => ({ ...prev, ...patch }))}
+                  compact
+                />
               </div>
 
               <input

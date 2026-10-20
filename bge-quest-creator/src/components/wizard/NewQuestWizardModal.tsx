@@ -37,6 +37,7 @@ import {
 } from '../../types/campaign';
 import { getAvailableStateTagsForQuest } from '../../utils/tagAnalysis';
 import { StateTagAutocompleteInput } from '../inspector/StateTagAutocompleteInput';
+import { OutcomeEffectsEditor } from '../inspector/OutcomeEffectsEditor';
 import { generateQuestDraftWithGemini } from '../../services/geminiQuestService';
 
 export const NewQuestWizardModal: React.FC = () => {
@@ -154,7 +155,7 @@ export const NewQuestWizardModal: React.FC = () => {
         id: `r-${Date.now().toString(36)}-1`,
         label: 'Victory Outcome',
         isExclusiveChoice: false,
-        gold: 25,
+        gold: 0,
         items: [],
         grantsStateTags: []
       }
@@ -403,7 +404,7 @@ export const NewQuestWizardModal: React.FC = () => {
           id: `r-${uid}-1`,
           label: 'Victory',
           isExclusiveChoice: false,
-          gold: 25,
+          gold: 0,
           items: [],
           grantsStateTags: []
         }
@@ -884,21 +885,19 @@ export const NewQuestWizardModal: React.FC = () => {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-0.5">Gold</label>
-                      <input
-                        type="number"
-                        value={r.gold}
-                        onChange={(e) => {
-                          const copy = [...rewards];
-                          copy[idx].gold = Number(e.target.value) || 0;
-                          setRewards(copy);
-                        }}
-                        placeholder="Gold"
-                        className="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-amber-400 font-mono"
-                      />
-                    </div>
+                  <div className="p-2 rounded-lg bg-slate-900/60 border border-slate-800/80">
+                    <OutcomeEffectsEditor
+                      values={r}
+                      onChange={(patch) => {
+                        const copy = [...rewards];
+                        copy[idx] = { ...copy[idx], ...patch };
+                        setRewards(copy);
+                      }}
+                      compact
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="block text-[10px] uppercase font-bold text-slate-500 mb-0.5">Items (CSV)</label>
                       <input

@@ -9,9 +9,10 @@ export interface NumberStepperInputProps {
   step?: number;
   prefix?: React.ReactNode;
   suffix?: string;
+  showPlusSign?: boolean;
   className?: string;
   size?: 'sm' | 'md';
-  colorScheme?: 'indigo' | 'amber' | 'teal' | 'slate';
+  colorScheme?: 'indigo' | 'amber' | 'teal' | 'slate' | 'rose' | 'emerald' | 'purple' | 'cyan' | 'orange';
   title?: string;
   disabled?: boolean;
 }
@@ -24,6 +25,7 @@ export const NumberStepperInput: React.FC<NumberStepperInputProps> = ({
   step = 1,
   prefix,
   suffix,
+  showPlusSign = false,
   className = '',
   size = 'sm',
   colorScheme = 'slate',
@@ -45,7 +47,7 @@ export const NumberStepperInput: React.FC<NumberStepperInputProps> = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
     if (raw === '' || raw === '-') {
-      onChange(min);
+      onChange(0 >= min && 0 <= max ? 0 : min);
       return;
     }
     const parsed = parseInt(raw, 10);
@@ -54,7 +56,6 @@ export const NumberStepperInput: React.FC<NumberStepperInputProps> = ({
     }
   };
 
-  // Color styles
   const colorStyles = {
     slate: {
       border: 'border-slate-800 focus-within:border-slate-600',
@@ -79,6 +80,36 @@ export const NumberStepperInput: React.FC<NumberStepperInputProps> = ({
       bg: 'bg-slate-950',
       text: 'text-teal-300',
       btnHover: 'hover:bg-teal-950/80 text-teal-400 hover:text-teal-200 active:bg-teal-900'
+    },
+    rose: {
+      border: 'border-rose-900/60 focus-within:border-rose-500',
+      bg: 'bg-slate-950',
+      text: 'text-rose-300',
+      btnHover: 'hover:bg-rose-950/80 text-rose-400 hover:text-rose-200 active:bg-rose-900'
+    },
+    emerald: {
+      border: 'border-emerald-900/60 focus-within:border-emerald-500',
+      bg: 'bg-slate-950',
+      text: 'text-emerald-300',
+      btnHover: 'hover:bg-emerald-950/80 text-emerald-400 hover:text-emerald-200 active:bg-emerald-900'
+    },
+    purple: {
+      border: 'border-purple-900/60 focus-within:border-purple-500',
+      bg: 'bg-slate-950',
+      text: 'text-purple-300',
+      btnHover: 'hover:bg-purple-950/80 text-purple-400 hover:text-purple-200 active:bg-purple-900'
+    },
+    cyan: {
+      border: 'border-cyan-900/60 focus-within:border-cyan-500',
+      bg: 'bg-slate-950',
+      text: 'text-cyan-300',
+      btnHover: 'hover:bg-cyan-950/80 text-cyan-400 hover:text-cyan-200 active:bg-cyan-900'
+    },
+    orange: {
+      border: 'border-orange-900/60 focus-within:border-orange-500',
+      bg: 'bg-slate-950',
+      text: 'text-orange-300',
+      btnHover: 'hover:bg-orange-950/80 text-orange-400 hover:text-orange-200 active:bg-orange-900'
     }
   }[colorScheme];
 
@@ -106,6 +137,9 @@ export const NumberStepperInput: React.FC<NumberStepperInputProps> = ({
       </button>
 
       <div className="flex-1 flex items-center justify-center min-w-0 px-1">
+        {showPlusSign && value > 0 && (
+          <span className={`font-mono font-medium -mr-0.5 ${colorStyles.text}`}>+</span>
+        )}
         <input
           type="number"
           min={min}
@@ -114,7 +148,9 @@ export const NumberStepperInput: React.FC<NumberStepperInputProps> = ({
           value={value}
           onChange={handleInputChange}
           disabled={disabled}
-          className={`w-full min-w-0 bg-transparent text-center font-mono font-medium focus:outline-none p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${colorStyles.text}`}
+          className={`w-full min-w-0 bg-transparent text-center font-mono font-medium focus:outline-none p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
+            value === 0 ? 'text-slate-500' : colorStyles.text
+          }`}
         />
         {suffix && (
           <span className="text-[10px] text-slate-500 font-mono shrink-0 ml-0.5">

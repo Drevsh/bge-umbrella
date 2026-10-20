@@ -33,6 +33,10 @@ export interface RewardOutcome {
   label: string;              // e.g. "[Choice A] Keep Blood Idol"
   isExclusiveChoice: boolean; // false = Always granted; true = Player picks 1 exclusive choice
   gold: number;
+  damage?: number;            // Dragon Eclipse: >0 Deals Damage, <0 Heals/Removes Damage
+  fatigue?: number;           // Dragon Eclipse: >0 Gain Fatigue Card(s), <0 Remove Fatigue Card(s)
+  energy?: number;            // Dragon Eclipse: Energy granted (>0) or lost (<0)
+  essence?: number;           // Dragon Eclipse: Essence granted (>0) or lost (<0)
   items: string[];
   grantsStateTags: string[];  // e.g. ["++Arnak_saved" or "+Beacon_lit"]
   timeAdvance?: number;       // Dragon Eclipse: Steps advanced on the Exploration Time Track
@@ -73,6 +77,10 @@ export interface DragonEclipseTestOutcome {
   title: string;              // e.g. "Failure: Trigger Alarm", "Success: Slipped Past"
   narrative?: string;         // Story text describing what happens
   gold?: number;
+  damage?: number;            // >0 Deals Damage, <0 Heals/Removes Damage
+  fatigue?: number;           // >0 Gain Fatigue Card(s), <0 Remove Fatigue Card(s)
+  energy?: number;            // Energy granted (>0) or lost (<0)
+  essence?: number;           // Essence granted (>0) or lost (<0)
   items?: string[];
   grantsStateTags?: string[];
   timeAdvance?: number;       // Dragon Eclipse: Steps advanced on the Exploration Time Track
@@ -99,6 +107,8 @@ export function createDefaultDragonEclipseTestConfig(testName: string = 'Skill T
         title: 'Failure: Complication Arises',
         narrative: 'Your efforts falter. A trap clicks or guards turn in your direction.',
         gold: 0,
+        damage: 2,
+        fatigue: 1,
         items: [],
         grantsStateTags: ['+Test_Failed'],
         timeAdvance: 2
@@ -110,8 +120,9 @@ export function createDefaultDragonEclipseTestConfig(testName: string = 'Skill T
         maxScore: 8,
         type: 'NEUTRAL',
         title: 'Complication: Narrow Escape',
-        narrative: 'You barely make it through, but resource or stamina was lost in the struggle.',
-        gold: 10,
+        narrative: 'You barely make it through, but stamina was lost in the struggle.',
+        gold: 0,
+        fatigue: 1,
         items: [],
         grantsStateTags: ['+Test_Narrow'],
         timeAdvance: 1
@@ -124,7 +135,9 @@ export function createDefaultDragonEclipseTestConfig(testName: string = 'Skill T
         type: 'POSITIVE',
         title: 'Success: Flawless Execution',
         narrative: 'You execute the task with mastery, discovering extra spoils along the way.',
-        gold: 25,
+        gold: 0,
+        energy: 1,
+        essence: 1,
         items: ['Valuable Clue'],
         grantsStateTags: ['++Test_Triumph'],
         timeAdvance: 0
@@ -139,6 +152,10 @@ export function syncTestOutcomesToRewardOutcomes(testConfig: DragonEclipseTestCo
     label: `[${o.rangeLabel}] ${o.title}`,
     isExclusiveChoice: true,
     gold: o.gold || 0,
+    damage: o.damage || 0,
+    fatigue: o.fatigue || 0,
+    energy: o.energy || 0,
+    essence: o.essence || 0,
     items: o.items || [],
     grantsStateTags: o.grantsStateTags || [],
     timeAdvance: o.timeAdvance || 0
@@ -254,6 +271,10 @@ export const RewardOutcomeSchema = z.object({
   label: z.string(),
   isExclusiveChoice: z.boolean(),
   gold: z.number().default(0),
+  damage: z.number().optional(),
+  fatigue: z.number().optional(),
+  energy: z.number().optional(),
+  essence: z.number().optional(),
   items: z.array(z.string()).default([]),
   grantsStateTags: z.array(z.string()).default([]),
   timeAdvance: z.number().optional(),
@@ -315,6 +336,10 @@ export const QuestModelSchema = z.object({
       title: z.string(),
       narrative: z.string().optional(),
       gold: z.number().optional(),
+      damage: z.number().optional(),
+      fatigue: z.number().optional(),
+      energy: z.number().optional(),
+      essence: z.number().optional(),
       items: z.array(z.string()).optional(),
       grantsStateTags: z.array(z.string()).optional(),
       timeAdvance: z.number().optional()

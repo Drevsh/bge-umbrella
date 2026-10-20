@@ -1,6 +1,7 @@
 import React from 'react';
-import { Scroll, Sparkles, Zap, Shield, Target } from 'lucide-react';
+import { Sparkles, Zap, Shield, Target } from 'lucide-react';
 import { QuestModel, QuestVariantOverride } from '../../types/campaign';
+import { OutcomeEffectsBadges } from './OutcomeEffectsEditor';
 
 interface TabletopCardPreviewProps {
   quest: QuestModel;
@@ -93,12 +94,13 @@ export const TabletopCardPreview: React.FC<TabletopCardPreviewProps> = ({
       {/* Rewards Footnote */}
       <div className="border-t border-amber-800/40 pt-2 font-sans text-[10px] text-amber-400/90 flex flex-wrap gap-2">
         {quest.rewardOutcomes.map((r) => (
-          <span
+          <div
             key={r.id}
-            className="bg-amber-950/70 border border-amber-800/60 px-2 py-0.5 rounded"
+            className="bg-amber-950/70 border border-amber-800/60 px-2 py-1 rounded flex flex-wrap items-center gap-1.5"
           >
-            {r.label}
-          </span>
+            <span>{r.label}</span>
+            <OutcomeEffectsBadges values={r} />
+          </div>
         ))}
       </div>
     </div>

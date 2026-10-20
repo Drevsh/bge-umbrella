@@ -27,7 +27,7 @@ import {
   syncTestOutcomesToRewardOutcomes
 } from '../../types/campaign';
 import { useCampaignStore } from '../../store/useCampaignStore';
-import { NumberStepperInput } from '../common/NumberStepperInput';
+import { OutcomeEffectsEditor, OutcomeEffectsBadges } from './OutcomeEffectsEditor';
 
 interface DragonEclipseTestTableEditorProps {
   quest: QuestModel;
@@ -108,7 +108,7 @@ export const DragonEclipseTestTableEditor: React.FC<DragonEclipseTestTableEditor
       type: 'POSITIVE',
       title: 'Major Breakthrough',
       narrative: 'A remarkable discovery beyond all expectations.',
-      gold: 15,
+      gold: 0,
       items: [],
       grantsStateTags: [],
       timeAdvance: 0
@@ -390,45 +390,24 @@ export const DragonEclipseTestTableEditor: React.FC<DragonEclipseTestTableEditor
                   />
                 </div>
 
-                {/* Rewards, Time & State Tags */}
-                <div className="grid grid-cols-3 gap-2 pt-1">
-                  <div>
-                    <label className="block text-[10px] font-medium text-amber-400 mb-0.5 flex items-center gap-1">
-                      <Coins className="w-3 h-3" />
-                      Gold
-                    </label>
-                    <NumberStepperInput
-                      value={outcome.gold || 0}
-                      onChange={(val) => handleUpdateOutcome(idx, { gold: val })}
-                      min={0}
-                      max={999}
-                      step={5}
-                      colorScheme="amber"
-                      className="w-full"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-medium text-teal-400 mb-0.5 flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      +Time
-                    </label>
-                    <NumberStepperInput
-                      value={outcome.timeAdvance || 0}
-                      onChange={(val) => handleUpdateOutcome(idx, { timeAdvance: val })}
-                      min={0}
-                      max={10}
-                      step={1}
-                      colorScheme="teal"
-                      className="w-full"
-                      title="Exploration Time Track advance for this outcome"
-                    />
-                  </div>
+                {/* Rewards, Penalties (Damage / Fatigue / Energy / Essence / Gold / Time) & State Tags */}
+                <div className="space-y-2.5 pt-1">
+                  <OutcomeEffectsEditor
+                    values={{
+                      damage: outcome.damage,
+                      fatigue: outcome.fatigue,
+                      energy: outcome.energy,
+                      essence: outcome.essence,
+                      gold: outcome.gold,
+                      timeAdvance: outcome.timeAdvance
+                    }}
+                    onChange={(partial) => handleUpdateOutcome(idx, partial)}
+                  />
 
                   <div>
                     <div className="flex items-center justify-between mb-0.5">
                       <label className="text-[10px] font-medium text-slate-400">
-                        State Tag
+                        Grants State Tags (comma-separated)
                       </label>
                       <button
                         type="button"

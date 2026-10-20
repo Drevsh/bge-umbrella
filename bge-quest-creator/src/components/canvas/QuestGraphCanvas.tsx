@@ -602,7 +602,7 @@ export const QuestGraphCanvas: React.FC = () => {
             id: `r-${newUid}-1`,
             label: 'Scenario Victory',
             isExclusiveChoice: false,
-            gold: 25,
+            gold: 0,
             items: [],
             grantsStateTags: []
           }
