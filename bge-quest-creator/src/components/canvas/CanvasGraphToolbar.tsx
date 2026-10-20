@@ -68,7 +68,9 @@ export const CanvasGraphToolbar: React.FC = () => {
   return (
     <div
       ref={toolbarRef}
-      className="flex items-center gap-2 pointer-events-auto select-none shrink-0"
+      className={`relative flex items-center gap-1.5 sm:gap-2 pointer-events-auto select-none shrink-0 ${
+        activeMenu ? 'z-40' : 'z-20'
+      }`}
     >
       {/* 1. Routing Pill */}
       <div className="relative">

@@ -22,6 +22,7 @@ import { QuestNodeCard, QuestNodeCardData } from './QuestNodeCard';
 import { SemanticEdge } from './SemanticEdgeLayer';
 import { TierSwimlaneHeader } from './TierSwimlaneHeader';
 import { CanvasGraphToolbar } from './CanvasGraphToolbar';
+import { ExplorationHudPill } from './ExplorationHudPill';
 import { CanvasContextMenu, ContextMenuState } from './CanvasContextMenu';
 import { Sparkles, Maximize2, Expand, Shrink } from 'lucide-react';
 import {
@@ -669,13 +670,16 @@ export const QuestGraphCanvas: React.FC = () => {
       ref={reactFlowWrapper}
       className="flex-1 h-full min-w-0 relative bg-slate-950 overflow-hidden"
     >
-      {/* Top Floating Canvas Toolbar (Progression Tiers + Routing & Layers Popovers) */}
-      <div className="absolute top-2.5 left-2 sm:left-4 z-30 pointer-events-none flex items-center gap-2 overflow-visible">
-        <TierSwimlaneHeader
-          tiers={tiers.length > 0 ? tiers : [1, 2, 3]}
-          onAddQuestInTier={handleAddQuestInTier}
-        />
-        <CanvasGraphToolbar />
+      {/* Top Floating Canvas Toolbar (Progression Tiers, Routing & Layers, and Exploration Time HUD) */}
+      <div className="absolute top-2.5 left-2 right-2 sm:left-4 sm:right-4 z-30 pointer-events-none flex flex-wrap items-start justify-between gap-2 overflow-visible">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 max-w-full min-w-0">
+          <TierSwimlaneHeader
+            tiers={tiers.length > 0 ? tiers : [1, 2, 3]}
+            onAddQuestInTier={handleAddQuestInTier}
+          />
+          <CanvasGraphToolbar />
+        </div>
+        <ExplorationHudPill />
       </div>
 
       <ReactFlow
