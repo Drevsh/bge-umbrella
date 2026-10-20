@@ -45,7 +45,7 @@ export const NumberStepperInput: React.FC<NumberStepperInputProps> = ({
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value;
+    const raw = e.target.value.replace(/^\+/, '').trim();
     if (raw === '' || raw === '-') {
       onChange(0 >= min && 0 <= max ? 0 : min);
       return;
@@ -113,15 +113,24 @@ export const NumberStepperInput: React.FC<NumberStepperInputProps> = ({
     }
   }[colorScheme];
 
-  const sizeStyles = size === 'sm' ? 'h-7 text-xs min-w-[76px]' : 'h-8 text-sm min-w-[88px]';
+  const hasCustomWidth = /\bw-/.test(className);
+  const defaultWidth = suffix
+    ? size === 'sm'
+      ? 'w-[116px]'
+      : 'w-[128px]'
+    : size === 'sm'
+    ? 'w-[92px]'
+    : 'w-[104px]';
+  const sizeStyles = size === 'sm' ? 'h-7 text-xs' : 'h-8 text-sm';
   const btnWidth = size === 'sm' ? 'w-6' : 'w-7';
+  const formattedValue = showPlusSign && value > 0 ? `+${value}` : String(value);
 
   return (
     <div
       title={title}
-      className={`inline-flex items-center justify-between rounded-lg border transition-colors select-none shrink-0 ${colorStyles.border} ${colorStyles.bg} ${sizeStyles} ${className} ${
-        disabled ? 'opacity-50 pointer-events-none' : ''
-      }`}
+      className={`inline-flex items-center justify-between rounded-lg border overflow-hidden transition-colors select-none shrink-0 ${colorStyles.border} ${colorStyles.bg} ${sizeStyles} ${
+        hasCustomWidth ? '' : defaultWidth
+      } ${className} ${disabled ? 'opacity-50 pointer-events-none' : ''}`}
     >
       {prefix && <span className="pl-1.5 pr-0.5 flex items-center shrink-0">{prefix}</span>}
 
@@ -129,7 +138,7 @@ export const NumberStepperInput: React.FC<NumberStepperInputProps> = ({
         type="button"
         onClick={handleDecrement}
         disabled={disabled || value <= min}
-        className={`h-full ${btnWidth} flex items-center justify-center transition-colors cursor-pointer shrink-0 disabled:opacity-25 disabled:cursor-not-allowed ${colorStyles.btnHover}`}
+        className={`h-full ${btnWidth} border-r border-slate-800/70 flex items-center justify-center transition-colors cursor-pointer shrink-0 disabled:opacity-25 disabled:cursor-not-allowed ${colorStyles.btnHover}`}
         tabIndex={-1}
         aria-label="Decrease value"
       >
@@ -137,18 +146,13 @@ export const NumberStepperInput: React.FC<NumberStepperInputProps> = ({
       </button>
 
       <div className="flex-1 flex items-center justify-center min-w-0 px-1">
-        {showPlusSign && value > 0 && (
-          <span className={`font-mono font-medium -mr-0.5 ${colorStyles.text}`}>+</span>
-        )}
         <input
-          type="number"
-          min={min}
-          max={max}
-          step={step}
-          value={value}
+          type="text"
+          inputMode="numeric"
+          value={formattedValue}
           onChange={handleInputChange}
           disabled={disabled}
-          className={`w-full min-w-0 bg-transparent text-center font-mono font-medium focus:outline-none p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
+          className={`w-full min-w-0 bg-transparent text-center font-mono tabular-nums font-semibold focus:outline-none p-0 ${
             value === 0 ? 'text-slate-500' : colorStyles.text
           }`}
         />
@@ -163,7 +167,7 @@ export const NumberStepperInput: React.FC<NumberStepperInputProps> = ({
         type="button"
         onClick={handleIncrement}
         disabled={disabled || value >= max}
-        className={`h-full ${btnWidth} flex items-center justify-center transition-colors cursor-pointer shrink-0 disabled:opacity-25 disabled:cursor-not-allowed ${colorStyles.btnHover}`}
+        className={`h-full ${btnWidth} border-l border-slate-800/70 flex items-center justify-center transition-colors cursor-pointer shrink-0 disabled:opacity-25 disabled:cursor-not-allowed ${colorStyles.btnHover}`}
         tabIndex={-1}
         aria-label="Increase value"
       >

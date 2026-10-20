@@ -155,7 +155,7 @@ export const OutcomeEffectsEditor: React.FC<OutcomeEffectsEditorProps> = ({
           {isKeyVisible('damage') && (
             <div className="flex flex-wrap items-center justify-between gap-2 px-2.5 py-1.5 rounded-md bg-slate-900/90 border border-slate-800">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="text-[11px] font-semibold flex items-center gap-1.5 text-slate-200 whitespace-nowrap">
+                <span className="text-[11px] font-semibold flex items-center gap-1.5 text-slate-200 whitespace-nowrap min-w-[68px]">
                   {damageVal >= 0 ? (
                     <HeartCrack className="w-3.5 h-3.5 text-rose-400 shrink-0" />
                   ) : (
@@ -167,7 +167,7 @@ export const OutcomeEffectsEditor: React.FC<OutcomeEffectsEditorProps> = ({
                   <button
                     type="button"
                     onClick={() => onChange({ damage: Math.abs(damageVal) || 1 })}
-                    className={`px-1.5 py-0.5 rounded text-[9px] font-semibold whitespace-nowrap cursor-pointer transition-colors ${
+                    className={`w-[54px] inline-flex items-center justify-center py-0.5 rounded text-[9px] font-semibold whitespace-nowrap cursor-pointer transition-colors ${
                       damageVal >= 0
                         ? 'bg-rose-950 text-rose-300 border border-rose-700/60'
                         : 'text-slate-500 hover:text-slate-300'
@@ -179,7 +179,7 @@ export const OutcomeEffectsEditor: React.FC<OutcomeEffectsEditorProps> = ({
                   <button
                     type="button"
                     onClick={() => onChange({ damage: -Math.abs(damageVal || 1) })}
-                    className={`px-1.5 py-0.5 rounded text-[9px] font-semibold whitespace-nowrap cursor-pointer transition-colors ${
+                    className={`w-[54px] inline-flex items-center justify-center py-0.5 rounded text-[9px] font-semibold whitespace-nowrap cursor-pointer transition-colors ${
                       damageVal < 0
                         ? 'bg-emerald-950 text-emerald-300 border border-emerald-700/60'
                         : 'text-slate-500 hover:text-slate-300'
@@ -218,7 +218,7 @@ export const OutcomeEffectsEditor: React.FC<OutcomeEffectsEditorProps> = ({
           {isKeyVisible('fatigue') && (
             <div className="flex flex-wrap items-center justify-between gap-2 px-2.5 py-1.5 rounded-md bg-slate-900/90 border border-slate-800">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="text-[11px] font-semibold flex items-center gap-1.5 text-slate-200 whitespace-nowrap">
+                <span className="text-[11px] font-semibold flex items-center gap-1.5 text-slate-200 whitespace-nowrap min-w-[68px]">
                   <Layers
                     className={`w-3.5 h-3.5 shrink-0 ${
                       fatigueVal >= 0 ? 'text-orange-400' : 'text-sky-400'
@@ -230,7 +230,7 @@ export const OutcomeEffectsEditor: React.FC<OutcomeEffectsEditorProps> = ({
                   <button
                     type="button"
                     onClick={() => onChange({ fatigue: Math.abs(fatigueVal) || 1 })}
-                    className={`px-1.5 py-0.5 rounded text-[9px] font-semibold whitespace-nowrap cursor-pointer transition-colors ${
+                    className={`w-[54px] inline-flex items-center justify-center py-0.5 rounded text-[9px] font-semibold whitespace-nowrap cursor-pointer transition-colors ${
                       fatigueVal >= 0
                         ? 'bg-orange-950 text-orange-300 border border-orange-700/60'
                         : 'text-slate-500 hover:text-slate-300'
@@ -242,7 +242,7 @@ export const OutcomeEffectsEditor: React.FC<OutcomeEffectsEditorProps> = ({
                   <button
                     type="button"
                     onClick={() => onChange({ fatigue: -Math.abs(fatigueVal || 1) })}
-                    className={`px-1.5 py-0.5 rounded text-[9px] font-semibold whitespace-nowrap cursor-pointer transition-colors ${
+                    className={`w-[54px] inline-flex items-center justify-center py-0.5 rounded text-[9px] font-semibold whitespace-nowrap cursor-pointer transition-colors ${
                       fatigueVal < 0
                         ? 'bg-sky-950 text-sky-300 border border-sky-700/60'
                         : 'text-slate-500 hover:text-slate-300'
